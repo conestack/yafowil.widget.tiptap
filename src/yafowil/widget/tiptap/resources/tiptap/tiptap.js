@@ -1,11 +1,11 @@
-(function (global, factory) {
+(function () {
+  'use strict';
+
+  (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('prosemirror-state'), require('prosemirror-transform'), require('prosemirror-commands'), require('prosemirror-model'), require('prosemirror-schema-list'), require('prosemirror-view'), require('prosemirror-keymap')) :
     typeof define === 'function' && define.amd ? define(['exports', 'prosemirror-state', 'prosemirror-transform', 'prosemirror-commands', 'prosemirror-model', 'prosemirror-schema-list', 'prosemirror-view', 'prosemirror-keymap'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global["@tiptap/core"] = {}, global.prosemirrorState, global.prosemirrorTransform, global.prosemirrorCommands, global.prosemirrorModel, global.prosemirrorSchemaList, global.prosemirrorView, global.prosemirrorKeymap));
-  })(this, (function (exports, prosemirrorState, prosemirrorTransform, prosemirrorCommands, prosemirrorModel, prosemirrorSchemaList, prosemirrorView, prosemirrorKeymap) { 'use strict';
-  
-    // see: https://github.com/mesqueeb/is-what/blob/88d6e4ca92fb2baab6003c54e02eedf4e729e5ab/src/index.ts
-    function getType(value) {
+  })(undefined, (function (exports, prosemirrorState, prosemirrorTransform, prosemirrorCommands, prosemirrorModel, prosemirrorSchemaList, prosemirrorView, prosemirrorKeymap) {  function getType(value) {
         return Object.prototype.toString.call(value).slice(8, -1);
     }
     function isPlainObject(value) {
@@ -14,7 +14,6 @@
         }
         return value.constructor === Object && Object.getPrototypeOf(value) === Object.prototype;
     }
-  
     function mergeDeep(target, source) {
         const output = { ...target };
         if (isPlainObject(target) && isPlainObject(source)) {
@@ -34,18 +33,9 @@
         }
         return output;
     }
-  
     function isFunction(value) {
         return typeof value === 'function';
     }
-  
-    /**
-     * Optionally calls `value` as a function.
-     * Otherwise it is returned directly.
-     * @param value Function or any value.
-     * @param context Optional context to bind to function.
-     * @param props Optional props to pass to function.
-     */
     function callOrReturn(value, context = undefined, ...props) {
         if (isFunction(value)) {
             if (context) {
@@ -55,7 +45,6 @@
         }
         return value;
     }
-  
     function getExtensionField(extension, field, context) {
         if (extension.config[field] === undefined && extension.parent) {
             return getExtensionField(extension.parent, field, context);
@@ -71,7 +60,6 @@
         }
         return extension.config[field];
     }
-  
     class Extension {
         constructor(config = {}) {
             this.type = 'extension';
@@ -90,7 +78,6 @@
             if (config.defaultOptions) {
                 console.warn(`[tiptap warn]: BREAKING CHANGE: "defaultOptions" is deprecated. Please use "addOptions" instead. Found in extension: "${this.name}".`);
             }
-            // TODO: remove `addOptions` fallback
             this.options = this.config.defaultOptions;
             if (this.config.addOptions) {
                 this.options = callOrReturn(getExtensionField(this, 'addOptions', {
@@ -106,8 +93,6 @@
             return new Extension(config);
         }
         configure(options = {}) {
-            // return a new instance so we can use the same extension
-            // with different calls of `configure`
             const extension = this.extend();
             extension.options = mergeDeep(this.options, options);
             extension.storage = callOrReturn(getExtensionField(extension, 'addStorage', {
@@ -136,7 +121,6 @@
             return extension;
         }
     }
-  
     function getTextBetween(startNode, range, options) {
         const { from, to } = range;
         const { blockSeparator = '\n\n', textSerializers = {}, } = options || {};
@@ -168,14 +152,12 @@
         });
         return text;
     }
-  
     function getTextSeralizersFromSchema(schema) {
         return Object.fromEntries(Object
             .entries(schema.nodes)
             .filter(([, node]) => node.spec.toText)
             .map(([name, node]) => [name, node.spec.toText]));
     }
-  
     const ClipboardTextSerializer = Extension.create({
         name: 'clipboardTextSerializer',
         addProseMirrorPlugins() {
@@ -201,34 +183,27 @@
             ];
         },
     });
-  
     const blur = () => ({ editor, view }) => {
         requestAnimationFrame(() => {
             var _a;
             if (!editor.isDestroyed) {
                 view.dom.blur();
-                // Browsers should remove the caret on blur but safari does not.
-                // See: https://github.com/ueberdosis/tiptap/issues/2405
                 (_a = window === null || window === void 0 ? void 0 : window.getSelection()) === null || _a === void 0 ? void 0 : _a.removeAllRanges();
             }
         });
         return true;
     };
-  
-    var blur$1 = /*#__PURE__*/Object.freeze({
+    var blur$1 = Object.freeze({
       __proto__: null,
       blur: blur
     });
-  
     const clearContent = (emitUpdate = false) => ({ commands }) => {
         return commands.setContent('', emitUpdate);
     };
-  
-    var clearContent$1 = /*#__PURE__*/Object.freeze({
+    var clearContent$1 = Object.freeze({
       __proto__: null,
       clearContent: clearContent
     });
-  
     const clearNodes = () => ({ state, tr, dispatch }) => {
         const { selection } = tr;
         const { ranges } = selection;
@@ -259,30 +234,24 @@
         });
         return true;
     };
-  
-    var clearNodes$1 = /*#__PURE__*/Object.freeze({
+    var clearNodes$1 = Object.freeze({
       __proto__: null,
       clearNodes: clearNodes
     });
-  
     const command = fn => props => {
         return fn(props);
     };
-  
-    var command$1 = /*#__PURE__*/Object.freeze({
+    var command$1 = Object.freeze({
       __proto__: null,
       command: command
     });
-  
     const createParagraphNear = () => ({ state, dispatch }) => {
         return prosemirrorCommands.createParagraphNear(state, dispatch);
     };
-  
-    var createParagraphNear$1 = /*#__PURE__*/Object.freeze({
+    var createParagraphNear$1 = Object.freeze({
       __proto__: null,
       createParagraphNear: createParagraphNear
     });
-  
     function getNodeType(nameOrType, schema) {
         if (typeof nameOrType === 'string') {
             if (!schema.nodes[nameOrType]) {
@@ -292,7 +261,6 @@
         }
         return nameOrType;
     }
-  
     const deleteNode = typeOrName => ({ tr, state, dispatch }) => {
         const type = getNodeType(typeOrName, state.schema);
         const $pos = tr.selection.$anchor;
@@ -309,12 +277,10 @@
         }
         return false;
     };
-  
-    var deleteNode$1 = /*#__PURE__*/Object.freeze({
+    var deleteNode$1 = Object.freeze({
       __proto__: null,
       deleteNode: deleteNode
     });
-  
     const deleteRange = range => ({ tr, dispatch }) => {
         const { from, to } = range;
         if (dispatch) {
@@ -322,39 +288,31 @@
         }
         return true;
     };
-  
-    var deleteRange$1 = /*#__PURE__*/Object.freeze({
+    var deleteRange$1 = Object.freeze({
       __proto__: null,
       deleteRange: deleteRange
     });
-  
     const deleteSelection = () => ({ state, dispatch }) => {
         return prosemirrorCommands.deleteSelection(state, dispatch);
     };
-  
-    var deleteSelection$1 = /*#__PURE__*/Object.freeze({
+    var deleteSelection$1 = Object.freeze({
       __proto__: null,
       deleteSelection: deleteSelection
     });
-  
     const enter = () => ({ commands }) => {
         return commands.keyboardShortcut('Enter');
     };
-  
-    var enter$1 = /*#__PURE__*/Object.freeze({
+    var enter$1 = Object.freeze({
       __proto__: null,
       enter: enter
     });
-  
     const exitCode = () => ({ state, dispatch }) => {
         return prosemirrorCommands.exitCode(state, dispatch);
     };
-  
-    var exitCode$1 = /*#__PURE__*/Object.freeze({
+    var exitCode$1 = Object.freeze({
       __proto__: null,
       exitCode: exitCode
     });
-  
     function getMarkType(nameOrType, schema) {
         if (typeof nameOrType === 'string') {
             if (!schema.marks[nameOrType]) {
@@ -364,16 +322,9 @@
         }
         return nameOrType;
     }
-  
     function isRegExp(value) {
         return Object.prototype.toString.call(value) === '[object RegExp]';
     }
-  
-    /**
-     * Check if object1 includes object2
-     * @param object1 Object
-     * @param object2 Object
-     */
     function objectIncludes(object1, object2, options = { strict: true }) {
         const keys = Object.keys(object2);
         if (!keys.length) {
@@ -389,7 +340,6 @@
             return object2[key] === object1[key];
         });
     }
-  
     function findMarkInSet(marks, type, attributes = {}) {
         return marks.find(item => {
             return item.type === type && objectIncludes(item.attrs, attributes);
@@ -429,7 +379,6 @@
             to: endPos,
         };
     }
-  
     const extendMarkRange = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
         const type = getMarkType(typeOrName, state.schema);
         const { doc, selection } = tr;
@@ -443,12 +392,10 @@
         }
         return true;
     };
-  
-    var extendMarkRange$1 = /*#__PURE__*/Object.freeze({
+    var extendMarkRange$1 = Object.freeze({
       __proto__: null,
       extendMarkRange: extendMarkRange
     });
-  
     const first = commands => props => {
         const items = typeof commands === 'function'
             ? commands(props)
@@ -460,12 +407,10 @@
         }
         return false;
     };
-  
-    var first$1 = /*#__PURE__*/Object.freeze({
+    var first$1 = Object.freeze({
       __proto__: null,
       first: first
     });
-  
     function isClass(value) {
         var _a;
         if (((_a = value.constructor) === null || _a === void 0 ? void 0 : _a.toString().substring(0, 5)) !== 'class') {
@@ -473,18 +418,15 @@
         }
         return true;
     }
-  
     function isObject(value) {
         return (value
             && typeof value === 'object'
             && !Array.isArray(value)
             && !isClass(value));
     }
-  
     function isTextSelection(value) {
         return isObject(value) && value instanceof prosemirrorState.TextSelection;
     }
-  
     function isiOS() {
         return [
             'iPad Simulator',
@@ -494,14 +436,11 @@
             'iPhone',
             'iPod',
         ].includes(navigator.platform)
-            // iPad on iOS 13 detection
             || (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
     }
-  
     function minMax(value = 0, min = 0, max = 0) {
         return Math.min(Math.max(value, min), max);
     }
-  
     function resolveFocusPosition(doc, position = null) {
         if (!position) {
             return null;
@@ -515,27 +454,21 @@
         if (position === 'all') {
             return prosemirrorState.TextSelection.create(doc, 0, doc.content.size);
         }
-        // Check if `position` is in bounds of the doc if `position` is a number.
         const minPos = prosemirrorState.Selection.atStart(doc).from;
         const maxPos = prosemirrorState.Selection.atEnd(doc).to;
         const resolvedFrom = minMax(position, minPos, maxPos);
         const resolvedEnd = minMax(position, minPos, maxPos);
         return prosemirrorState.TextSelection.create(doc, resolvedFrom, resolvedEnd);
     }
-  
     const focus = (position = null, options) => ({ editor, view, tr, dispatch, }) => {
         options = {
             scrollIntoView: true,
             ...options,
         };
         const delayedFocus = () => {
-            // focus within `requestAnimationFrame` breaks focus on iOS
-            // so we have to call this
             if (isiOS()) {
                 view.dom.focus();
             }
-            // For React we have to focus asynchronously. Otherwise wild things happen.
-            // see: https://github.com/ueberdosis/tiptap/issues/1520
             requestAnimationFrame(() => {
                 if (!editor.isDestroyed) {
                     view.focus();
@@ -548,7 +481,6 @@
         if ((view.hasFocus() && position === null) || position === false) {
             return true;
         }
-        // we don’t try to resolve a NodeSelection or CellSelection
         if (dispatch && position === null && !isTextSelection(editor.state.selection)) {
             delayedFocus();
             return true;
@@ -559,8 +491,6 @@
             if (!isSameSelection) {
                 tr.setSelection(selection);
             }
-            // `tr.setSelection` resets the stored marks
-            // so we’ll restore them if the selection is the same as before
             if (isSameSelection && tr.storedMarks) {
                 tr.setStoredMarks(tr.storedMarks);
             }
@@ -568,36 +498,28 @@
         }
         return true;
     };
-  
-    var focus$1 = /*#__PURE__*/Object.freeze({
+    var focus$1 = Object.freeze({
       __proto__: null,
       focus: focus
     });
-  
     const forEach = (items, fn) => props => {
         return items.every((item, index) => fn(item, { ...props, index }));
     };
-  
-    var forEach$1 = /*#__PURE__*/Object.freeze({
+    var forEach$1 = Object.freeze({
       __proto__: null,
       forEach: forEach
     });
-  
     const insertContent = (value, options) => ({ tr, commands }) => {
         return commands.insertContentAt({ from: tr.selection.from, to: tr.selection.to }, value, options);
     };
-  
-    var insertContent$1 = /*#__PURE__*/Object.freeze({
+    var insertContent$1 = Object.freeze({
       __proto__: null,
       insertContent: insertContent
     });
-  
     function elementFromString(value) {
-        // add a wrapper to preserve leading and trailing whitespace
         const wrappedValue = `<body>${value}</body>`;
         return new window.DOMParser().parseFromString(wrappedValue, 'text/html').body;
     }
-  
     function createNodeFromContent(content, schema, options) {
         options = {
             slice: true,
@@ -624,8 +546,6 @@
         }
         return createNodeFromContent('', schema, options);
     }
-  
-    // source: https://github.com/ProseMirror/prosemirror-state/blob/master/src/selection.js#L466
     function selectionToInsertionEnd(tr, startLen, bias) {
         const last = tr.steps.length - 1;
         if (last < startLen) {
@@ -644,7 +564,6 @@
         });
         tr.setSelection(prosemirrorState.Selection.near(tr.doc.resolve(end), bias));
     }
-  
     const isFragment = (nodeOrFragment) => {
         return nodeOrFragment.toString().startsWith('<');
     };
@@ -661,7 +580,6 @@
                     ...options.parseOptions,
                 },
             });
-            // don’t dispatch an empty fragment because this can lead to strange errors
             if (content.toString() === '<>') {
                 return true;
             }
@@ -674,7 +592,6 @@
                 ? content
                 : [content];
             nodes.forEach(node => {
-                // check if added node is valid
                 node.check();
                 isOnlyTextContent = isOnlyTextContent
                     ? node.isText && node.marks.length === 0
@@ -683,11 +600,6 @@
                     ? node.isBlock
                     : false;
             });
-            // check if we can replace the wrapping node by
-            // the newly inserted content
-            // example:
-            // replace an empty paragraph by an inserted image
-            // instead of inserting the image below the paragraph
             if (from === to && isOnlyBlockContent) {
                 const { parent } = tr.doc.resolve(from);
                 const isEmptyTextBlock = parent.isTextblock
@@ -698,45 +610,36 @@
                     to += 1;
                 }
             }
-            // if there is only plain text we have to use `insertText`
-            // because this will keep the current marks
             if (isOnlyTextContent) {
                 tr.insertText(value, from, to);
             }
             else {
                 tr.replaceWith(from, to, content);
             }
-            // set cursor at end of inserted content
             if (options.updateSelection) {
                 selectionToInsertionEnd(tr, tr.steps.length - 1, -1);
             }
         }
         return true;
     };
-  
-    var insertContentAt$1 = /*#__PURE__*/Object.freeze({
+    var insertContentAt$1 = Object.freeze({
       __proto__: null,
       insertContentAt: insertContentAt
     });
-  
     const joinBackward = () => ({ state, dispatch }) => {
         return prosemirrorCommands.joinBackward(state, dispatch);
     };
-  
-    var joinBackward$1 = /*#__PURE__*/Object.freeze({
+    var joinBackward$1 = Object.freeze({
       __proto__: null,
       joinBackward: joinBackward
     });
-  
     const joinForward = () => ({ state, dispatch }) => {
         return prosemirrorCommands.joinForward(state, dispatch);
     };
-  
-    var joinForward$1 = /*#__PURE__*/Object.freeze({
+    var joinForward$1 = Object.freeze({
       __proto__: null,
       joinForward: joinForward
     });
-  
     const mac = typeof navigator !== 'undefined' ? /Mac/.test(navigator.platform) : false;
     function normalizeKeyName(name) {
         const parts = name.split(/-(?!$)/);
@@ -813,12 +716,10 @@
         });
         return true;
     };
-  
-    var keyboardShortcut$1 = /*#__PURE__*/Object.freeze({
+    var keyboardShortcut$1 = Object.freeze({
       __proto__: null,
       keyboardShortcut: keyboardShortcut
     });
-  
     function isNodeActive(state, typeOrName, attributes = {}) {
         const { from, to, empty } = state.selection;
         const type = typeOrName
@@ -853,7 +754,6 @@
             .reduce((sum, nodeRange) => sum + nodeRange.to - nodeRange.from, 0);
         return range >= selectionRange;
     }
-  
     const lift = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
         const type = getNodeType(typeOrName, state.schema);
         const isActive = isNodeActive(state, type, attributes);
@@ -862,40 +762,32 @@
         }
         return prosemirrorCommands.lift(state, dispatch);
     };
-  
-    var lift$1 = /*#__PURE__*/Object.freeze({
+    var lift$1 = Object.freeze({
       __proto__: null,
       lift: lift
     });
-  
     const liftEmptyBlock = () => ({ state, dispatch }) => {
         return prosemirrorCommands.liftEmptyBlock(state, dispatch);
     };
-  
-    var liftEmptyBlock$1 = /*#__PURE__*/Object.freeze({
+    var liftEmptyBlock$1 = Object.freeze({
       __proto__: null,
       liftEmptyBlock: liftEmptyBlock
     });
-  
     const liftListItem = typeOrName => ({ state, dispatch }) => {
         const type = getNodeType(typeOrName, state.schema);
         return prosemirrorSchemaList.liftListItem(type)(state, dispatch);
     };
-  
-    var liftListItem$1 = /*#__PURE__*/Object.freeze({
+    var liftListItem$1 = Object.freeze({
       __proto__: null,
       liftListItem: liftListItem
     });
-  
     const newlineInCode = () => ({ state, dispatch }) => {
         return prosemirrorCommands.newlineInCode(state, dispatch);
     };
-  
-    var newlineInCode$1 = /*#__PURE__*/Object.freeze({
+    var newlineInCode$1 = Object.freeze({
       __proto__: null,
       newlineInCode: newlineInCode
     });
-  
     function getSchemaTypeNameByName(name, schema) {
         if (schema.nodes[name]) {
             return 'node';
@@ -905,12 +797,6 @@
         }
         return null;
     }
-  
-    /**
-     * Remove a property or an array of properties from an object
-     * @param obj Object
-     * @param key Key to remove
-     */
     function deleteProps(obj, propOrProps) {
         const props = typeof propOrProps === 'string'
             ? [propOrProps]
@@ -924,7 +810,6 @@
             return newObj;
         }, {});
     }
-  
     const resetAttributes = (typeOrName, attributes) => ({ tr, state, dispatch }) => {
         let nodeType = null;
         let markType = null;
@@ -958,67 +843,54 @@
         }
         return true;
     };
-  
-    var resetAttributes$1 = /*#__PURE__*/Object.freeze({
+    var resetAttributes$1 = Object.freeze({
       __proto__: null,
       resetAttributes: resetAttributes
     });
-  
     const scrollIntoView = () => ({ tr, dispatch }) => {
         if (dispatch) {
             tr.scrollIntoView();
         }
         return true;
     };
-  
-    var scrollIntoView$1 = /*#__PURE__*/Object.freeze({
+    var scrollIntoView$1 = Object.freeze({
       __proto__: null,
       scrollIntoView: scrollIntoView
     });
-  
     const selectAll = () => ({ tr, commands }) => {
         return commands.setTextSelection({
             from: 0,
             to: tr.doc.content.size,
         });
     };
-  
-    var selectAll$1 = /*#__PURE__*/Object.freeze({
+    var selectAll$1 = Object.freeze({
       __proto__: null,
       selectAll: selectAll
     });
-  
     const selectNodeBackward = () => ({ state, dispatch }) => {
         return prosemirrorCommands.selectNodeBackward(state, dispatch);
     };
-  
-    var selectNodeBackward$1 = /*#__PURE__*/Object.freeze({
+    var selectNodeBackward$1 = Object.freeze({
       __proto__: null,
       selectNodeBackward: selectNodeBackward
     });
-  
     const selectNodeForward = () => ({ state, dispatch }) => {
         return prosemirrorCommands.selectNodeForward(state, dispatch);
     };
-  
-    var selectNodeForward$1 = /*#__PURE__*/Object.freeze({
+    var selectNodeForward$1 = Object.freeze({
       __proto__: null,
       selectNodeForward: selectNodeForward
     });
-  
     const selectParentNode = () => ({ state, dispatch }) => {
         return prosemirrorCommands.selectParentNode(state, dispatch);
     };
-  
-    var selectParentNode$1 = /*#__PURE__*/Object.freeze({
+    var selectParentNode$1 = Object.freeze({
       __proto__: null,
       selectParentNode: selectParentNode
     });
-  
     function createDocument(content, schema, parseOptions = {}) {
         return createNodeFromContent(content, schema, { slice: false, parseOptions });
     }
-  
     const setContent = (content, emitUpdate = false, parseOptions = {}) => ({ tr, editor, dispatch }) => {
         const { doc } = tr;
         const document = createDocument(content, editor.schema, parseOptions);
@@ -1030,12 +902,10 @@
         }
         return true;
     };
-  
-    var setContent$1 = /*#__PURE__*/Object.freeze({
+    var setContent$1 = Object.freeze({
       __proto__: null,
       setContent: setContent
     });
-  
     function getMarkAttributes(state, typeOrName) {
         const type = getMarkType(typeOrName, state.schema);
         const { from, to, empty } = state.selection;
@@ -1057,7 +927,6 @@
         }
         return { ...mark.attrs };
     }
-  
     const setMark = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
         const { selection } = tr;
         const { empty, ranges } = selection;
@@ -1078,9 +947,6 @@
                         const trimmedFrom = Math.max(pos, from);
                         const trimmedTo = Math.min(pos + node.nodeSize, to);
                         const someHasMark = node.marks.find(mark => mark.type === type);
-                        // if there is already a mark of this type
-                        // we know that we have to merge its attributes
-                        // otherwise we add a fresh new mark
                         if (someHasMark) {
                             node.marks.forEach(mark => {
                                 if (type === mark.type) {
@@ -1100,31 +966,25 @@
         }
         return true;
     };
-  
-    var setMark$1 = /*#__PURE__*/Object.freeze({
+    var setMark$1 = Object.freeze({
       __proto__: null,
       setMark: setMark
     });
-  
     const setMeta = (key, value) => ({ tr }) => {
         tr.setMeta(key, value);
         return true;
     };
-  
-    var setMeta$1 = /*#__PURE__*/Object.freeze({
+    var setMeta$1 = Object.freeze({
       __proto__: null,
       setMeta: setMeta
     });
-  
     const setNode = (typeOrName, attributes = {}) => ({ state, dispatch, chain }) => {
         const type = getNodeType(typeOrName, state.schema);
-        // TODO: use a fallback like insertContent?
         if (!type.isTextblock) {
             console.warn('[tiptap warn]: Currently "setNode()" only supports text block nodes.');
             return false;
         }
         return chain()
-            // try to convert node to default node if needed
             .command(({ commands }) => {
             const canSetBlock = prosemirrorCommands.setBlockType(type, attributes)(state);
             if (canSetBlock) {
@@ -1137,12 +997,10 @@
         })
             .run();
     };
-  
-    var setNode$1 = /*#__PURE__*/Object.freeze({
+    var setNode$1 = Object.freeze({
       __proto__: null,
       setNode: setNode
     });
-  
     const setNodeSelection = position => ({ tr, dispatch }) => {
         if (dispatch) {
             const { doc } = tr;
@@ -1154,12 +1012,10 @@
         }
         return true;
     };
-  
-    var setNodeSelection$1 = /*#__PURE__*/Object.freeze({
+    var setNodeSelection$1 = Object.freeze({
       __proto__: null,
       setNodeSelection: setNodeSelection
     });
-  
     const setTextSelection = position => ({ tr, dispatch }) => {
         if (dispatch) {
             const { doc } = tr;
@@ -1175,22 +1031,18 @@
         }
         return true;
     };
-  
-    var setTextSelection$1 = /*#__PURE__*/Object.freeze({
+    var setTextSelection$1 = Object.freeze({
       __proto__: null,
       setTextSelection: setTextSelection
     });
-  
     const sinkListItem = typeOrName => ({ state, dispatch }) => {
         const type = getNodeType(typeOrName, state.schema);
         return prosemirrorSchemaList.sinkListItem(type)(state, dispatch);
     };
-  
-    var sinkListItem$1 = /*#__PURE__*/Object.freeze({
+    var sinkListItem$1 = Object.freeze({
       __proto__: null,
       sinkListItem: sinkListItem
     });
-  
     function getSplittedAttributes(extensionAttributes, typeName, attributes) {
         return Object.fromEntries(Object
             .entries(attributes)
@@ -1204,7 +1056,6 @@
             return extensionAttribute.attribute.keepOnSplit;
         }));
     }
-  
     function defaultBlockAt$1(match) {
         for (let i = 0; i < match.edgeCount; i += 1) {
             const { type } = match.edge(i);
@@ -1288,18 +1139,14 @@
         }
         return true;
     };
-  
-    var splitBlock$1 = /*#__PURE__*/Object.freeze({
+    var splitBlock$1 = Object.freeze({
       __proto__: null,
       splitBlock: splitBlock
     });
-  
     const splitListItem = typeOrName => ({ tr, state, dispatch, editor, }) => {
         var _a;
         const type = getNodeType(typeOrName, state.schema);
         const { $from, $to } = state.selection;
-        // @ts-ignore
-        // eslint-disable-next-line
         const node = state.selection.node;
         if ((node && node.isBlock) || $from.depth < 2 || !$from.sameParent($to)) {
             return false;
@@ -1310,9 +1157,6 @@
         }
         const extensionAttributes = editor.extensionManager.attributes;
         if ($from.parent.content.size === 0 && $from.node(-1).childCount === $from.indexAfter(-1)) {
-            // In an empty block. If this is a nested list, the wrapping
-            // list item should be split. Otherwise, bail out and let next
-            // command handle lifting.
             if ($from.depth === 2
                 || $from.node(-3).type !== type
                 || $from.index(-2) !== $from.node(-2).childCount - 1) {
@@ -1320,24 +1164,19 @@
             }
             if (dispatch) {
                 let wrap = prosemirrorModel.Fragment.empty;
-                // eslint-disable-next-line
                 const depthBefore = $from.index(-1)
                     ? 1
                     : $from.index(-2)
                         ? 2
                         : 3;
-                // Build a fragment containing empty versions of the structure
-                // from the outer list item to the parent node of the cursor
                 for (let d = $from.depth - depthBefore; d >= $from.depth - 3; d -= 1) {
                     wrap = prosemirrorModel.Fragment.from($from.node(d).copy(wrap));
                 }
-                // eslint-disable-next-line
                 const depthAfter = $from.indexAfter(-1) < $from.node(-2).childCount
                     ? 1
                     : $from.indexAfter(-2) < $from.node(-3).childCount
                         ? 2
                         : 3;
-                // Add a second list item with an empty default start node
                 const newNextTypeAttributes = getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs);
                 const nextType = ((_a = type.contentMatch.defaultType) === null || _a === void 0 ? void 0 : _a.createAndFill(newNextTypeAttributes)) || undefined;
                 wrap = wrap.append(prosemirrorModel.Fragment.from(type.createAndFill(null, nextType) || undefined));
@@ -1376,12 +1215,10 @@
         }
         return true;
     };
-  
-    var splitListItem$1 = /*#__PURE__*/Object.freeze({
+    var splitListItem$1 = Object.freeze({
       __proto__: null,
       splitListItem: splitListItem
     });
-  
     function findParentNodeClosestToPos($pos, predicate) {
         for (let i = $pos.depth; i > 0; i -= 1) {
             const node = $pos.node(i);
@@ -1395,11 +1232,9 @@
             }
         }
     }
-  
     function findParentNode(predicate) {
         return (selection) => findParentNodeClosestToPos(selection.$from, predicate);
     }
-  
     function splitExtensions(extensions) {
         const baseExtensions = extensions.filter(extension => extension.type === 'extension');
         const nodeExtensions = extensions.filter(extension => extension.type === 'node');
@@ -1410,7 +1245,6 @@
             markExtensions,
         };
     }
-  
     function isList(name, extensions) {
         const { nodeExtensions } = splitExtensions(extensions);
         const extension = nodeExtensions.find(item => item.name === name);
@@ -1428,7 +1262,6 @@
         }
         return group.split(' ').includes('list');
     }
-  
     const joinListBackwards = (tr, listType) => {
         const list = findParentNode(node => node.type === listType)(tr.selection);
         if (!list) {
@@ -1477,11 +1310,9 @@
         }
         const parentList = findParentNode(node => isList(node.type.name, extensions))(selection);
         if (range.depth >= 1 && parentList && range.depth - parentList.depth <= 1) {
-            // remove list
             if (parentList.node.type === listType) {
                 return commands.liftListItem(itemType);
             }
-            // change list type
             if (isList(parentList.node.type.name, extensions)
                 && listType.validContent(parentList.node.content)
                 && dispatch) {
@@ -1496,7 +1327,6 @@
             }
         }
         return chain()
-            // try to convert node to default node if needed
             .command(() => {
             const canWrapInList = can().wrapInList(listType);
             if (canWrapInList) {
@@ -1509,12 +1339,10 @@
             .command(() => joinListForwards(tr, listType))
             .run();
     };
-  
-    var toggleList$1 = /*#__PURE__*/Object.freeze({
+    var toggleList$1 = Object.freeze({
       __proto__: null,
       toggleList: toggleList
     });
-  
     function isMarkActive(state, typeOrName, attributes = {}) {
         const { empty, ranges } = state.selection;
         const type = typeOrName
@@ -1553,7 +1381,6 @@
         if (selectionRange === 0) {
             return false;
         }
-        // calculate range of matched mark
         const matchedRange = markRanges
             .filter(markRange => {
             if (!type) {
@@ -1563,8 +1390,6 @@
         })
             .filter(markRange => objectIncludes(markRange.mark.attrs, attributes, { strict: false }))
             .reduce((sum, markRange) => sum + markRange.to - markRange.from, 0);
-        // calculate range of marks that excludes the searched mark
-        // for example `code` doesn’t allow any other marks
         const excludedRange = markRanges
             .filter(markRange => {
             if (!type) {
@@ -1574,14 +1399,11 @@
                 && markRange.mark.type.excludes(type);
         })
             .reduce((sum, markRange) => sum + markRange.to - markRange.from, 0);
-        // we only include the result of `excludedRange`
-        // if there is a match at all
         const range = matchedRange > 0
             ? matchedRange + excludedRange
             : matchedRange;
         return range >= selectionRange;
     }
-  
     const toggleMark = (typeOrName, attributes = {}, options = {}) => ({ state, commands }) => {
         const { extendEmptyMarkRange = false } = options;
         const type = getMarkType(typeOrName, state.schema);
@@ -1591,12 +1413,10 @@
         }
         return commands.setMark(type, attributes);
     };
-  
-    var toggleMark$1 = /*#__PURE__*/Object.freeze({
+    var toggleMark$1 = Object.freeze({
       __proto__: null,
       toggleMark: toggleMark
     });
-  
     const toggleNode = (typeOrName, toggleTypeOrName, attributes = {}) => ({ state, commands }) => {
         const type = getNodeType(typeOrName, state.schema);
         const toggleType = getNodeType(toggleTypeOrName, state.schema);
@@ -1606,12 +1426,10 @@
         }
         return commands.setNode(type, attributes);
     };
-  
-    var toggleNode$1 = /*#__PURE__*/Object.freeze({
+    var toggleNode$1 = Object.freeze({
       __proto__: null,
       toggleNode: toggleNode
     });
-  
     const toggleWrap = (typeOrName, attributes = {}) => ({ state, commands }) => {
         const type = getNodeType(typeOrName, state.schema);
         const isActive = isNodeActive(state, type, attributes);
@@ -1620,19 +1438,15 @@
         }
         return commands.wrapIn(type, attributes);
     };
-  
-    var toggleWrap$1 = /*#__PURE__*/Object.freeze({
+    var toggleWrap$1 = Object.freeze({
       __proto__: null,
       toggleWrap: toggleWrap
     });
-  
     const undoInputRule = () => ({ state, dispatch }) => {
         const plugins = state.plugins;
         for (let i = 0; i < plugins.length; i += 1) {
             const plugin = plugins[i];
             let undoable;
-            // @ts-ignore
-            // eslint-disable-next-line
             if (plugin.spec.isInputRules && (undoable = plugin.getState(state))) {
                 if (dispatch) {
                     const tr = state.tr;
@@ -1653,12 +1467,10 @@
         }
         return false;
     };
-  
-    var undoInputRule$1 = /*#__PURE__*/Object.freeze({
+    var undoInputRule$1 = Object.freeze({
       __proto__: null,
       undoInputRule: undoInputRule
     });
-  
     const unsetAllMarks = () => ({ tr, dispatch }) => {
         const { selection } = tr;
         const { empty, ranges } = selection;
@@ -1672,12 +1484,10 @@
         }
         return true;
     };
-  
-    var unsetAllMarks$1 = /*#__PURE__*/Object.freeze({
+    var unsetAllMarks$1 = Object.freeze({
       __proto__: null,
       unsetAllMarks: unsetAllMarks
     });
-  
     const unsetMark = (typeOrName, options = {}) => ({ tr, state, dispatch }) => {
         var _a;
         const { extendEmptyMarkRange = false } = options;
@@ -1705,12 +1515,10 @@
         tr.removeStoredMark(type);
         return true;
     };
-  
-    var unsetMark$1 = /*#__PURE__*/Object.freeze({
+    var unsetMark$1 = Object.freeze({
       __proto__: null,
       unsetMark: unsetMark
     });
-  
     const updateAttributes = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
         let nodeType = null;
         let markType = null;
@@ -1754,32 +1562,26 @@
         }
         return true;
     };
-  
-    var updateAttributes$1 = /*#__PURE__*/Object.freeze({
+    var updateAttributes$1 = Object.freeze({
       __proto__: null,
       updateAttributes: updateAttributes
     });
-  
     const wrapIn = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
         const type = getNodeType(typeOrName, state.schema);
         return prosemirrorCommands.wrapIn(type, attributes)(state, dispatch);
     };
-  
-    var wrapIn$1 = /*#__PURE__*/Object.freeze({
+    var wrapIn$1 = Object.freeze({
       __proto__: null,
       wrapIn: wrapIn
     });
-  
     const wrapInList = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
         const type = getNodeType(typeOrName, state.schema);
         return prosemirrorSchemaList.wrapInList(type, attributes)(state, dispatch);
     };
-  
-    var wrapInList$1 = /*#__PURE__*/Object.freeze({
+    var wrapInList$1 = Object.freeze({
       __proto__: null,
       wrapInList: wrapInList
     });
-  
     const Commands = Extension.create({
         name: 'commands',
         addCommands() {
@@ -1835,7 +1637,6 @@
             };
         },
     });
-  
     const Editable = Extension.create({
         name: 'editable',
         addProseMirrorPlugins() {
@@ -1849,7 +1650,6 @@
             ];
         },
     });
-  
     const FocusEvents = Extension.create({
         name: 'focusEvents',
         addProseMirrorPlugins() {
@@ -1881,7 +1681,6 @@
             ];
         },
     });
-  
     function createChainableState(config) {
         const { state, transaction } = config;
         let { selection } = transaction;
@@ -1912,7 +1711,6 @@
             },
         };
     }
-  
     class CommandManager {
         constructor(props) {
             this.editor = props.editor;
@@ -2023,13 +1821,11 @@
             return props;
         }
     }
-  
     const Keymap = Extension.create({
         name: 'keymap',
         addKeyboardShortcuts() {
             const handleBackspace = () => this.editor.commands.first(({ commands }) => [
                 () => commands.undoInputRule(),
-                // maybe convert first text block node to default node
                 () => commands.command(({ tr }) => {
                     const { selection, doc } = tr;
                     const { empty, $anchor } = selection;
@@ -2070,11 +1866,6 @@
         },
         addProseMirrorPlugins() {
             return [
-                // With this plugin we check if the whole document was selected and deleted.
-                // In this case we will additionally call `clearNodes()` to convert e.g. a heading
-                // to a paragraph if necessary.
-                // This is an alternative to ProseMirror's `AllSelection`, which doesn’t work well
-                // with many other commands.
                 new prosemirrorState.Plugin({
                     key: new prosemirrorState.PluginKey('clearDocument'),
                     appendTransaction: (transactions, oldState, newState) => {
@@ -2110,7 +1901,6 @@
             ];
         },
     });
-  
     const Tabindex = Extension.create({
         name: 'tabindex',
         addProseMirrorPlugins() {
@@ -2126,8 +1916,7 @@
             ];
         },
     });
-  
-    var extensions = /*#__PURE__*/Object.freeze({
+    var extensions = Object.freeze({
       __proto__: null,
       ClipboardTextSerializer: ClipboardTextSerializer,
       Commands: Commands,
@@ -2136,7 +1925,6 @@
       Keymap: Keymap,
       Tabindex: Tabindex
     });
-  
     function getNodeAttributes(state, typeOrName) {
         const type = getNodeType(typeOrName, state.schema);
         const { from, to } = state.selection;
@@ -2152,7 +1940,6 @@
         }
         return { ...node.attrs };
     }
-  
     function getAttributes(state, typeOrName) {
         const schemaType = getSchemaTypeNameByName(typeof typeOrName === 'string'
             ? typeOrName
@@ -2165,7 +1952,6 @@
         }
         return {};
     }
-  
     function isActive(state, name, attributes = {}) {
         if (!name) {
             return isNodeActive(state, null, attributes) || isMarkActive(state, null, attributes);
@@ -2179,7 +1965,6 @@
         }
         return false;
     }
-  
     function getHTMLFromFragment(fragment, schema) {
         const documentFragment = prosemirrorModel.DOMSerializer
             .fromSchema(schema)
@@ -2189,7 +1974,6 @@
         container.appendChild(documentFragment);
         return container.innerHTML;
     }
-  
     function getText(node, options) {
         const range = {
             from: 0,
@@ -2197,14 +1981,12 @@
         };
         return getTextBetween(node, range, options);
     }
-  
     function isNodeEmpty(node) {
         var _a;
         const defaultContent = (_a = node.type.createAndFill()) === null || _a === void 0 ? void 0 : _a.toJSON();
         const content = node.toJSON();
         return JSON.stringify(defaultContent) === JSON.stringify(content);
     }
-  
     function createStyleTag(style) {
         const tipTapStyleTag = document.querySelector('style[data-tiptap-style]');
         if (tipTapStyleTag !== null) {
@@ -2216,7 +1998,6 @@
         document.getElementsByTagName('head')[0].appendChild(styleNode);
         return styleNode;
     }
-  
     class InputRule {
         constructor(config) {
             this.find = config.find;
@@ -2253,9 +2034,7 @@
         }
         const $from = view.state.doc.resolve(from);
         if (
-        // check for code node
         $from.parent.type.spec.code
-            // check for code mark
             || !!((_a = ($from.nodeBefore || $from.nodeAfter)) === null || _a === void 0 ? void 0 : _a.marks.find(mark => mark.type.spec.code))) {
             return false;
         }
@@ -2291,12 +2070,9 @@
                 chain,
                 can,
             });
-            // stop if there are no changes
             if (handler === null || !tr.steps.length) {
                 return;
             }
-            // store transform as meta data
-            // so we can undo input rules within the `undoInputRules` command
             tr.setMeta(plugin, {
                 transform: tr,
                 from,
@@ -2308,11 +2084,6 @@
         });
         return matched;
     }
-    /**
-     * Create an input rules plugin. When enabled, it will cause text
-     * input that matches any of the given rules to trigger the rule’s
-     * action.
-     */
     function inputRulesPlugin(props) {
         const { editor, rules } = props;
         const plugin = new prosemirrorState.Plugin({
@@ -2359,8 +2130,6 @@
                         return false;
                     },
                 },
-                // add support for input rules to trigger on enter
-                // this is useful for example for code blocks
                 handleKeyDown(view, event) {
                     if (event.key !== 'Enter') {
                         return false;
@@ -2379,16 +2148,13 @@
                     return false;
                 },
             },
-            // @ts-ignore
             isInputRules: true,
         });
         return plugin;
     }
-  
     function isNumber(value) {
         return typeof value === 'number';
     }
-  
     class PasteRule {
         constructor(config) {
             this.find = config.find;
@@ -2457,11 +2223,6 @@
         const success = handlers.every(handler => handler !== null);
         return success;
     }
-    /**
-     * Create an paste rules plugin. When enabled, it will cause pasted
-     * text that matches any of the given rules to trigger the rule’s
-     * action.
-     */
     function pasteRulesPlugin(props) {
         const { editor, rules } = props;
         let dragSourceElement = null;
@@ -2469,7 +2230,6 @@
         let isDroppedFromProseMirror = false;
         const plugins = rules.map(rule => {
             return new prosemirrorState.Plugin({
-                // we register a global drag handler to track the current drag source element
                 view(view) {
                     const handleDragstart = (event) => {
                         var _a;
@@ -2505,14 +2265,11 @@
                     if (!isPaste && !isDrop) {
                         return;
                     }
-                    // stop if there is no changed range
                     const from = oldState.doc.content.findDiffStart(state.doc.content);
                     const to = oldState.doc.content.findDiffEnd(state.doc.content);
                     if (!isNumber(from) || !to || from === to.b) {
                         return;
                     }
-                    // build a chainable state
-                    // so we can use a single transaction for all paste rules
                     const tr = state.tr;
                     const chainableState = createChainableState({
                         state,
@@ -2525,7 +2282,6 @@
                         to: to.b,
                         rule,
                     });
-                    // stop if there are no changes
                     if (!handler || !tr.steps.length) {
                         return;
                     }
@@ -2535,11 +2291,6 @@
         });
         return plugins;
     }
-  
-    /**
-     * Get a list of all extension attributes defined in `addAttribute` and `addGlobalAttribute`.
-     * @param extensions List of extensions
-     */
     function getAttributesFromExtensions(extensions) {
         const extensionAttributes = [];
         const { nodeExtensions, markExtensions } = splitExtensions(extensions);
@@ -2561,7 +2312,6 @@
             if (!addGlobalAttributes) {
                 return;
             }
-            // TODO: remove `as GlobalAttributes`
             const globalAttributes = addGlobalAttributes();
             globalAttributes.forEach(globalAttribute => {
                 globalAttribute.types.forEach(type => {
@@ -2590,7 +2340,6 @@
             if (!addAttributes) {
                 return;
             }
-            // TODO: remove `as Attributes`
             const attributes = addAttributes();
             Object
                 .entries(attributes)
@@ -2607,7 +2356,6 @@
         });
         return extensionAttributes;
     }
-  
     function mergeAttributes(...objects) {
         return objects
             .filter(item => !!item)
@@ -2632,7 +2380,6 @@
             return mergedAttributes;
         }, {});
     }
-  
     function getRenderedAttributes(nodeOrMark, extensionAttributes) {
         return extensionAttributes
             .filter(item => item.attribute.rendered)
@@ -2646,11 +2393,9 @@
         })
             .reduce((attributes, attribute) => mergeAttributes(attributes, attribute), {});
     }
-  
     function isEmptyObject(value = {}) {
         return Object.keys(value).length === 0 && value.constructor === Object;
     }
-  
     function fromString(value) {
         if (typeof value !== 'string') {
             return value;
@@ -2666,13 +2411,6 @@
         }
         return value;
     }
-  
-    /**
-     * This function merges extension attributes into parserule attributes (`attrs` or `getAttrs`).
-     * Cancels when `getAttrs` returned `false`.
-     * @param parseRule ProseMirror ParseRule
-     * @param extensionAttributes List of attributes to inject
-     */
     function injectExtensionAttributesToParseRule(parseRule, extensionAttributes) {
         if (parseRule.style) {
             return parseRule;
@@ -2707,7 +2445,6 @@
             },
         };
     }
-  
     function cleanUpSchemaItem(data) {
         return Object.fromEntries(Object.entries(data).filter(([key, value]) => {
             if (key === 'attrs' && isEmptyObject(value)) {
@@ -2816,11 +2553,9 @@
             marks,
         });
     }
-  
     function getSchemaTypeByName(name, schema) {
         return schema.nodes[name] || schema.marks[name] || null;
     }
-  
     function isExtensionRulesEnabled(extension, enabled) {
         if (Array.isArray(enabled)) {
             return enabled.some(enabledExtension => {
@@ -2832,12 +2567,10 @@
         }
         return enabled;
     }
-  
     function findDuplicates(items) {
         const filtered = items.filter((el, index) => items.indexOf(el) !== index);
         return [...new Set(filtered)];
     }
-  
     class ExtensionManager {
         constructor(extensions, editor) {
             this.splittableMarks = [];
@@ -2846,7 +2579,6 @@
             this.schema = getSchemaByResolvedExtensions(this.extensions);
             this.extensions.forEach(extension => {
                 var _a;
-                // store extension storage in editor
                 this.editor.extensionStorage[extension.name] = extension.storage;
                 const context = {
                     name: extension.name,
@@ -2920,7 +2652,6 @@
                 }
                 return extension;
             })
-                // `Infinity` will break TypeScript so we set a number that is probably high enough
                 .flat(10);
         }
         static sort(extensions) {
@@ -2958,11 +2689,6 @@
         }
         get plugins() {
             const { editor } = this;
-            // With ProseMirror, first plugins within an array are executed first.
-            // In tiptap, we provide the ability to override plugins,
-            // so it feels more natural to run plugins at the end of an array first.
-            // That’s why we have to reverse the `extensions` array and sort again
-            // based on the `priority` option.
             const extensions = ExtensionManager.sort([...this.extensions].reverse());
             const inputRules = [];
             const pasteRules = [];
@@ -3050,7 +2776,6 @@
             }));
         }
     }
-  
     class EventEmitter {
         constructor() {
             this.callbacks = {};
@@ -3085,83 +2810,81 @@
             this.callbacks = {};
         }
     }
-  
     const style = `.ProseMirror {
-    position: relative;
+  position: relative;
+}
+
+.ProseMirror {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0; /* the above doesn't seem to work in Edge */
+}
+
+.ProseMirror [contenteditable="false"] {
+  white-space: normal;
+}
+
+.ProseMirror [contenteditable="false"] [contenteditable="true"] {
+  white-space: pre-wrap;
+}
+
+.ProseMirror pre {
+  white-space: pre-wrap;
+}
+
+img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+}
+
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  margin: 0;
+}
+
+.ProseMirror-gapcursor:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid black;
+  animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes ProseMirror-cursor-blink {
+  to {
+    visibility: hidden;
   }
-  
-  .ProseMirror {
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    white-space: break-spaces;
-    -webkit-font-variant-ligatures: none;
-    font-variant-ligatures: none;
-    font-feature-settings: "liga" 0; /* the above doesn't seem to work in Edge */
-  }
-  
-  .ProseMirror [contenteditable="false"] {
-    white-space: normal;
-  }
-  
-  .ProseMirror [contenteditable="false"] [contenteditable="true"] {
-    white-space: pre-wrap;
-  }
-  
-  .ProseMirror pre {
-    white-space: pre-wrap;
-  }
-  
-  img.ProseMirror-separator {
-    display: inline !important;
-    border: none !important;
-    margin: 0 !important;
-    width: 1px !important;
-    height: 1px !important;
-  }
-  
-  .ProseMirror-gapcursor {
-    display: none;
-    pointer-events: none;
-    position: absolute;
-    margin: 0;
-  }
-  
-  .ProseMirror-gapcursor:after {
-    content: "";
-    display: block;
-    position: absolute;
-    top: -2px;
-    width: 20px;
-    border-top: 1px solid black;
-    animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
-  }
-  
-  @keyframes ProseMirror-cursor-blink {
-    to {
-      visibility: hidden;
-    }
-  }
-  
-  .ProseMirror-hideselection *::selection {
-    background: transparent;
-  }
-  
-  .ProseMirror-hideselection *::-moz-selection {
-    background: transparent;
-  }
-  
-  .ProseMirror-hideselection * {
-    caret-color: transparent;
-  }
-  
-  .ProseMirror-focused .ProseMirror-gapcursor {
-    display: block;
-  }
-  
-  .tippy-box[data-animation=fade][data-state=hidden] {
-    opacity: 0
-  }`;
-  
+}
+
+.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+.ProseMirror-hideselection *::-moz-selection {
+  background: transparent;
+}
+
+.ProseMirror-hideselection * {
+  caret-color: transparent;
+}
+
+.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+
+.tippy-box[data-animation=fade][data-state=hidden] {
+  opacity: 0
+}`;
     class Editor extends EventEmitter {
         constructor(options = {}) {
             super();
@@ -3213,43 +2936,23 @@
                 this.emit('create', { editor: this });
             }, 0);
         }
-        /**
-         * Returns the editor storage.
-         */
         get storage() {
             return this.extensionStorage;
         }
-        /**
-         * An object of all registered commands.
-         */
         get commands() {
             return this.commandManager.commands;
         }
-        /**
-         * Create a command chain to call multiple commands at once.
-         */
         chain() {
             return this.commandManager.chain();
         }
-        /**
-         * Check if a command or a command chain can be executed. Without executing it.
-         */
         can() {
             return this.commandManager.can();
         }
-        /**
-         * Inject CSS styles.
-         */
         injectCSS() {
             if (this.options.injectCSS && document) {
                 this.css = createStyleTag(style);
             }
         }
-        /**
-         * Update editor options.
-         *
-         * @param options A list of options
-         */
         setOptions(options = {}) {
             this.options = {
                 ...this.options,
@@ -3263,35 +2966,17 @@
             }
             this.view.updateState(this.state);
         }
-        /**
-         * Update editable state of the editor.
-         */
         setEditable(editable) {
             this.setOptions({ editable });
         }
-        /**
-         * Returns whether the editor is editable.
-         */
         get isEditable() {
-            // since plugins are applied after creating the view
-            // `editable` is always `true` for one tick.
-            // that’s why we also have to check for `options.editable`
             return this.options.editable
                 && this.view
                 && this.view.editable;
         }
-        /**
-         * Returns the editor state.
-         */
         get state() {
             return this.view.state;
         }
-        /**
-         * Register a ProseMirror plugin.
-         *
-         * @param plugin A ProseMirror plugin
-         * @param handlePlugins Control how to merge the plugin into the existing plugins.
-         */
         registerPlugin(plugin, handlePlugins) {
             const plugins = isFunction(handlePlugins)
                 ? handlePlugins(plugin, this.state.plugins)
@@ -3299,28 +2984,18 @@
             const state = this.state.reconfigure({ plugins });
             this.view.updateState(state);
         }
-        /**
-         * Unregister a ProseMirror plugin.
-         *
-         * @param nameOrPluginKey The plugins name
-         */
         unregisterPlugin(nameOrPluginKey) {
             if (this.isDestroyed) {
                 return;
             }
             const name = typeof nameOrPluginKey === 'string'
                 ? `${nameOrPluginKey}$`
-                // @ts-ignore
                 : nameOrPluginKey.key;
             const state = this.state.reconfigure({
-                // @ts-ignore
                 plugins: this.state.plugins.filter(plugin => !plugin.key.startsWith(name)),
             });
             this.view.updateState(state);
         }
-        /**
-         * Creates an extension manager.
-         */
         createExtensionManager() {
             const coreExtensions = this.options.enableCoreExtensions
                 ? Object.values(extensions)
@@ -3330,23 +3005,14 @@
             });
             this.extensionManager = new ExtensionManager(allExtensions, this);
         }
-        /**
-         * Creates an command manager.
-         */
         createCommandManager() {
             this.commandManager = new CommandManager({
                 editor: this,
             });
         }
-        /**
-         * Creates a ProseMirror schema.
-         */
         createSchema() {
             this.schema = this.extensionManager.schema;
         }
-        /**
-         * Creates a ProseMirror view.
-         */
         createView() {
             const doc = createDocument(this.options.content, this.schema, this.options.parseOptions);
             const selection = resolveFocusPosition(doc, this.options.autofocus);
@@ -3358,21 +3024,14 @@
                     selection,
                 }),
             });
-            // `editor.view` is not yet available at this time.
-            // Therefore we will add all plugins and node views directly afterwards.
             const newState = this.state.reconfigure({
                 plugins: this.extensionManager.plugins,
             });
             this.view.updateState(newState);
             this.createNodeViews();
-            // Let’s store the editor instance in the DOM element.
-            // So we’ll have access to it for tests.
             const dom = this.view.dom;
             dom.editor = this;
         }
-        /**
-         * Creates all node views.
-         */
         createNodeViews() {
             this.view.setProps({
                 nodeViews: this.extensionManager.nodeViews,
@@ -3386,11 +3045,6 @@
             this.capturedTransaction = null;
             return tr;
         }
-        /**
-         * The callback over which to send transactions (state updates) produced by the view.
-         *
-         * @param transaction An editor state transaction
-         */
         dispatchTransaction(transaction) {
             if (this.isCapturingTransaction) {
                 if (!this.capturedTransaction) {
@@ -3437,9 +3091,6 @@
                 transaction,
             });
         }
-        /**
-         * Get attributes of the currently selected node or mark.
-         */
         getAttributes(nameOrType) {
             return getAttributes(this.state, nameOrType);
         }
@@ -3452,21 +3103,12 @@
                 : nameOrAttributes;
             return isActive(this.state, name, attributes);
         }
-        /**
-         * Get the document as JSON.
-         */
         getJSON() {
             return this.state.doc.toJSON();
         }
-        /**
-         * Get the document as HTML.
-         */
         getHTML() {
             return getHTMLFromFragment(this.state.doc.content, this.schema);
         }
-        /**
-         * Get the document as text.
-         */
         getText(options) {
             const { blockSeparator = '\n\n', textSerializers = {}, } = options || {};
             return getText(this.state.doc, {
@@ -3477,24 +3119,13 @@
                 },
             });
         }
-        /**
-         * Check if there is no content.
-         */
         get isEmpty() {
             return isNodeEmpty(this.state.doc);
         }
-        /**
-         * Get the number of characters for the current document.
-         *
-         * @deprecated
-         */
         getCharacterCount() {
             console.warn('[tiptap warn]: "editor.getCharacterCount()" is deprecated. Please use "editor.storage.characterCount.characters()" instead.');
             return this.state.doc.content.size - 2;
         }
-        /**
-         * Destroy the editor.
-         */
         destroy() {
             this.emit('destroy');
             if (this.view) {
@@ -3502,16 +3133,11 @@
             }
             this.removeAllListeners();
         }
-        /**
-         * Check if the editor is already destroyed.
-         */
         get isDestroyed() {
             var _a;
-            // @ts-ignore
             return !((_a = this.view) === null || _a === void 0 ? void 0 : _a.docView);
         }
     }
-  
     class Node {
         constructor(config = {}) {
             this.type = 'node';
@@ -3530,7 +3156,6 @@
             if (config.defaultOptions) {
                 console.warn(`[tiptap warn]: BREAKING CHANGE: "defaultOptions" is deprecated. Please use "addOptions" instead. Found in extension: "${this.name}".`);
             }
-            // TODO: remove `addOptions` fallback
             this.options = this.config.defaultOptions;
             if (this.config.addOptions) {
                 this.options = callOrReturn(getExtensionField(this, 'addOptions', {
@@ -3546,8 +3171,6 @@
             return new Node(config);
         }
         configure(options = {}) {
-            // return a new instance so we can use the same extension
-            // with different calls of `configure`
             const extension = this.extend();
             extension.options = mergeDeep(this.options, options);
             extension.storage = callOrReturn(getExtensionField(extension, 'addStorage', {
@@ -3576,7 +3199,6 @@
             return extension;
         }
     }
-  
     class Mark {
         constructor(config = {}) {
             this.type = 'mark';
@@ -3595,7 +3217,6 @@
             if (config.defaultOptions) {
                 console.warn(`[tiptap warn]: BREAKING CHANGE: "defaultOptions" is deprecated. Please use "addOptions" instead. Found in extension: "${this.name}".`);
             }
-            // TODO: remove `addOptions` fallback
             this.options = this.config.defaultOptions;
             if (this.config.addOptions) {
                 this.options = callOrReturn(getExtensionField(this, 'addOptions', {
@@ -3611,8 +3232,6 @@
             return new Mark(config);
         }
         configure(options = {}) {
-            // return a new instance so we can use the same extension
-            // with different calls of `configure`
             const extension = this.extend();
             extension.options = mergeDeep(this.options, options);
             extension.storage = callOrReturn(getExtensionField(extension, 'addStorage', {
@@ -3641,7 +3260,6 @@
             return extension;
         }
     }
-  
     class NodeView {
         constructor(component, props, options) {
             this.isDragging = false;
@@ -3659,7 +3277,6 @@
             this.mount();
         }
         mount() {
-            // eslint-disable-next-line
             return;
         }
         get dom() {
@@ -3672,8 +3289,6 @@
             var _a, _b, _c;
             const { view } = this.editor;
             const target = event.target;
-            // get the drag handle element
-            // `closest` is not available for text nodes so we may have to use its parent
             const dragHandle = target.nodeType === 3
                 ? (_a = target.parentElement) === null || _a === void 0 ? void 0 : _a.closest('[data-drag-handle]')
                 : target.closest('[data-drag-handle]');
@@ -3684,7 +3299,6 @@
             }
             let x = 0;
             let y = 0;
-            // calculate offset for drag element if we use a different drag handle element
             if (this.dom !== dragHandle) {
                 const domBox = this.dom.getBoundingClientRect();
                 const handleBox = dragHandle.getBoundingClientRect();
@@ -3692,8 +3306,6 @@
                 y = handleBox.y - domBox.y + event.offsetY;
             }
             (_c = event.dataTransfer) === null || _c === void 0 ? void 0 : _c.setDragImage(this.dom, x, y);
-            // we need to tell ProseMirror that we want to move the whole node
-            // so we create a NodeSelection
             const selection = prosemirrorState.NodeSelection.create(view.state.doc, this.getPos());
             const transaction = view.state.tr.setSelection(selection);
             view.dispatch(transaction);
@@ -3708,14 +3320,12 @@
             }
             const target = event.target;
             const isInElement = this.dom.contains(target) && !((_a = this.contentDOM) === null || _a === void 0 ? void 0 : _a.contains(target));
-            // any event from child nodes should be handled by ProseMirror
             if (!isInElement) {
                 return false;
             }
             const isDropEvent = event.type === 'drop';
             const isInput = ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA'].includes(target.tagName)
                 || target.isContentEditable;
-            // any input event within node views should be ignored by ProseMirror
             if (isInput && !isDropEvent) {
                 return true;
             }
@@ -3728,9 +3338,6 @@
             const isCutEvent = event.type === 'cut';
             const isClickEvent = event.type === 'mousedown';
             const isDragEvent = event.type.startsWith('drag');
-            // ProseMirror tries to drag selectable nodes
-            // even if `draggable` is set to `false`
-            // this fix prevents that
             if (!isDraggable && isSelectable && isDragEvent) {
                 event.preventDefault();
             }
@@ -3738,7 +3345,6 @@
                 event.preventDefault();
                 return false;
             }
-            // we have to store that dragging started
             if (isDraggable && isEditable && !isDragging && isClickEvent) {
                 const dragHandle = target.closest('[data-drag-handle]');
                 const isValidDragHandle = dragHandle
@@ -3753,7 +3359,6 @@
                     }, { once: true });
                 }
             }
-            // these events are handled by prosemirror
             if (isDragging
                 || isDropEvent
                 || isCopyEvent
@@ -3771,19 +3376,12 @@
             if (typeof this.options.ignoreMutation === 'function') {
                 return this.options.ignoreMutation({ mutation });
             }
-            // a leaf/atom node is like a black box for ProseMirror
-            // and should be fully handled by the node view
             if (this.node.isLeaf || this.node.isAtom) {
                 return true;
             }
-            // ProseMirror should handle any selections
             if (mutation.type === 'selection') {
                 return false;
             }
-            // try to prevent a bug on iOS that will break node views on enter
-            // this is because ProseMirror can’t preventDispatch on enter
-            // this will lead to a re-render of the node view on enter
-            // see: https://github.com/ueberdosis/tiptap/issues/1214
             if (this.dom.contains(mutation.target)
                 && mutation.type === 'childList'
                 && isiOS()
@@ -3792,18 +3390,13 @@
                     ...Array.from(mutation.addedNodes),
                     ...Array.from(mutation.removedNodes),
                 ];
-                // we’ll check if every changed node is contentEditable
-                // to make sure it’s probably mutated by ProseMirror
                 if (changedNodes.every(node => node.isContentEditable)) {
                     return false;
                 }
             }
-            // we will allow mutation contentDOM with attributes
-            // so we can for example adding classes within our node view
             if (this.contentDOM === mutation.target && mutation.type === 'attributes') {
                 return true;
             }
-            // ProseMirror should handle any changes within contentDOM
             if (this.contentDOM.contains(mutation.target)) {
                 return false;
             }
@@ -3825,7 +3418,6 @@
             this.editor.commands.deleteRange({ from, to });
         }
     }
-  
     class Tracker {
         constructor(transaction) {
             this.transaction = transaction;
@@ -3850,11 +3442,6 @@
             };
         }
     }
-  
-    /**
-     * Build an input rule that adds a node when the
-     * matched text is typed into it.
-     */
     function nodeInputRule(config) {
         return new InputRule({
             find: config.find,
@@ -3872,10 +3459,8 @@
                     else {
                         end = matchStart + match[1].length;
                     }
-                    // insert last typed character
                     const lastChar = match[0][match[0].length - 1];
                     tr.insertText(lastChar, start + match[0].length - 1);
-                    // insert node from input rule
                     tr.replaceWith(matchStart, end, config.type.create(attributes));
                 }
                 else if (match[0]) {
@@ -3884,10 +3469,8 @@
             },
         });
     }
-  
     function getMarksBetween(from, to, doc) {
         const marks = [];
-        // get all inclusive marks on empty selection
         if (from === to) {
             doc
                 .resolve(from)
@@ -3915,11 +3498,6 @@
         }
         return marks;
     }
-  
-    /**
-     * Build an input rule that adds a mark when the
-     * matched text is typed into it.
-     */
     function markInputRule(config) {
         return new InputRule({
             find: config.find,
@@ -3938,7 +3516,6 @@
                     const textEnd = textStart + captureGroup.length;
                     const excludedMarks = getMarksBetween(range.from, range.to, state.doc)
                         .filter(item => {
-                        // @ts-ignore
                         const excluded = item.mark.type.excluded;
                         return excluded.find(type => type === config.type && type !== item.mark.type);
                     })
@@ -3959,13 +3536,6 @@
             },
         });
     }
-  
-    /**
-     * Build an input rule that changes the type of a textblock when the
-     * matched text is typed into it. When using a regular expresion you’ll
-     * probably want the regexp to start with `^`, so that the pattern can
-     * only occur at the start of a textblock.
-     */
     function textblockTypeInputRule(config) {
         return new InputRule({
             find: config.find,
@@ -3981,11 +3551,6 @@
             },
         });
     }
-  
-    /**
-     * Build an input rule that replaces text when the
-     * matched text is typed into it.
-     */
     function textInputRule(config) {
         return new InputRule({
             find: config.find,
@@ -4007,21 +3572,6 @@
             },
         });
     }
-  
-    /**
-     * Build an input rule for automatically wrapping a textblock when a
-     * given string is typed. When using a regular expresion you’ll
-     * probably want the regexp to start with `^`, so that the pattern can
-     * only occur at the start of a textblock.
-     *
-     * `type` is the type of node to wrap in.
-     *
-     * By default, if there’s a node with the same type above the newly
-     * wrapped node, the rule will try to join those
-     * two nodes. You can pass a join predicate, which takes a regular
-     * expression match and the node before the wrapped node, and can
-     * return a boolean to indicate whether a join should happen.
-     */
     function wrappingInputRule(config) {
         return new InputRule({
             find: config.find,
@@ -4045,11 +3595,6 @@
             },
         });
     }
-  
-    /**
-     * Build an paste rule that adds a mark when the
-     * matched text is pasted into it.
-     */
     function markPasteRule(config) {
         return new PasteRule({
             find: config.find,
@@ -4068,7 +3613,6 @@
                     const textEnd = textStart + captureGroup.length;
                     const excludedMarks = getMarksBetween(range.from, range.to, state.doc)
                         .filter(item => {
-                        // @ts-ignore
                         const excluded = item.mark.type.excluded;
                         return excluded.find(type => type === config.type && type !== item.mark.type);
                     })
@@ -4089,11 +3633,6 @@
             },
         });
     }
-  
-    /**
-     * Build an paste rule that replaces text when the
-     * matched text is pasted into it.
-     */
     function textPasteRule(config) {
         return new PasteRule({
             find: config.find,
@@ -4115,15 +3654,9 @@
             },
         });
     }
-  
-    // source: https://stackoverflow.com/a/6969486
     function escapeForRegEx(string) {
         return string.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
     }
-  
-    /**
-     * Returns a new `Transform` based on all steps of the passed transactions.
-     */
     function combineTransactionSteps(oldDoc, transactions) {
         const transform = new prosemirrorTransform.Transform(oldDoc);
         transactions.forEach(transaction => {
@@ -4133,7 +3666,6 @@
         });
         return transform;
     }
-  
     function defaultBlockAt(match) {
         for (let i = 0; i < match.edgeCount; i += 1) {
             const { type } = match.edge(i);
@@ -4143,7 +3675,6 @@
         }
         return null;
     }
-  
     function findChildren(node, predicate) {
         const nodesWithPos = [];
         node.descendants((child, pos) => {
@@ -4156,21 +3687,8 @@
         });
         return nodesWithPos;
     }
-  
-    /**
-     * Same as `findChildren` but searches only within a `range`.
-     */
     function findChildrenInRange(node, range, predicate) {
         const nodesWithPos = [];
-        // if (range.from === range.to) {
-        //   const nodeAt = node.nodeAt(range.from)
-        //   if (nodeAt) {
-        //     nodesWithPos.push({
-        //       node: nodeAt,
-        //       pos: range.from,
-        //     })
-        //   }
-        // }
         node.nodesBetween(range.from, range.to, (child, pos) => {
             if (predicate(child)) {
                 nodesWithPos.push({
@@ -4181,18 +3699,15 @@
         });
         return nodesWithPos;
     }
-  
     function getSchema(extensions) {
         const resolvedExtensions = ExtensionManager.resolve(extensions);
         return getSchemaByResolvedExtensions(resolvedExtensions);
     }
-  
     function generateHTML(doc, extensions) {
         const schema = getSchema(extensions);
         const contentNode = prosemirrorModel.Node.fromJSON(schema, doc);
         return getHTMLFromFragment(contentNode.content, schema);
     }
-  
     function generateJSON(html, extensions) {
         const schema = getSchema(extensions);
         const dom = elementFromString(html);
@@ -4200,7 +3715,6 @@
             .parse(dom)
             .toJSON();
     }
-  
     function generateText(doc, extensions, options) {
         const { blockSeparator = '\n\n', textSerializers = {}, } = options || {};
         const schema = getSchema(extensions);
@@ -4213,11 +3727,6 @@
             },
         });
     }
-  
-    /**
-     * Removes duplicated values within an array.
-     * Supports numbers, strings and objects.
-     */
     function removeDuplicates(array, by = JSON.stringify) {
         const seen = {};
         return array.filter(item => {
@@ -4227,11 +3736,6 @@
                 : (seen[key] = true);
         });
     }
-  
-    /**
-     * Removes duplicated ranges and ranges that are
-     * fully captured by other ranges.
-     */
     function simplifyChangedRanges(changes) {
         const uniqueChanges = removeDuplicates(changes);
         return uniqueChanges.length === 1
@@ -4246,18 +3750,11 @@
                 });
             });
     }
-    /**
-     * Returns a list of changed ranges
-     * based on the first and last state of all steps.
-     */
     function getChangedRanges(transform) {
         const { mapping, steps } = transform;
         const changes = [];
         mapping.maps.forEach((stepMap, index) => {
             const ranges = [];
-            // This accounts for step changes where no range was actually altered
-            // e.g. when setting a mark, node attribute, etc.
-            // @ts-ignore
             if (!stepMap.ranges.length) {
                 const { from, to } = steps[index];
                 if (from === undefined || to === undefined) {
@@ -4289,7 +3786,6 @@
         });
         return simplifyChangedRanges(changes);
     }
-  
     function getDebugJSON(node, startOffset = 0) {
         const isTopNode = node.type === node.type.schema.topNodeType;
         const increment = isTopNode ? 0 : 1;
@@ -4328,11 +3824,9 @@
         }
         return output;
     }
-  
     function isNodeSelection(value) {
         return isObject(value) && value instanceof prosemirrorState.NodeSelection;
     }
-  
     function posToDOMRect(view, from, to) {
         const minPos = 0;
         const maxPos = view.state.doc.content.size;
@@ -4363,7 +3857,6 @@
             toJSON: () => data,
         };
     }
-  
     exports.CommandManager = CommandManager;
     exports.Editor = Editor;
     exports.Extension = Extension;
@@ -4417,9 +3910,16 @@
     exports.textPasteRule = textPasteRule;
     exports.textblockTypeInputRule = textblockTypeInputRule;
     exports.wrappingInputRule = wrappingInputRule;
-  
     Object.defineProperty(exports, '__esModule', { value: true });
-  
   }));
-  //# sourceMappingURL=tiptap-core.umd.js.map
-  
+
+  $(function() {
+      console.log('foobar');
+  });
+
+
+      window.tiptap = exports;
+
+
+})();
+//# sourceMappingURL=tiptap.js.map

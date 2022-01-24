@@ -19,6 +19,7 @@ npm --save-dev install \
     karma-viewport \
     karma-module-resolver-preprocessor \
     rollup \
+    rollup-plugin-ts \
     rollup-plugin-cleanup \
     rollup-plugin-terser
 
