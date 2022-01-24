@@ -17,7 +17,7 @@ def tiptap_example():
     part['tiptap'] = factory(
         '#field:tiptap',
         props={
-            'label': 'tiptap Widget'
+            'label': 'Tiptap Widget'
         })
     return {
         'widget': part,
