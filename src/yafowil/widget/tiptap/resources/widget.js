@@ -2,8 +2,16 @@
     'use strict';
 
     class TiptapWidget {
+        static initialize(context) {
+            $('div.tiptap-editor', context).each(function() {
+                let options = {};
+                new TiptapWidget($(this), options);
+            });
+        }
         constructor(elem) {
             this.elem = elem;
+            this.elem.css('width', '300px').css('height', '200px').css('border', '1px solid red');
+            console.log(tiptap);
         }
     }
 

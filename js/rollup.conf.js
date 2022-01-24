@@ -22,14 +22,15 @@ export default args => {
             outro: outro,
             globals: {
                 jquery: 'jQuery',
-                iro: 'iro'
+                tiptap: 'tiptap'
             },
             interop: 'default',
             sourcemap: true,
             sourcemapExcludeSources: true
         }],
         external: [
-            'jquery'
+            'jquery',
+            'tiptap'
         ]
     };
     if (args.configDebug !== true) {
@@ -41,7 +42,8 @@ export default args => {
             ],
             outro: outro,
             globals: {
-                jquery: 'jQuery'
+                jquery: 'jQuery',
+                tiptap: 'tiptap'
             },
             interop: 'default',
             sourcemap: true,
