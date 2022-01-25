@@ -13612,6 +13612,156 @@ img.ProseMirror-separator {
       },
   });
 
+  const Underline = Mark.create({
+      name: 'underline',
+      addOptions() {
+          return {
+              HTMLAttributes: {},
+          };
+      },
+      parseHTML() {
+          return [
+              {
+                  tag: 'u',
+              },
+              {
+                  style: 'text-decoration',
+                  consuming: false,
+                  getAttrs: style => (style.includes('underline') ? {} : false),
+              },
+          ];
+      },
+      renderHTML({ HTMLAttributes }) {
+          return ['u', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+      },
+      addCommands() {
+          return {
+              setUnderline: () => ({ commands }) => {
+                  return commands.setMark(this.name);
+              },
+              toggleUnderline: () => ({ commands }) => {
+                  return commands.toggleMark(this.name);
+              },
+              unsetUnderline: () => ({ commands }) => {
+                  return commands.unsetMark(this.name);
+              },
+          };
+      },
+      addKeyboardShortcuts() {
+          return {
+              'Mod-u': () => this.editor.commands.toggleUnderline(),
+          };
+      },
+  });
+
+  const TextStyle = Mark.create({
+      name: 'textStyle',
+      addOptions() {
+          return {
+              HTMLAttributes: {},
+          };
+      },
+      parseHTML() {
+          return [
+              {
+                  tag: 'span',
+                  getAttrs: element => {
+                      const hasStyles = element.hasAttribute('style');
+                      if (!hasStyles) {
+                          return false;
+                      }
+                      return {};
+                  },
+              },
+          ];
+      },
+      renderHTML({ HTMLAttributes }) {
+          return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+      },
+      addCommands() {
+          return {
+              removeEmptyTextStyle: () => ({ state, commands }) => {
+                  const attributes = getMarkAttributes(state, this.type);
+                  const hasStyles = Object.entries(attributes).some(([, value]) => !!value);
+                  if (hasStyles) {
+                      return true;
+                  }
+                  return commands.unsetMark(this.name);
+              },
+          };
+      },
+  });
+
+  const Color = Extension.create({
+      name: 'color',
+      addOptions() {
+          return {
+              types: ['textStyle'],
+          };
+      },
+      addGlobalAttributes() {
+          return [
+              {
+                  types: this.options.types,
+                  attributes: {
+                      color: {
+                          default: null,
+                          parseHTML: element => element.style.color.replace(/['"]+/g, ''),
+                          renderHTML: attributes => {
+                              if (!attributes.color) {
+                                  return {};
+                              }
+                              return {
+                                  style: `color: ${attributes.color}`,
+                              };
+                          },
+                      },
+                  },
+              },
+          ];
+      },
+      addCommands() {
+          return {
+              setColor: color => ({ chain }) => {
+                  return chain()
+                      .setMark('textStyle', { color })
+                      .run();
+              },
+              unsetColor: () => ({ chain }) => {
+                  return chain()
+                      .setMark('textStyle', { color: null })
+                      .removeEmptyTextStyle()
+                      .run();
+              },
+          };
+      },
+  });
+
+  class Button {
+      static create(editor, content, css) {
+          let elem = $('<button />');
+          if (typeof content === 'string') {
+              elem.text(content);
+          } else {
+              elem.append(content);
+          }
+          if (css) {
+              elem.css(css);
+          }
+          return new Button(editor, elem);
+      }
+      constructor(editor, elem) {
+          this.elem = elem;
+          this.editor = editor;
+          this.on_click = this.on_click.bind(this);
+          this.elem.on('click', e => {
+              e.preventDefault();
+              this.on_click();
+          });
+      }
+      on_click() {
+      }
+  }
   class TiptapWidget {
       static initialize(context) {
           $('div.tiptap-editor', context).each(function() {
@@ -13621,52 +13771,36 @@ img.ProseMirror-separator {
       }
       constructor(elem) {
           this.elem = elem;
-          this.buttons_elem = $('<div />')
-              .addClass('btn-group')
-              .prependTo(this.elem);
-          this.bold_button = $('<button />')
-              .text('B')
-              .css('font-weight', 'bold')
-              .appendTo(this.buttons_elem);
-          this.italic_button = $('<button />')
-              .text('I')
-              .css('font-style', 'italic')
-              .appendTo(this.buttons_elem);
-          this.underline_button = $('<button />')
-              .text('U')
-              .css('text-decoration', 'underline')
-              .appendTo(this.buttons_elem);
+          this.elem.data('tiptap-widget', this);
           this.editor = new Editor({
               element: this.elem[0],
               extensions: [
                   StarterKit,
+                  Underline,
+                  TextStyle,
+                  Color
               ],
               content: '<p>Hello World!</p>',
           });
-          this.bold_button.on('click', e => {
-              e.preventDefault();
-              this.editor
-                  .chain()
-                  .focus()
-                  .toggleBold()
-                  .run();
-          });
-          this.italic_button.on('click', e => {
-              e.preventDefault();
-              this.editor
-                  .chain()
-                  .focus()
-                  .toggleItalic()
-                  .run();
-          });
-          this.underline_button.on('click', e => {
-              e.preventDefault();
-              this.editor
-                  .chain()
-                  .focus()
-                  .toggleUnderline()
-                  .run();
-          });
+          this.buttons_textstyles = $('<div />')
+              .addClass('btn-group')
+              .prependTo(this.elem);
+          this.bold_button = Button.create(this, 'B', {'font-weight': 'bold'});
+          this.italic_button = Button.create(this, 'i', {'font-style': 'italic'});
+          this.underline_button = Button.create(this, 'U', {'text-decoration': 'underline'});
+          this.buttons_textstyles
+              .append(this.bold_button.elem)
+              .append(this.italic_button.elem)
+              .append(this.underline_button.elem);
+          this.bold_button.on_click = function(e) {
+              this.editor.chain().focus().toggleBold().run();
+          };
+          this.italic_button.on_click = function(e) {
+              this.editor.chain().focus().toggleItalic().run();
+          };
+          this.underline_button.on_click = function(e) {
+              this.editor.chain().focus().toggleUnderline().run();
+          };
       }
   }
 

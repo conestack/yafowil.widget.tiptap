@@ -24,7 +24,13 @@ npm --save-dev install \
     rollup-plugin-terser
     
 
-npm --save install @tiptap/core @tiptap/starter-kit
+npm --save install \
+    @tiptap/core \
+    @tiptap/starter-kit \
+    @tiptap/extension-underline \
+    @tiptap/extension-text-style \
+    @tiptap/extension-color
+
 npm --no-save install https://github.com/jquery/jquery#main
 
 python3 -m venv .
