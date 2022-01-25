@@ -1,7 +1,6 @@
 import $ from 'jquery';
 
 import {TiptapWidget} from './widget.js';
-
 export * from './widget.js';
 
 $(function() {

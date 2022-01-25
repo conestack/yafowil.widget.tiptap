@@ -19,9 +19,10 @@ npm --save-dev install \
     karma-viewport \
     karma-module-resolver-preprocessor \
     rollup \
-    rollup-plugin-ts \
+    @rollup/plugin-node-resolve \
     rollup-plugin-cleanup \
     rollup-plugin-terser
+    
 
 npm --save install @tiptap/core @tiptap/starter-kit
 npm --no-save install https://github.com/jquery/jquery#main

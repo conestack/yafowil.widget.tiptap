@@ -1,4 +1,5 @@
 import cleanup from 'rollup-plugin-cleanup';
+import {nodeResolve} from '@rollup/plugin-node-resolve';
 import {terser} from 'rollup-plugin-terser';
 
 const out_dir = 'src/yafowil/widget/tiptap/resources';
@@ -14,6 +15,7 @@ export default args => {
     let conf = {
         input: 'js/src/bundle.js',
         plugins: [
+            nodeResolve(),
             cleanup()
         ],
         output: [{
@@ -21,16 +23,14 @@ export default args => {
             format: 'iife',
             outro: outro,
             globals: {
-                jquery: 'jQuery',
-                tiptap: 'tiptap'
+                jquery: 'jQuery'
             },
             interop: 'default',
             sourcemap: true,
             sourcemapExcludeSources: true
         }],
         external: [
-            'jquery',
-            'tiptap'
+            'jquery'
         ]
     };
     if (args.configDebug !== true) {
@@ -42,8 +42,7 @@ export default args => {
             ],
             outro: outro,
             globals: {
-                jquery: 'jQuery',
-                tiptap: 'tiptap'
+                jquery: 'jQuery'
             },
             interop: 'default',
             sourcemap: true,
