@@ -29,7 +29,8 @@ npm --save install \
     @tiptap/starter-kit \
     @tiptap/extension-underline \
     @tiptap/extension-text-style \
-    @tiptap/extension-color
+    @tiptap/extension-color \
+    @tiptap/extension-heading
 
 npm --no-save install https://github.com/jquery/jquery#main
 
