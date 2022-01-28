@@ -18,8 +18,14 @@
   },
   "dependencies": {
     "@tiptap/core": "^2.0.0-beta.167",
+    "@tiptap/extension-blockquote": "^2.0.0-beta.26",
+    "@tiptap/extension-bullet-list": "^2.0.0-beta.26",
+    "@tiptap/extension-code": "^2.0.0-beta.26",
+    "@tiptap/extension-code-block": "^2.0.0-beta.37",
     "@tiptap/extension-color": "^2.0.0-beta.9",
     "@tiptap/extension-heading": "^2.0.0-beta.26",
+    "@tiptap/extension-list-item": "^2.0.0-beta.20",
+    "@tiptap/extension-ordered-list": "^2.0.0-beta.27",
     "@tiptap/extension-text-style": "^2.0.0-beta.23",
     "@tiptap/extension-underline": "^2.0.0-beta.22",
     "@tiptap/starter-kit": "^2.0.0-beta.176"

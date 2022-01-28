@@ -1,151 +1,96 @@
 import $ from 'jquery';
-import {Editor} from '@tiptap/core'
+import {Editor, getText} from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline';
 import TextStyle from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
 import Heading from '@tiptap/extension-heading';
+import ListItem from '@tiptap/extension-list-item';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import Blockquote from '@tiptap/extension-blockquote';
+import Code from '@tiptap/extension-code';
+import CodeBlock from '@tiptap/extension-code-block';
 
 class Button {
 
-    static create(content) {
+    static create(widget, content, func) {
         let elem = $('<button />');
-        if (typeof content === 'string') {
-            elem.text(content);
+        if (content instanceof Array) {
+            for (let item of content) {
+                elem.append(item);
+            }
         } else {
             elem.append(content);
         }
-        return elem;
+        return new Button(widget, elem, func);
     }
 
-    constructor(widget, elem) {
+    constructor(widget, elem, func) {
         this.elem = elem;
         this.widget = widget;
-
+        if (func) {
+            this.func = func;
+            this.func = this.func.bind(this);
+        }
         this.on_click = this.on_click.bind(this);
         this.elem.on('click', this.on_click);
     }
 
     on_click(e) {
         e.preventDefault();
-    }
-}
-
-class BoldButton extends Button {
-
-    static create(widget, content) {
-        let elem = super.create(content);
-        elem.css('font-weight', 'bold');
-        return new BoldButton(widget, elem);
-    }
-
-    constructor(widget, elem) {
-        super(widget, elem);
-    }
-
-    on_click(e) {
-        super.on_click(e);
-        this.widget.editor.chain().focus().toggleBold().run();
-    }
-}
-
-class ItalicButton extends Button {
-
-    static create(widget, content) {
-        let elem = super.create(content);
-        elem.css('font-style', 'italic');
-        return new ItalicButton(widget, elem);
-    }
-
-    constructor(widget, elem) {
-        super(widget, elem);
-    }
-
-    on_click(e) {
-        super.on_click(e);
-        this.widget.editor.chain().focus().toggleItalic().run();
-    }
-}
-
-class UnderlineButton extends Button {
-
-    static create(widget, content) {
-        let elem = super.create(content);
-        elem.css('text-decoration', 'underline');
-        return new UnderlineButton(widget, elem);
-    }
-
-    constructor(widget, elem) {
-        super(widget, elem);
-    }
-
-    on_click(e) {
-        super.on_click(e);
-        this.widget.editor.chain().focus().toggleUnderline().run();
-    }
-}
-
-class ColorButton extends Button {
-    static create(widget, color) {
-        let elem = super.create(
-            $('<div />')
-                .addClass('color')
-                .css('background-color', color));
-        return new ColorButton(widget, elem, color);
-    }
-
-    constructor(widget, elem, color) {
-        super(widget, elem);
-        this.color = color;
-    }
-
-    on_click(e) {
-        super.on_click(e);
-        this.widget.editor.commands.setColor(this.color);
-    }
-}
-
-class HeadingButton extends Button {
-    static create(widget, level) {
-        let elem = super.create(content);
-        return new HeadingButton(widget, elem, level);
-    }
-
-    constructor(widget, elem, level) {
-        super(widget, elem);
-        this.level = level;
-    }
-
-    on_click(e) {
-        super.on_click(e);
-        if (!this.level) {
-            this.widget.editor.commands.setParagraph();
-            return;
+        if (this.func) {
+            this.func();
         }
-        this.widget.editor.commands.toggleHeading({ level: this.level });
     }
 }
 
 class DropButton extends Button {
 
-    static create(content) {
-        let elem = super.create(content);
-        elem.addClass('drop_btn');
-        return elem;
+    static create(widget, children) {
+        let elem = $('<button />').addClass('drop_btn');
+        return new DropButton(widget, elem, children);
     }
 
-    constructor(widget, elem) {
+    constructor(widget, elem, children) {
         super(widget, elem);
         this.dd_elem = $('<div />')
             .addClass('btn-dropdown')
             .appendTo(widget.elem);
 
+        this.children = [];
+        if (children) {
+            for (let child of children) {
+                this.add(child);
+            }
+            this.active_item = this.children[0];
+        }
+
         this.hide_dropdown = this.hide_dropdown.bind(this);
         $(document).on('click', this.hide_dropdown);
     }
 
+    get active_item() {
+        return this._active_item;
+    }
+
+    set active_item(item) {
+        let clone = item.elem.children().clone();
+        this.elem.empty().append(clone);
+        this._active_item = item;
+    }
+
     unload() {
         $(document).off('click', this.hide_dropdown);
+    }
+
+    add(item) {
+        item.elem.addClass('dropdown-item');
+        item.elem.on('click', () => {
+            this.active_item = item;
+        });
+        this.dd_elem.append(item.elem);
+        this.children.push(item);
     }
 
     hide_dropdown(e) {
@@ -167,67 +112,28 @@ class DropButton extends Button {
     }
 }
 
-class ColorDropButton extends DropButton {
-
-    static create(widget, content, colors) {
-        let elem = super.create(content);
-        return new ColorDropButton(widget, elem, colors);
-    }
-
-    constructor(widget, elem, colors) {
-        super(widget, elem);
-
-        this.colors = colors ? colors : [];
-        this.buttons = [];
-
-        for (let swatch of colors) {
-            let color_elem = $('<div />')
-                .addClass('color')
-                .css('background-color', swatch.color);
-            let elem = $('<button />')
-                .addClass('dropdown-item')
-                .text(swatch.name);
-
-            this.dd_elem.append(elem);
-            elem.prepend(color_elem);
-            this.buttons.push(new ColorButton(widget, elem, swatch.color));
-        }
-    }
-}
-
-class HeadingDropButton extends DropButton {
-
-    static create(widget, content, styles) {
-        let elem = super.create(content);
-        return new HeadingDropButton(widget, elem, styles);
-    }
-
-    constructor(widget, elem, styles) {
-        super(widget, elem);
-
-        this.styles = styles ? styles : [];
-        this.buttons = [];
-
-        for (let style of styles) {
-            let elem = $('<button />')
-                .addClass('dropdown-item')
-                .text(style.name);
-
-            this.dd_elem.append(elem);
-            this.buttons.push(new HeadingButton(widget, elem, style.level));
-        }
-    }
-}
-
 export class TiptapWidget {
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
-            let options = {};
+            let options = {
+                bold: true,
+                italic: true,
+                underline: true,
+                heading: true,
+                text_colors: [
+                    {name: 'blue', color: '#1a21fb'},
+                    {name: 'lime', color:'#ccff00'},
+                    {name: 'teal', color: '#2acaea'},
+                    {name: 'red', color: '#d0060a'}
+                ],
+                bulletList : true,
+                orderedList: true
+            };
             new TiptapWidget($(this), options);
         });
     }
 
-    constructor(elem) {
+    constructor(elem, ops) {
         this.elem = elem;
         this.elem.data('tiptap-widget', this);
 
@@ -237,7 +143,13 @@ export class TiptapWidget {
                 StarterKit,
                 Underline,
                 TextStyle,
-                Color
+                Color,
+                ListItem,
+                BulletList,
+                OrderedList,
+                Blockquote,
+                Code,
+                CodeBlock
             ],
             content: '<p>Hello World!</p>',
         });
@@ -246,41 +158,115 @@ export class TiptapWidget {
             .addClass('btn-group')
             .prependTo(this.elem);
 
-        this.bold_button = BoldButton.create(this, 'B');
-        this.italic_button = ItalicButton.create(this, 'i');
-        this.underline_button = UnderlineButton.create(this, 'U');
+        if (ops.bold) {
+            this.bold_btn = Button.create(this, 'B', function() {
+                this.widget.editor.chain().focus().toggleBold().run();
+            });
+            this.bold_btn.elem.css('font-weight', 'bold');
+        }
 
-        let colors = [
-            {name: 'blue', color: '#1a21fb'},
-            {name: 'lime', color:'#ccff00'},
-            {name: 'teal', color: '#2acaea'},
-            {name: 'red', color: '#d0060a'}
-        ];
+        if (ops.italic) {
+            this.italic_btn = Button.create(this, 'i', function() {
+                this.widget.editor.chain().focus().toggleItalic().run();
+            });
+            this.italic_btn.elem.css('font-style', 'italic');
+        }
 
-        this.colors_button = ColorDropButton.create(
-            this,
-            $('<div class="color" />'),
-            colors);
+        if (ops.underline) {
+            this.underline_btn = Button.create(this, 'U', function() {
+                this.widget.editor.chain().focus().toggleUnderline().run();
+            });
+            this.underline_btn.elem.css('text-decoration', 'underline');
+        }
 
-        let styles = [{name: 'Text', level: null}];
-        for (let i=1; i<=6; i++) {
-            styles.push({
-                name: 'Heading ' + i,
-                level: i
+        if (ops.heading) {
+            let items = [];
+            items.push(Button.create(
+                this,
+                $('<span />').text('Text'),
+                function() {this.widget.editor.commands.setParagraph()}
+            ));
+            for (let i=1; i<=6; i++) {
+                items.push(Button.create(
+                    this,
+                    $('<span />').text(`Heading ${i}`),
+                    function() {this.widget.editor.commands.toggleHeading({level: i})}
+                ));
+            }
+            this.heading_btn = DropButton.create(this, items);
+        }
+
+        if (ops.text_colors) {
+            let items = [];
+            for (let item of ops.text_colors) {
+                let name_elem = $('<span />').text(item.name),
+                    color_elem = $('<div />')
+                    .addClass('color')
+                    .css('background-color', item.color);
+                items.push(Button.create(
+                    this,
+                    [color_elem, name_elem],
+                    function() {
+                        this.widget.editor.commands.setColor(item.color);
+                    }
+                ));
+            }
+            this.color_btn = DropButton.create(this, items);
+        }
+
+        if (ops.bulletList) {
+            this.ul_btn = Button.create(this, 'Bullet List', function() {
+                this.widget.editor.commands.toggleBulletList();
             });
         }
-        this.styles_button = HeadingDropButton.create(
-            this,
-            'A',
-            styles
-        );
+
+        if (ops.orderedList) {
+            this.ol_btn = Button.create(this, 'Ordered List', function() {
+                this.widget.editor.commands.toggleOrderedList();
+            });
+        }
+
+        this.indent_btn = Button.create(this, 'Indent', function() {
+            this.widget.editor.commands.setBlockquote();
+        });
+
+        this.outdent_btn = Button.create(this, 'Outdent', function() {
+            this.widget.editor.commands.unsetBlockquote();
+        });
+
+        this.html_btn = Button.create(this, 'Edit HTML', function() {
+            this.html_edit = !this.html_edit ? true : false;
+            console.log(this.html_edit)
+
+            if (this.html_edit) {
+                console.log('is not editable')
+                let html = this.widget.editor.getHTML();
+                let cont = this.widget.parse_from_html(html);
+                this.widget.editor.commands.setContent(`<p>${cont}</p>`);
+            } else {
+                console.log('is editable');
+                let html = this.widget.editor.getHTML();
+                let cont = this.widget.parse_to_html(html);
+                this.widget.editor.commands.setContent(`${cont}`);
+            }
+
+        });
+        // let html = this.editor.getHTML();
+        // let new_html = this.parse_from_html(html);
+        // this.editor.commands.setContent(`<p>${new_html}</p>`);
+
 
         this.buttons_textstyles
-            .append(this.bold_button.elem)
-            .append(this.italic_button.elem)
-            .append(this.underline_button.elem)
-            .after(this.colors_button.elem)
-            .after(this.styles_button.elem);
+            .append(this.bold_btn.elem)
+            .append(this.italic_btn.elem)
+            .append(this.underline_btn.elem)
+            .after(this.color_btn.elem)
+            .after(this.heading_btn.elem)
+            .after(this.ul_btn.elem)
+            .after(this.ol_btn.elem)
+            .after(this.indent_btn.elem)
+            .after(this.outdent_btn.elem)
+            .after(this.html_btn.elem);
 
         this.hide_all = this.hide_all.bind(this);
         this.editor.on('update', this.hide_all);
@@ -288,6 +274,22 @@ export class TiptapWidget {
 
     unload_all() {
 
+    }
+
+    parse_from_html(html) {
+        let arr_html = html.split('');
+        for (let i = 0; i < arr_html.length; i++) {
+            if (html.charAt(i).toLowerCase() === '<') {
+                arr_html[i] = '&lt;';
+            } else if (html.charAt(i).toLowerCase() === '>') {
+                arr_html[i] = '&gt;';
+            }
+        }
+        return arr_html.join('');
+    }
+
+    parse_to_html(html) {
+        // some escape regex
     }
 
     hide_all() {

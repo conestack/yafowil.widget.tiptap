@@ -30,7 +30,14 @@ npm --save install \
     @tiptap/extension-underline \
     @tiptap/extension-text-style \
     @tiptap/extension-color \
-    @tiptap/extension-heading
+    @tiptap/extension-heading \
+    @tiptap/extension-list-item \
+    @tiptap/extension-ordered-list \
+    @tiptap/extension-bullet-list \
+    @tiptap/extension-blockquote \
+    @tiptap/extension-code \
+    @tiptap/extension-code-block
+
 
 npm --no-save install https://github.com/jquery/jquery#main
 
