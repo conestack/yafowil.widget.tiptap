@@ -1,7 +1,7 @@
 import $ from 'jquery';
 
-import {TiptapWidget} from './widget.js';
-export * from './widget.js';
+import {TiptapWidget} from '../widget.js';
+export * from '../widget.js';
 
 $(function() {
     if (window.ts !== undefined) {

@@ -1,96 +1,71 @@
 import $ from 'jquery';
-import {Editor, getText} from '@tiptap/core'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline';
-import TextStyle from '@tiptap/extension-text-style'
-import { Color } from '@tiptap/extension-color'
-import Heading from '@tiptap/extension-heading';
-import ListItem from '@tiptap/extension-list-item';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import Blockquote from '@tiptap/extension-blockquote';
-import Code from '@tiptap/extension-code';
-import CodeBlock from '@tiptap/extension-code-block';
+import tiptap from 'tiptap';
 
 class Button {
 
-    static create(widget, content, func) {
+    static create(widget, ops) {
         let elem = $('<button />');
-        if (content instanceof Array) {
-            for (let item of content) {
-                elem.append(item);
-            }
-        } else {
-            elem.append(content);
-        }
-        return new Button(widget, elem, func);
+        return new Button(widget, elem, ops);
     }
 
-    constructor(widget, elem, func) {
+    constructor(widget, elem, ops) {
         this.elem = elem;
         this.widget = widget;
-        if (func) {
-            this.func = func;
-            this.func = this.func.bind(this);
-        }
+        this.ops = ops;
+
         this.on_click = this.on_click.bind(this);
         this.elem.on('click', this.on_click);
     }
 
     on_click(e) {
         e.preventDefault();
-        if (this.func) {
-            this.func();
+        if (this.ops && this.ops.click) {
+            this.ops.click();
+        }
+    }
+}
+
+class ToggleButton extends Button {
+    constructor(widget, elem, ops) {
+        super(widget, elem, ops);
+
+        this.do = this.ops.toggle[0].bind(this.widget);
+        this.undo = this.ops.toggle[1].bind(this.widget);
+    }
+
+    on_click(e) {
+        super.on_click(e);
+        this.active = !this.active ? true : false;
+
+        if (this.active) {
+            this.elem.addClass('active');
+            this.do();
+        } else {
+            this.elem.removeClass('active');
+            this.undo();
         }
     }
 }
 
 class DropButton extends Button {
 
-    static create(widget, children) {
+    static create(widget) {
         let elem = $('<button />').addClass('drop_btn');
-        return new DropButton(widget, elem, children);
+        return new DropButton(widget, elem);
     }
 
-    constructor(widget, elem, children) {
+    constructor(widget, elem) {
         super(widget, elem);
         this.dd_elem = $('<div />')
             .addClass('btn-dropdown')
             .appendTo(widget.elem);
 
-        this.children = [];
-        if (children) {
-            for (let child of children) {
-                this.add(child);
-            }
-            this.active_item = this.children[0];
-        }
-
         this.hide_dropdown = this.hide_dropdown.bind(this);
         $(document).on('click', this.hide_dropdown);
     }
 
-    get active_item() {
-        return this._active_item;
-    }
-
-    set active_item(item) {
-        let clone = item.elem.children().clone();
-        this.elem.empty().append(clone);
-        this._active_item = item;
-    }
-
     unload() {
         $(document).off('click', this.hide_dropdown);
-    }
-
-    add(item) {
-        item.elem.addClass('dropdown-item');
-        item.elem.on('click', () => {
-            this.active_item = item;
-        });
-        this.dd_elem.append(item.elem);
-        this.children.push(item);
     }
 
     hide_dropdown(e) {
@@ -109,6 +84,92 @@ class DropButton extends Button {
         super.on_click(e);
         this.dd_elem.css('transform', `translate(${this.elem.position().left}px, ${this.elem.outerHeight()}px)`);
         this.dd_elem.toggle();
+    }
+}
+
+class ImageButton extends DropButton {
+    static create(widget) {
+        let elem = $('<button />').addClass('drop_btn');
+        return new ImageButton(widget, elem);
+    }
+
+    constructor(widget, elem) {
+        super(widget, elem);
+
+        this.src_input = $('<span />')
+            .addClass('dropdown-item')
+            .text('source:')
+            .append($('<input type="text" />')
+            .addClass('img-source'))
+            .appendTo(this.dd_elem);
+
+        this.title_input = $('<span />')
+            .addClass('dropdown-item')
+            .text('title:')
+            .append($('<input type="text" />')
+            .addClass('img-title'))
+            .appendTo(this.dd_elem);
+
+        this.alt_input = $('<span />')
+            .addClass('dropdown-item')
+            .text('alt:')
+            .append($('<input type="text" />')
+            .addClass('img-alt'))
+            .appendTo(this.dd_elem);
+
+        let submit_btn_elem = this.submit_btn_elem = $('<button />')
+            .text('submit')
+            .appendTo(this.dd_elem);
+
+        this.submit_btn = new Button(widget, submit_btn_elem);
+        this.submit_btn.elem.on('click', (e) => {
+            let src = $('input.img-source', this.dd_elem).val();
+            let alt = $('input.img-alt', this.dd_elem).val();
+            let title = $('input.img-title', this.dd_elem).val();
+            this.widget.editor.commands.setImage({
+                src: src,
+                alt: alt,
+                title: title
+            })
+        });
+    }
+}
+
+class DropListButton extends DropButton {
+
+    static create(widget, children) {
+        let elem = $('<button />').addClass('drop_btn');
+        return new DropListButton(widget, elem, children);
+    }
+
+    constructor(widget, elem, children) {
+        super(widget, elem);
+        this.children = [];
+        if (children) {
+            for (let child of children) {
+                this.add(child);
+            }
+            this.active_item = this.children[0];
+        }
+    }
+
+    get active_item() {
+        return this._active_item;
+    }
+
+    set active_item(item) {
+        let clone = item.elem.children().clone();
+        this.elem.empty().append(clone);
+        this._active_item = item;
+    }
+
+    add(item) {
+        item.elem.addClass('dropdown-item');
+        item.elem.on('click', () => {
+            this.active_item = item;
+        });
+        this.dd_elem.append(item.elem);
+        this.children.push(item);
     }
 }
 
@@ -137,136 +198,143 @@ export class TiptapWidget {
         this.elem = elem;
         this.elem.data('tiptap-widget', this);
 
-        this.editor = new Editor({
+        this.editor = new tiptap.Editor({
             element: this.elem[0],
             extensions: [
-                StarterKit,
-                Underline,
-                TextStyle,
-                Color,
-                ListItem,
-                BulletList,
-                OrderedList,
-                Blockquote,
-                Code,
-                CodeBlock
+                tiptap.Document,
+                tiptap.Paragraph,
+                tiptap.Text,
+                tiptap.Underline,
+                tiptap.TextStyle,
+                tiptap.Color,
+                tiptap.Heading,
+                tiptap.BulletList,
+                tiptap.OrderedList,
+                tiptap.ListItem,
+                tiptap.Blockquote,
+                tiptap.Bold,
+                tiptap.Italic,
+                tiptap.Code,
+                tiptap.CodeBlock,
+                tiptap.Image
             ],
             content: '<p>Hello World!</p>',
         });
+
+        this.editarea = $('div.ProseMirror', this.elem);
+        let textarea = this.textarea = $('<textarea />')
+            .addClass('ProseMirror')
+            .appendTo(this.elem);
 
         this.buttons_textstyles = $('<div />')
             .addClass('btn-group')
             .prependTo(this.elem);
 
-        if (ops.bold) {
-            this.bold_btn = Button.create(this, 'B', function() {
-                this.widget.editor.chain().focus().toggleBold().run();
-            });
-            this.bold_btn.elem.css('font-weight', 'bold');
-        }
+        // if (ops.bold) {
+        //     this.bold_btn = Button.create(this, 'B', function() {
+        //         this.widget.editor.commands.toggleBold();
+        //     });
+        //     this.bold_btn.elem.css('font-weight', 'bold');
+        // }
 
-        if (ops.italic) {
-            this.italic_btn = Button.create(this, 'i', function() {
-                this.widget.editor.chain().focus().toggleItalic().run();
-            });
-            this.italic_btn.elem.css('font-style', 'italic');
-        }
+        // if (ops.italic) {
+        //     this.italic_btn = Button.create(this, 'i', function() {
+        //         this.widget.editor.commands.toggleItalic();
+        //     });
+        //     this.italic_btn.elem.css('font-style', 'italic');
+        // }
 
-        if (ops.underline) {
-            this.underline_btn = Button.create(this, 'U', function() {
-                this.widget.editor.chain().focus().toggleUnderline().run();
-            });
-            this.underline_btn.elem.css('text-decoration', 'underline');
-        }
+        // if (ops.underline) {
+        //     this.underline_btn = Button.create(this, 'U', function() {
+        //         this.widget.editor.commands.toggleUnderline();
+        //     });
+        //     this.underline_btn.elem.css('text-decoration', 'underline');
+        // }
 
-        if (ops.heading) {
-            let items = [];
-            items.push(Button.create(
-                this,
-                $('<span />').text('Text'),
-                function() {this.widget.editor.commands.setParagraph()}
-            ));
-            for (let i=1; i<=6; i++) {
-                items.push(Button.create(
-                    this,
-                    $('<span />').text(`Heading ${i}`),
-                    function() {this.widget.editor.commands.toggleHeading({level: i})}
-                ));
-            }
-            this.heading_btn = DropButton.create(this, items);
-        }
+        // if (ops.heading) {
+        //     let items = [];
+        //     items.push(Button.create(
+        //         this,
+        //         $('<span />').text('Text'),
+        //         function() {this.widget.editor.commands.setParagraph()}
+        //     ));
+        //     for (let i=1; i<=6; i++) {
+        //         items.push(Button.create(
+        //             this,
+        //             $('<span />').text(`Heading ${i}`),
+        //             function() {this.widget.editor.commands.toggleHeading({level: i})}
+        //         ));
+        //     }
+        //     this.heading_btn = DropListButton.create(this, items);
+        // }
 
-        if (ops.text_colors) {
-            let items = [];
-            for (let item of ops.text_colors) {
-                let name_elem = $('<span />').text(item.name),
-                    color_elem = $('<div />')
-                    .addClass('color')
-                    .css('background-color', item.color);
-                items.push(Button.create(
-                    this,
-                    [color_elem, name_elem],
-                    function() {
-                        this.widget.editor.commands.setColor(item.color);
-                    }
-                ));
-            }
-            this.color_btn = DropButton.create(this, items);
-        }
+        // if (ops.text_colors) {
+        //     let items = [];
+        //     for (let item of ops.text_colors) {
+        //         let name_elem = $('<span />').text(item.name),
+        //             color_elem = $('<div />')
+        //             .addClass('color')
+        //             .css('background-color', item.color);
+        //         items.push(Button.create(
+        //             this,
+        //             [color_elem, name_elem],
+        //             function() {
+        //                 this.widget.editor.commands.setColor(item.color);
+        //             }
+        //         ));
+        //     }
+        //     this.color_btn = DropListButton.create(this, items);
+        // }
 
-        if (ops.bulletList) {
-            this.ul_btn = Button.create(this, 'Bullet List', function() {
-                this.widget.editor.commands.toggleBulletList();
-            });
-        }
+        // if (ops.bulletList) {
+        //     this.ul_btn = Button.create(
+        //         this,
+        //         $('<i />').addClass('glyphicon glyphicon-list'),
+        //         function() {
+        //             this.widget.editor.commands.toggleBulletList();
+        //     });
+        // }
 
-        if (ops.orderedList) {
-            this.ol_btn = Button.create(this, 'Ordered List', function() {
-                this.widget.editor.commands.toggleOrderedList();
-            });
-        }
+        // if (ops.orderedList) {
+        //     this.ol_btn = Button.create(
+        //         this,
+        //         $('<i />').addClass('glyphicon glyphicon-th-list'),
+        //         function() {
+        //             this.widget.editor.commands.toggleOrderedList();
+        //     });
+        // }
 
-        this.indent_btn = Button.create(this, 'Indent', function() {
-            this.widget.editor.commands.setBlockquote();
+        // this.indent_btn = Button.create(this,
+        //     $('<i />').addClass('glyphicon glyphicon-indent-left'), function() {
+        //     this.widget.editor.commands.setBlockquote();
+        // });
+
+        // this.outdent_btn = Button.create(this,
+        //     $('<i />').addClass('glyphicon glyphicon-indent-right'), function() {
+        //     this.widget.editor.commands.unsetBlockquote();
+        // });
+
+        let html_btn_elem = $('<button />')
+            .append($('<i class="glyphicon glyphicon-pencil">'))
+            .insertAfter(this.buttons_textstyles);
+
+        this.html_btn = new ToggleButton(this, html_btn_elem, {
+            toggle: [function() {
+                    let html = this.editor.getHTML();
+                    this.editarea.hide();
+                    this.textarea.show().text(html);
+                }, function() {
+                    let html = this.textarea.val();
+                    this.textarea.hide();
+                    this.editarea.show();
+                    this.editor.commands.setContent(html);
+            }]
         });
 
-        this.outdent_btn = Button.create(this, 'Outdent', function() {
-            this.widget.editor.commands.unsetBlockquote();
-        });
-
-        this.html_btn = Button.create(this, 'Edit HTML', function() {
-            this.html_edit = !this.html_edit ? true : false;
-            console.log(this.html_edit)
-
-            if (this.html_edit) {
-                console.log('is not editable')
-                let html = this.widget.editor.getHTML();
-                let cont = this.widget.parse_from_html(html);
-                this.widget.editor.commands.setContent(`<p>${cont}</p>`);
-            } else {
-                console.log('is editable');
-                let html = this.widget.editor.getHTML();
-                let cont = this.widget.parse_to_html(html);
-                this.widget.editor.commands.setContent(`${cont}`);
-            }
-
-        });
-        // let html = this.editor.getHTML();
-        // let new_html = this.parse_from_html(html);
-        // this.editor.commands.setContent(`<p>${new_html}</p>`);
-
-
-        this.buttons_textstyles
-            .append(this.bold_btn.elem)
-            .append(this.italic_btn.elem)
-            .append(this.underline_btn.elem)
-            .after(this.color_btn.elem)
-            .after(this.heading_btn.elem)
-            .after(this.ul_btn.elem)
-            .after(this.ol_btn.elem)
-            .after(this.indent_btn.elem)
-            .after(this.outdent_btn.elem)
-            .after(this.html_btn.elem);
+        let img_btn_elem = $('<button />')
+            .append($('<i class="glyphicon glyphicon-picture">'))
+            .insertAfter(this.buttons_textstyles);
+        this.image_btn = new ImageButton(this, img_btn_elem);
 
         this.hide_all = this.hide_all.bind(this);
         this.editor.on('update', this.hide_all);
@@ -274,22 +342,6 @@ export class TiptapWidget {
 
     unload_all() {
 
-    }
-
-    parse_from_html(html) {
-        let arr_html = html.split('');
-        for (let i = 0; i < arr_html.length; i++) {
-            if (html.charAt(i).toLowerCase() === '<') {
-                arr_html[i] = '&lt;';
-            } else if (html.charAt(i).toLowerCase() === '>') {
-                arr_html[i] = '&gt;';
-            }
-        }
-        return arr_html.join('');
-    }
-
-    parse_to_html(html) {
-        // some escape regex
     }
 
     hide_all() {

@@ -13,7 +13,7 @@ window.yafowil.tiptap = exports;
 
 export default args => {
     let conf = {
-        input: 'js/src/bundle.js',
+        input: 'js/src/bundles/yafowil.bundle.js',
         plugins: [
             nodeResolve(),
             cleanup()
@@ -23,14 +23,16 @@ export default args => {
             format: 'iife',
             outro: outro,
             globals: {
-                jquery: 'jQuery'
+                jquery: 'jQuery',
+                tiptap: 'tiptap'
             },
             interop: 'default',
             sourcemap: true,
             sourcemapExcludeSources: true
         }],
         external: [
-            'jquery'
+            'jquery',
+            'tiptap'
         ]
     };
     if (args.configDebug !== true) {
@@ -42,7 +44,8 @@ export default args => {
             ],
             outro: outro,
             globals: {
-                jquery: 'jQuery'
+                jquery: 'jQuery',
+                tiptap: 'tiptap'
             },
             interop: 'default',
             sourcemap: true,

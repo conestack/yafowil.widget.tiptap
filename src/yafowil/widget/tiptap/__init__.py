@@ -5,6 +5,10 @@ import os
 
 resourcedir = os.path.join(os.path.dirname(__file__), 'resources')
 js = [{
+    'group': 'yafowil.widget.tiptap.dependencies',
+    'resource': 'tiptap.js',
+    'order': 21,
+}, {
     'group': 'yafowil.widget.tiptap.common',
     'resource': 'widget.js',
     'order': 21,

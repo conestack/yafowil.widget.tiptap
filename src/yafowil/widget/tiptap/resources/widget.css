@@ -23,6 +23,10 @@ div.tiptap-editor button {
     border: 1px solid #ccc;
     border-radius: 6px;
 }
+div.tiptap-editor button.active {
+    border: 2px solid red;
+}
+
 div.tiptap-editor button.drop_btn > * {
     display: inline-block;
 }
@@ -63,7 +67,7 @@ div.tiptap-editor button > .color {
     border: 1px solid rgba(0,0,0,0.3);
     border-radius: 3px;
 }
-div.tiptap-editor .btn-dropdown button.dropdown-item {
+div.tiptap-editor .btn-dropdown .dropdown-item {
     display: block;
     width: 100%;
     background: none;
@@ -84,4 +88,13 @@ div.tiptap-editor blockquote {
     margin: 0;
     font-size: unset;
     border: none;
+}
+div.tiptap-editor img {
+    max-width: 100%;
+}
+
+textarea.ProseMirror {
+    width: 100%;
+    max-width: 100%;
+    display: none;
 }

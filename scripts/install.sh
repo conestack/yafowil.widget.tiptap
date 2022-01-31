@@ -26,17 +26,22 @@ npm --save-dev install \
 
 npm --save install \
     @tiptap/core \
-    @tiptap/starter-kit \
+    @tiptap/extension-document \
+    @tiptap/extension-paragraph \
+    @tiptap/extension-text \
+    @tiptap/extension-bullet-list \
+    @tiptap/extension-ordered-list \
+    @tiptap/extension-list-item \
     @tiptap/extension-underline \
     @tiptap/extension-text-style \
     @tiptap/extension-color \
     @tiptap/extension-heading \
-    @tiptap/extension-list-item \
-    @tiptap/extension-ordered-list \
-    @tiptap/extension-bullet-list \
     @tiptap/extension-blockquote \
+    @tiptap/extension-bold \
+    @tiptap/extension-italic \
     @tiptap/extension-code \
-    @tiptap/extension-code-block
+    @tiptap/extension-code-block \
+    @tiptap/extension-image
 
 
 npm --no-save install https://github.com/jquery/jquery#main
