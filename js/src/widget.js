@@ -1,17 +1,20 @@
 import $ from 'jquery';
 import tiptap from 'tiptap';
 
-class Button {
-
-    static create(widget, ops) {
+class NewBtn {
+    static create(editor, content) {
         let elem = $('<button />');
-        return new Button(widget, elem, ops);
+        if (content) {
+            elem.append(content);
+        }
+        return new NewBtn(editor, elem);
     }
 
-    constructor(widget, elem, ops) {
+    constructor(editor, elem) {
+        this.editor = editor;
         this.elem = elem;
-        this.widget = widget;
-        this.ops = ops;
+
+        this.ops = {};
 
         this.on_click = this.on_click.bind(this);
         this.elem.on('click', this.on_click);
@@ -19,49 +22,140 @@ class Button {
 
     on_click(e) {
         e.preventDefault();
-        if (this.ops && this.ops.click) {
-            this.ops.click();
+        for (let op in this.ops) {
+            if (op) { this.ops[op].execute(); }
         }
+    }
+
+    insert(target) {
+        this.elem.appendTo(target);
+        return this;
+    }
+
+    setName(str) {
+        this.elem.prepend($('<span />').text(str));
+        return this;
+    }
+
+    setBold() {
+        this.elem.css('font-weight', 'bold');
+        this.ops.boldToggle = {
+            execute: () => {this.editor.commands.toggleBold();}
+        }
+        return this;
+    }
+
+    setItalic() {
+        this.elem.css('font-style', 'italic');
+        this.ops.italicToggle = {
+            execute: () => {this.editor.commands.toggleItalic();}
+        }
+        return this;
+    }
+
+    setUnderline() {
+        this.elem.css('text-decoration', 'underline');
+        this.ops.underlineToggle = {
+            execute: () => {this.editor.commands.toggleUnderline();}
+        }
+        return this;
+    }
+
+    setColor(color) {
+        this.elem.css('text-decoration', 'underline');
+        this.ops.colorSet = {
+            execute: () => {this.editor.commands.setColor(color);}
+        }
+        return this;
+    }
+
+    setToggle(execute, undo) {
+        this.ops.toggle = {
+            execute: () => {
+                this.active = !this.active ? true : false;
+                if (this.active) {
+                    this.elem.addClass('active');
+                    execute();
+                } else {
+                    this.elem.removeClass('active');
+                    undo();
+                }
+            }
+        }
+    }
+
+    setParagraph()  {
+        this.ops.pToggle = {
+            execute: () => {this.editor.commands.setParagraph();}
+        }
+        return this;
+    }
+
+    setHeading(level) {
+        this.ops.headingToggle = {
+            execute: () => {this.editor.commands.toggleHeading({level: level});}
+        }
+        return this;
+    }
+
+    setBulletList() {
+        this.ops.toggleBulletList = {
+            execute: () => {this.editor.commands.toggleBulletList();}
+        }
+        return this;
+    }
+
+    setOrderedList() {
+        this.ops.toggleOrderedList = {
+            execute: () => {this.editor.commands.toggleOrderedList();}
+        }
+        return this;
+    }
+
+    setIndent() {
+        this.ops.addBQ = {
+            execute: () => {this.editor.commands.setBlockquote();}
+        }
+        return this;
+    }
+
+    setOutdent() {
+        this.ops.rmBQ = {
+            execute: () => {this.editor.commands.unsetBlockquote();}
+        }
+        return this;
     }
 }
 
-class ToggleButton extends Button {
-    constructor(widget, elem, ops) {
-        super(widget, elem, ops);
+class NewDropBtn extends NewBtn {
 
-        this.do = this.ops.toggle[0].bind(this.widget);
-        this.undo = this.ops.toggle[1].bind(this.widget);
-    }
-
-    on_click(e) {
-        super.on_click(e);
-        this.active = !this.active ? true : false;
-
-        if (this.active) {
-            this.elem.addClass('active');
-            this.do();
-        } else {
-            this.elem.removeClass('active');
-            this.undo();
-        }
-    }
-}
-
-class DropButton extends Button {
-
-    static create(widget) {
+    static create(editor, content) {
         let elem = $('<button />').addClass('drop_btn');
-        return new DropButton(widget, elem);
+        if (content) {
+            elem.append(content);
+        }
+        return new NewDropBtn(editor, elem);
     }
 
-    constructor(widget, elem) {
-        super(widget, elem);
+    constructor(editor, elem) {
+        super(editor, elem);
         this.dd_elem = $('<div />')
             .addClass('btn-dropdown')
-            .appendTo(widget.elem);
+            .appendTo('body');
+        this.children = [];
 
         this.hide_dropdown = this.hide_dropdown.bind(this);
         $(document).on('click', this.hide_dropdown);
+    }
+
+    get active_item() {
+        return this._active_item;
+    }
+
+    set active_item(item) {
+        let clone = item.elem.children().clone();
+        this.elem.empty().append(clone);
+        this._active_item = item;
     }
 
     unload() {
@@ -82,85 +176,10 @@ class DropButton extends Button {
 
     on_click(e) {
         super.on_click(e);
-        this.dd_elem.css('transform', `translate(${this.elem.position().left}px, ${this.elem.outerHeight()}px)`);
-        this.dd_elem.toggle();
-    }
-}
-
-class ImageButton extends DropButton {
-    static create(widget) {
-        let elem = $('<button />').addClass('drop_btn');
-        return new ImageButton(widget, elem);
-    }
-
-    constructor(widget, elem) {
-        super(widget, elem);
-
-        this.src_input = $('<span />')
-            .addClass('dropdown-item')
-            .text('source:')
-            .append($('<input type="text" />')
-            .addClass('img-source'))
-            .appendTo(this.dd_elem);
-
-        this.title_input = $('<span />')
-            .addClass('dropdown-item')
-            .text('title:')
-            .append($('<input type="text" />')
-            .addClass('img-title'))
-            .appendTo(this.dd_elem);
-
-        this.alt_input = $('<span />')
-            .addClass('dropdown-item')
-            .text('alt:')
-            .append($('<input type="text" />')
-            .addClass('img-alt'))
-            .appendTo(this.dd_elem);
-
-        let submit_btn_elem = this.submit_btn_elem = $('<button />')
-            .text('submit')
-            .appendTo(this.dd_elem);
-
-        this.submit_btn = new Button(widget, submit_btn_elem);
-        this.submit_btn.elem.on('click', (e) => {
-            let src = $('input.img-source', this.dd_elem).val();
-            let alt = $('input.img-alt', this.dd_elem).val();
-            let title = $('input.img-title', this.dd_elem).val();
-            this.widget.editor.commands.setImage({
-                src: src,
-                alt: alt,
-                title: title
-            })
-        });
-    }
-}
-
-class DropListButton extends DropButton {
-
-    static create(widget, children) {
-        let elem = $('<button />').addClass('drop_btn');
-        return new DropListButton(widget, elem, children);
-    }
-
-    constructor(widget, elem, children) {
-        super(widget, elem);
-        this.children = [];
-        if (children) {
-            for (let child of children) {
-                this.add(child);
-            }
-            this.active_item = this.children[0];
-        }
-    }
-
-    get active_item() {
-        return this._active_item;
-    }
-
-    set active_item(item) {
-        let clone = item.elem.children().clone();
-        this.elem.empty().append(clone);
-        this._active_item = item;
+        this.dd_elem
+            .css('left', `${this.elem.offset().left}px`)
+            .css('top', `${this.elem.offset().top + this.elem.outerHeight()}px`)
+            .toggle();
     }
 
     add(item) {
@@ -172,6 +191,54 @@ class DropListButton extends DropButton {
         this.children.push(item);
     }
 }
+
+// class ImageButton extends DropButton {
+//     static create(widget) {
+//         let elem = $('<button />').addClass('drop_btn');
+//         return new ImageButton(widget, elem);
+//     }
+
+//     constructor(widget, elem) {
+//         super(widget, elem);
+
+//         this.src_input = $('<span />')
+//             .addClass('dropdown-item')
+//             .text('source:')
+//             .append($('<input type="text" />')
+//             .addClass('img-source'))
+//             .appendTo(this.dd_elem);
+
+//         this.title_input = $('<span />')
+//             .addClass('dropdown-item')
+//             .text('title:')
+//             .append($('<input type="text" />')
+//             .addClass('img-title'))
+//             .appendTo(this.dd_elem);
+
+//         this.alt_input = $('<span />')
+//             .addClass('dropdown-item')
+//             .text('alt:')
+//             .append($('<input type="text" />')
+//             .addClass('img-alt'))
+//             .appendTo(this.dd_elem);
+
+//         let submit_btn_elem = this.submit_btn_elem = $('<button />')
+//             .text('submit')
+//             .appendTo(this.dd_elem);
+
+//         this.submit_btn = new Button(widget, submit_btn_elem);
+//         this.submit_btn.elem.on('click', (e) => {
+//             let src = $('input.img-source', this.dd_elem).val();
+//             let alt = $('input.img-alt', this.dd_elem).val();
+//             let title = $('input.img-title', this.dd_elem).val();
+//             this.widget.editor.commands.setImage({
+//                 src: src,
+//                 alt: alt,
+//                 title: title
+//             })
+//         });
+//     }
+// }
 
 export class TiptapWidget {
     static initialize(context) {
@@ -231,148 +298,109 @@ export class TiptapWidget {
             .prependTo(this.elem);
 
         if (ops.bold) {
-            let bold_elem = $('<button />')
-                .text('B')
-                .css('font-weight', 'bold')
-                .appendTo(this.buttons_textstyles);
-            this.bold_btn = new Button(this, bold_elem, {
-                click: () => {this.editor.commands.toggleBold();}
-            });
+            this.bold_btn = NewBtn
+                .create(this.editor, $('<span />').text('B'))
+                .insert(this.buttons_textstyles)
+                .setBold();
         }
-
         if (ops.italic) {
-            let italic_elem = $('<button />')
-                .text('i')
-                .css('font-style', 'italic')
-                .appendTo(this.buttons_textstyles);
-            this.italic_btn = new Button(this, italic_elem, {
-                click: () => {this.editor.commands.toggleItalic();}
-            });
+            this.italic_btn = NewBtn
+                .create(this.editor, $('<span />').text('i'))
+                .insert(this.buttons_textstyles)
+                .setItalic();
         }
-
         if (ops.underline) {
-            let underline_elem = $('<button />')
-                .text('U')
-                .css('text-decoration', 'underline')
-                .appendTo(this.buttons_textstyles);
-            this.underline_btn = Button.create(this, underline_elem, {
-                click: () => {this.editor.commands.toggleUnderline();}
-            });
+            this.underline_btn = NewBtn
+                .create(this.editor, $('<span />').text('U'))
+                .insert(this.buttons_textstyles)
+                .setUnderline();
         }
 
         if (ops.heading) {
-            let heading_elem = $('<button />')
-                .addClass('drop_btn')
-                .insertAfter(this.buttons_textstyles);
-            let items = [];
+            this.heading_btn = NewDropBtn
+            .create(this.editor)
+            .insert(this.buttons_textstyles);
 
-            const text_elem = $('<button />')
-                .append($('<span />').text('Text'));
+            let p_btn = NewBtn
+                .create(this.editor, $('<span />').text(`Text`))
+                .setParagraph();
 
-
-            items.push(new Button(
-                this,
-                text_elem, {
-                    click: () => {this.editor.commands.setParagraph();}
-                }
-            ));
+            this.heading_btn.add(p_btn)
             for (let i=1; i<=6; i++) {
-                let heading_btn = $('<button />')
-                    .append($('<span />').text(`Heading ${i}`));
-
-                items.push(new Button(
-                    this,
-                    heading_btn, {
-                        click: () => {this.editor.commands.toggleHeading({level: i})}
-                    }
-                ));
+                let btn = NewBtn
+                .create(this.editor, $('<span />').text(`Heading ${i}`))
+                .setHeading(i);
+                this.heading_btn.add(btn);
             }
-            this.heading_btn = new DropListButton(this, heading_elem, items);
+            this.heading_btn.active_item = p_btn;
         }
 
-        if (ops.text_colors) {
-            let colors_btn = $('<button />')
-                .addClass('drop_btn')
-                .insertAfter(this.heading_btn.elem);
-
-            let items = [];
-            for (let item of ops.text_colors) {
-                let name_elem = $('<span />').text(item.name);
-                let color_elem = $('<div />')
-                    .addClass('color')
-                    .css('background-color', item.color);
-
-                let btn = $('<button />')
-                    .append(color_elem)
-                    .append(name_elem)
-                    .insertAfter(this.buttons_textstyles);
-
-                items.push(new Button(this, btn, {
-                    click: () => {this.editor.commands.setColor(item.color);}
-                }));
-            }
-            this.color_btn = new DropListButton(this, colors_btn, items);
-        }
-
-        if (ops.bulletList) {
-            let bullet_elem = $('<button />')
-                .append($('<i />').addClass('glyphicon glyphicon-list'))
-                .insertAfter(this.color_btn.elem);
-            this.ul_btn = new Button(
-                this,
-                bullet_elem, {
-                    click: () => {this.editor.commands.toggleBulletList();}
-                }
-            );
-        }
-
-        if (ops.orderedList) {
-            let ol_elem = $('<button />')
-                .append($('<i />').addClass('glyphicon glyphicon-th-list'))
-                .insertAfter(this.ul_btn.elem);
-            this.ol_btn = new Button(
-                this,
-                ol_elem, {
-                    click: () => {this.editor.commands.toggleOrderedList();}
-                }
-            );
-        }
-
-        let indent_elem = $('<button />')
-                .append($('<i />').addClass('glyphicon glyphicon-indent-left'))
-                .insertAfter(this.ol_btn.elem);
-        this.indent_btn = new Button(this, indent_elem, {
-                click: () => {this.editor.commands.setBlockquote();}
-        });
-
-        let outdent_elem = $('<button />')
-            .append($('<i />').addClass('glyphicon glyphicon-indent-right'))
-            .insertAfter(this.indent_btn.elem);
-        this.outdent_btn = new Button(this, outdent_elem, {
-            click: ()=> {this.editor.commands.unsetBlockquote();}
-        });
-
-        let html_btn_elem = $('<button />')
-            .append($('<i class="glyphicon glyphicon-pencil">'))
-            .insertAfter(this.buttons_textstyles);
-
-        this.html_btn = new ToggleButton(this, html_btn_elem, {
-            toggle: [function() {
-                    let html = this.editor.getHTML();
-                    this.editarea.hide();
-                    this.textarea.show().text(html);
-                }, function() {
+        this.new_html_btn = NewBtn
+            .create(this.editor, $('<i class="glyphicon glyphicon-pencil">'))
+            .insert(this.buttons_textstyles)
+            .setToggle(() => {
+                let html = this.editor.getHTML();
+                this.editarea.hide();
+                this.textarea.show().text(html)},
+                () => {
                     let html = this.textarea.val();
                     this.textarea.hide();
                     this.editarea.show();
                     this.editor.commands.setContent(html);
-            }]
-        });
+                }
+            );
 
-        let img_btn_elem = $('<button />')
-            .append($('<i class="glyphicon glyphicon-picture">'))
-            .insertAfter(this.buttons_textstyles);
-        this.image_btn = new ImageButton(this, img_btn_elem);
+        if (ops.text_colors) {
+            this.colors_btn = NewDropBtn
+                .create(this.editor)
+                .insert(this.buttons_textstyles);
+
+            for (let item of ops.text_colors) {
+                let color_elem = $('<div />')
+                    .addClass('color')
+                    .css('background-color', item.color);
+
+                let btn = NewBtn
+                    .create(this.editor, color_elem)
+                    .setName(item.name)
+                    .setColor(item.color);
+                this.colors_btn.add(btn);
+
+                this.colors_btn.active_item = btn;
+            }
+        }
+
+        if (ops.bulletList) {
+            this.ul_btn = NewBtn
+                .create(this.editor, $('<i />').addClass('glyphicon glyphicon-list'))
+                .insert(this.buttons_textstyles)
+                .setBulletList();
+        }
+
+        if (ops.orderedList) {
+            this.ul_btn = NewBtn
+                .create(this.editor, $('<i />').addClass('glyphicon glyphicon-th-list'))
+                .insert(this.buttons_textstyles)
+                .setOrderedList();
+        }
+
+        this.indent_btn = NewBtn
+            .create(this.editor, $('<i />').addClass('glyphicon glyphicon-indent-left'))
+            .insert(this.buttons_textstyles)
+            .setIndent();
+
+        this.indent_btn = NewBtn
+            .create(this.editor, $('<i />').addClass('glyphicon glyphicon-indent-right'))
+            .insert(this.buttons_textstyles)
+            .setOutdent();
+
+        this.img_btn = NewDropBtn
+            .create(this.editor, $('<i class="glyphicon glyphicon-picture">'))
+            .insert(this.buttons_textstyles);
+
+        this.sub_img_btn = NewBtn
+            .create(this.editor, $('<span />').text(`submit`));
+        this.img_btn.add(this.sub_img_btn);
 
         this.hide_all = this.hide_all.bind(this);
         this.editor.on('update', this.hide_all);

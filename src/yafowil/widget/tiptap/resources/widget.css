@@ -47,9 +47,8 @@ div.tiptap-editor .btn-group button:hover {
     background-color: #ccc!important;
 }
 
-div.tiptap-editor .btn-dropdown {
+div.btn-dropdown {
     position: absolute;
-    top: 0;
     min-width: 40px;
     min-height: 20px;
     display: none;
@@ -67,7 +66,7 @@ div.tiptap-editor button > .color {
     border: 1px solid rgba(0,0,0,0.3);
     border-radius: 3px;
 }
-div.tiptap-editor .btn-dropdown .dropdown-item {
+.btn-dropdown .dropdown-item {
     display: block;
     width: 100%;
     background: none;
@@ -75,11 +74,15 @@ div.tiptap-editor .btn-dropdown .dropdown-item {
     text-align: left;
     padding: 5px;
 }
-div.tiptap-editor .btn-dropdown button:hover {
+.btn-dropdown button:hover {
     background-color: #f5f5f5;
 }
-div.tiptap-editor .btn-dropdown button.dropdown-item .color {
+.btn-dropdown button.dropdown-item .color {
     display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 3px;
     margin-right: 5px;
 }
 
