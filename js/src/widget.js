@@ -230,89 +230,127 @@ export class TiptapWidget {
             .addClass('btn-group')
             .prependTo(this.elem);
 
-        // if (ops.bold) {
-        //     this.bold_btn = Button.create(this, 'B', function() {
-        //         this.widget.editor.commands.toggleBold();
-        //     });
-        //     this.bold_btn.elem.css('font-weight', 'bold');
-        // }
+        if (ops.bold) {
+            let bold_elem = $('<button />')
+                .text('B')
+                .css('font-weight', 'bold')
+                .appendTo(this.buttons_textstyles);
+            this.bold_btn = new Button(this, bold_elem, {
+                click: () => {this.editor.commands.toggleBold();}
+            });
+        }
 
-        // if (ops.italic) {
-        //     this.italic_btn = Button.create(this, 'i', function() {
-        //         this.widget.editor.commands.toggleItalic();
-        //     });
-        //     this.italic_btn.elem.css('font-style', 'italic');
-        // }
+        if (ops.italic) {
+            let italic_elem = $('<button />')
+                .text('i')
+                .css('font-style', 'italic')
+                .appendTo(this.buttons_textstyles);
+            this.italic_btn = new Button(this, italic_elem, {
+                click: () => {this.editor.commands.toggleItalic();}
+            });
+        }
 
-        // if (ops.underline) {
-        //     this.underline_btn = Button.create(this, 'U', function() {
-        //         this.widget.editor.commands.toggleUnderline();
-        //     });
-        //     this.underline_btn.elem.css('text-decoration', 'underline');
-        // }
+        if (ops.underline) {
+            let underline_elem = $('<button />')
+                .text('U')
+                .css('text-decoration', 'underline')
+                .appendTo(this.buttons_textstyles);
+            this.underline_btn = Button.create(this, underline_elem, {
+                click: () => {this.editor.commands.toggleUnderline();}
+            });
+        }
 
-        // if (ops.heading) {
-        //     let items = [];
-        //     items.push(Button.create(
-        //         this,
-        //         $('<span />').text('Text'),
-        //         function() {this.widget.editor.commands.setParagraph()}
-        //     ));
-        //     for (let i=1; i<=6; i++) {
-        //         items.push(Button.create(
-        //             this,
-        //             $('<span />').text(`Heading ${i}`),
-        //             function() {this.widget.editor.commands.toggleHeading({level: i})}
-        //         ));
-        //     }
-        //     this.heading_btn = DropListButton.create(this, items);
-        // }
+        if (ops.heading) {
+            let heading_elem = $('<button />')
+                .addClass('drop_btn')
+                .insertAfter(this.buttons_textstyles);
+            let items = [];
 
-        // if (ops.text_colors) {
-        //     let items = [];
-        //     for (let item of ops.text_colors) {
-        //         let name_elem = $('<span />').text(item.name),
-        //             color_elem = $('<div />')
-        //             .addClass('color')
-        //             .css('background-color', item.color);
-        //         items.push(Button.create(
-        //             this,
-        //             [color_elem, name_elem],
-        //             function() {
-        //                 this.widget.editor.commands.setColor(item.color);
-        //             }
-        //         ));
-        //     }
-        //     this.color_btn = DropListButton.create(this, items);
-        // }
+            const text_elem = $('<button />')
+                .append($('<span />').text('Text'));
 
-        // if (ops.bulletList) {
-        //     this.ul_btn = Button.create(
-        //         this,
-        //         $('<i />').addClass('glyphicon glyphicon-list'),
-        //         function() {
-        //             this.widget.editor.commands.toggleBulletList();
-        //     });
-        // }
 
-        // if (ops.orderedList) {
-        //     this.ol_btn = Button.create(
-        //         this,
-        //         $('<i />').addClass('glyphicon glyphicon-th-list'),
-        //         function() {
-        //             this.widget.editor.commands.toggleOrderedList();
-        //     });
-        // }
+            items.push(new Button(
+                this,
+                text_elem, {
+                    click: () => {this.editor.commands.setParagraph();}
+                }
+            ));
+            for (let i=1; i<=6; i++) {
+                let heading_btn = $('<button />')
+                    .append($('<span />').text(`Heading ${i}`));
 
-        // this.indent_btn = Button.create(this,
-        //     $('<i />').addClass('glyphicon glyphicon-indent-left'), function() {
-        //     this.widget.editor.commands.setBlockquote();
-        // });
+                items.push(new Button(
+                    this,
+                    heading_btn, {
+                        click: () => {this.editor.commands.toggleHeading({level: i})}
+                    }
+                ));
+            }
+            this.heading_btn = new DropListButton(this, heading_elem, items);
+        }
 
-        // this.outdent_btn = Button.create(this,
-        //     $('<i />').addClass('glyphicon glyphicon-indent-right'), function() {
-        //     this.widget.editor.commands.unsetBlockquote();
-        // });
+        if (ops.text_colors) {
+            let colors_btn = $('<button />')
+                .addClass('drop_btn')
+                .insertAfter(this.heading_btn.elem);
+
+            let items = [];
+            for (let item of ops.text_colors) {
+                let name_elem = $('<span />').text(item.name);
+                let color_elem = $('<div />')
+                    .addClass('color')
+                    .css('background-color', item.color);
+
+                let btn = $('<button />')
+                    .append(color_elem)
+                    .append(name_elem)
+                    .insertAfter(this.buttons_textstyles);
+
+                items.push(new Button(this, btn, {
+                    click: () => {this.editor.commands.setColor(item.color);}
+                }));
+            }
+            this.color_btn = new DropListButton(this, colors_btn, items);
+        }
+
+        if (ops.bulletList) {
+            let bullet_elem = $('<button />')
+                .append($('<i />').addClass('glyphicon glyphicon-list'))
+                .insertAfter(this.color_btn.elem);
+            this.ul_btn = new Button(
+                this,
+                bullet_elem, {
+                    click: () => {this.editor.commands.toggleBulletList();}
+                }
+            );
+        }
+
+        if (ops.orderedList) {
+            let ol_elem = $('<button />')
+                .append($('<i />').addClass('glyphicon glyphicon-th-list'))
+                .insertAfter(this.ul_btn.elem);
+            this.ol_btn = new Button(
+                this,
+                ol_elem, {
+                    click: () => {this.editor.commands.toggleOrderedList();}
+                }
+            );
+        }
+
+        let indent_elem = $('<button />')
+                .append($('<i />').addClass('glyphicon glyphicon-indent-left'))
+                .insertAfter(this.ol_btn.elem);
+        this.indent_btn = new Button(this, indent_elem, {
+                click: () => {this.editor.commands.setBlockquote();}
+        });
+
+        let outdent_elem = $('<button />')
+            .append($('<i />').addClass('glyphicon glyphicon-indent-right'))
+            .insertAfter(this.indent_btn.elem);
+        this.outdent_btn = new Button(this, outdent_elem, {
+            click: ()=> {this.editor.commands.unsetBlockquote();}
+        });
 
         let html_btn_elem = $('<button />')
             .append($('<i class="glyphicon glyphicon-pencil">'))
