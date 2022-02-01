@@ -24,7 +24,7 @@ div.tiptap-editor button {
     border-radius: 6px;
 }
 div.tiptap-editor button.active {
-    border: 2px solid red;
+    background-color: #ddd!important;
 }
 
 div.tiptap-editor button.drop_btn > * {

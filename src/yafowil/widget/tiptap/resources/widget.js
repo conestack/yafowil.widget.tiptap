@@ -1,16 +1,15 @@
-(function (exports, $, tiptap) {
+(function (exports, $$1, tiptap) {
     'use strict';
 
-    class NewBtn {
-        static create(editor, content, ctx) {
-            let elem = $('<button />', ctx);
+    class Button {
+        static create(content) {
+            let elem = $('<button />');
             if (content) {
                 elem.append(content);
             }
-            return new NewBtn(editor, elem, ctx);
+            return new Button(elem);
         }
-        constructor(editor, elem, ctx) {
-            this.editor = editor;
+        constructor(elem) {
             this.elem = elem;
             this.ops = {};
             this.on_click = this.on_click.bind(this);
@@ -34,69 +33,12 @@
             this.elem.prepend($('<span />').text(str));
             return this;
         }
-        set(str) {
-            if (typeof str === 'function') {
+        set(arg) {
+            if (arg && typeof arg === 'function') {
                 this.ops.customFunction = {
-                    execute: () => {str();}
-                };
-                return this;
-            }
-            let args = str.split(', ');
-            if (args.includes('bold')) {
-                this.elem.css('font-weight', 'bold');
-                this.ops.boldToggle = {
-                    execute: () => {this.editor.commands.toggleBold();}
+                    execute: () => { str(); }
                 };
             }
-            if (args.includes('italic')) {
-                this.elem.css('font-style', 'italic');
-                this.ops.italicToggle = {
-                    execute: () => { this.editor.commands.toggleItalic(); }
-                };
-            }
-            if (args.includes('underline')) {
-                this.elem.css('text-decoration', 'underline');
-                this.ops.underlineToggle = {
-                    execute: () => { this.editor.commands.toggleUnderline(); }
-                };
-            }
-            if (args.includes('paragraph')) {
-                this.ops.pToggle = {
-                    execute: () => {this.editor.commands.setParagraph();}
-                };
-            }
-            if (args.includes('bulletList')) {
-                this.ops.toggleBulletList = {
-                    execute: () => {this.editor.commands.toggleBulletList();}
-                };
-            }
-            if (args.includes('orderedList')) {
-                this.ops.toggleOrderedList = {
-                    execute: () => {this.editor.commands.toggleOrderedList();}
-                };
-            }
-            if (args.includes('indent')) {
-                this.ops.addBQ = {
-                    execute: () => {this.editor.commands.setBlockquote();}
-                };
-            }
-            if (args.includes('outdent')) {
-                this.ops.rmBQ = {
-                    execute: () => {this.editor.commands.unsetBlockquote();}
-                };
-            }
-            return this;
-        }
-        setHeading(level) {
-            this.ops.headingToggle = {
-                execute: () => {this.editor.commands.toggleHeading({level: level});}
-            };
-            return this;
-        }
-        setColor(color) {
-            this.ops.colorSet = {
-                execute: () => { this.editor.commands.setColor(color); }
-            };
             return this;
         }
         setToggle(execute, undo) {
@@ -118,16 +60,16 @@
             this.parent.active_item = this;
         }
     }
-    class NewDropBtn extends NewBtn {
-        static create(editor, content) {
+    class DropButton extends Button {
+        static create(content) {
             let elem = $('<button />').addClass('drop_btn');
             if (content) {
                 elem.append(content);
             }
-            return new NewDropBtn(editor, elem);
+            return new DropButton(elem);
         }
-        constructor(editor, elem) {
-            super(editor, elem);
+        constructor(elem) {
+            super(elem);
             this.dd_elem = $('<div />')
                 .addClass('btn-dropdown')
                 .appendTo('body');
@@ -186,9 +128,101 @@
             return this;
         }
     }
+
+    class TiptapButton extends Button {
+        static create(editor, content) {
+            let elem = $$1('<button />');
+            if (content) {
+                elem.append(content);
+            }
+            return new TiptapButton(editor, elem);
+        }
+        constructor(editor, elem) {
+            super(elem);
+            this.editor = editor;
+        }
+        set(str) {
+            if (!str) {return;}
+            super.set(str);
+            if (typeof str === 'string') {
+                let args = str.split(', ');
+                if (args.includes('bold')) {
+                    this.elem.css('font-weight', 'bold');
+                    this.ops.boldToggle = {
+                        execute: () => { this.editor.commands.toggleBold(); }
+                    };
+                }
+                if (args.includes('italic')) {
+                    this.elem.css('font-style', 'italic');
+                    this.ops.italicToggle = {
+                        execute: () => { this.editor.commands.toggleItalic(); }
+                    };
+                }
+                if (args.includes('underline')) {
+                    this.elem.css('text-decoration', 'underline');
+                    this.ops.underlineToggle = {
+                        execute: () => { this.editor.commands.toggleUnderline(); }
+                    };
+                }
+                if (args.includes('paragraph')) {
+                    this.ops.pToggle = {
+                        execute: () => { this.editor.commands.setParagraph(); }
+                    };
+                }
+                if (args.includes('bulletList')) {
+                    this.ops.toggleBulletList = {
+                        execute: () => { this.editor.commands.toggleBulletList(); }
+                    };
+                }
+                if (args.includes('orderedList')) {
+                    this.ops.toggleOrderedList = {
+                        execute: () => { this.editor.commands.toggleOrderedList(); }
+                    };
+                }
+                if (args.includes('indent')) {
+                    this.ops.addBQ = {
+                        execute: () => { this.editor.commands.setBlockquote(); }
+                    };
+                }
+                if (args.includes('outdent')) {
+                    this.ops.rmBQ = {
+                        execute: () => { this.editor.commands.unsetBlockquote(); }
+                    };
+                }
+            } else {
+                super.set(str);
+            }
+            return this;
+        }
+        setHeading(level) {
+            this.ops.headingToggle = {
+                execute: () => {this.editor.commands.toggleHeading({level: level});}
+            };
+            return this;
+        }
+        setColor(color) {
+            this.ops.colorSet = {
+                execute: () => { this.editor.commands.setColor(color); }
+            };
+            return this;
+        }
+    }
+    class TiptapDropButton extends DropButton {
+        static create(content) {
+            console.log(content);
+            let elem = $$1('<button />').addClass('drop_btn');
+            if (content) {
+                elem.append(content);
+            }
+            return new TiptapDropButton(elem);
+        }
+        constructor(elem) {
+            super(elem);
+        }
+    }
     class TiptapWidget {
         static initialize(context) {
-            $('div.tiptap-editor', context).each(function() {
+            $$1('div.tiptap-editor', context).each(function() {
                 let options = {
                     bold: true,
                     italic: true,
@@ -203,7 +237,7 @@
                     bulletList : true,
                     orderedList: true
                 };
-                new TiptapWidget($(this), options);
+                new TiptapWidget($$1(this), options);
             });
         }
         constructor(elem, ops) {
@@ -231,47 +265,33 @@
                 ],
                 content: '<p>Hello World!</p>',
             });
-            this.editarea = $('div.ProseMirror', this.elem);
-            this.textarea = $('<textarea />')
+            this.editarea = $$1('div.ProseMirror', this.elem);
+            this.textarea = $$1('<textarea />')
                 .addClass('ProseMirror')
                 .appendTo(this.elem);
-            this.buttons_textstyles = $('<div />')
+            this.buttons_textstyles = $$1('<div />')
                 .addClass('btn-group')
                 .prependTo(this.elem);
             if (ops.bold) {
-                this.bold_btn = NewBtn
-                    .create(this.editor, $('<span />').text('B'))
+                this.bold_btn = TiptapButton
+                    .create(this.editor, $$1('<span />').text('B'))
                     .insert(this.buttons_textstyles)
                     .set('bold');
             }
             if (ops.italic) {
-                this.italic_btn = NewBtn
-                    .create(this.editor, $('<span />').text('i'))
+                this.italic_btn = TiptapButton
+                    .create(this.editor, $$1('<span />').text('i'))
                     .insert(this.buttons_textstyles)
                     .set('italic');
             }
             if (ops.underline) {
-                this.underline_btn = NewBtn
-                    .create(this.editor, $('<span />').text('U'))
+                this.underline_btn = TiptapButton
+                    .create(this.editor, $$1('<span />').text('U'))
                     .insert(this.buttons_textstyles)
                     .set('underline');
             }
-            if (ops.heading) {
-                this.heading_btn = NewDropBtn
-                    .create(this.editor)
-                    .insert(this.buttons_textstyles);
-                NewBtn.create(this.editor, $('<span />', $('body')).text('Text'))
-                    .addTo(this.heading_btn, true)
-                    .set('paragraph');
-                for (let i=1; i<=6; i++) {
-                    NewBtn.create(this.editor, $('<span />').text(`Heading ${i}`))
-                        .setHeading(i)
-                        .addTo(this.heading_btn, true);
-                }
-                this.heading_btn.active_item = this.heading_btn.children[0];
-            }
-            this.new_html_btn = NewBtn
-                .create(this.editor, $('<i class="glyphicon glyphicon-pencil">'))
+            this.new_html_btn = TiptapButton
+                .create(this.editor, $$1('<i class="glyphicon glyphicon-pencil">'))
                 .insert(this.buttons_textstyles)
                 .setToggle(() => {
                     let html = this.editor.getHTML();
@@ -284,53 +304,67 @@
                         this.editor.commands.setContent(html);
                     }
                 );
+            if (ops.bulletList) {
+                this.ul_btn = TiptapButton
+                    .create(this.editor, $$1('<i />').addClass('glyphicon glyphicon-list'))
+                    .insert(this.buttons_textstyles)
+                    .set('bulletList');
+            }
+            if (ops.orderedList) {
+                this.ul_btn = TiptapButton
+                    .create(this.editor, $$1('<i />').addClass('glyphicon glyphicon-th-list'))
+                    .insert(this.buttons_textstyles)
+                    .set('orderedList');
+            }
+            this.indent_btn = TiptapButton
+                .create(this.editor, $$1('<i />').addClass('glyphicon glyphicon-indent-left'))
+                .insert(this.buttons_textstyles)
+                .set('indent');
+            this.indent_btn = TiptapButton
+                .create(this.editor, $$1('<i />').addClass('glyphicon glyphicon-indent-right'))
+                .insert(this.buttons_textstyles)
+                .set('outdent');
+            if (ops.heading) {
+                this.heading_btn = TiptapDropButton
+                    .create()
+                    .insert(this.buttons_textstyles);
+                TiptapButton.create(this.editor, $$1('<span />', $$1('body')).text('Text'))
+                    .addTo(this.heading_btn, true)
+                    .set('paragraph');
+                for (let i=1; i<=6; i++) {
+                    TiptapButton.create(this.editor, $$1('<span />').text(`Heading ${i}`))
+                        .setHeading(i)
+                        .addTo(this.heading_btn, true);
+                }
+                this.heading_btn.active_item = this.heading_btn.children[0];
+            }
             if (ops.text_colors) {
-                this.colors_btn = NewDropBtn
-                    .create(this.editor)
+                this.colors_btn = TiptapDropButton
+                    .create()
                     .insert(this.buttons_textstyles);
                 for (let item of ops.text_colors) {
-                    let color_elem = $('<div />')
+                    let color_elem = $$1('<div />')
                         .addClass('color')
                         .css('background-color', item.color);
-                    NewBtn.create(this.editor, color_elem)
+                    TiptapButton.create(this.editor, color_elem)
                         .setName(item.name)
                         .setColor(item.color)
                         .addTo(this.colors_btn, true);
                 }
                 this.colors_btn.active_item = this.colors_btn.children[0];
             }
-            if (ops.bulletList) {
-                this.ul_btn = NewBtn
-                    .create(this.editor, $('<i />').addClass('glyphicon glyphicon-list'))
-                    .insert(this.buttons_textstyles)
-                    .set('bulletList');
-            }
-            if (ops.orderedList) {
-                this.ul_btn = NewBtn
-                    .create(this.editor, $('<i />').addClass('glyphicon glyphicon-th-list'))
-                    .insert(this.buttons_textstyles)
-                    .set('orderedList');
-            }
-            this.indent_btn = NewBtn
-                .create(this.editor, $('<i />').addClass('glyphicon glyphicon-indent-left'))
-                .insert(this.buttons_textstyles)
-                .set('indent');
-            this.indent_btn = NewBtn
-                .create(this.editor, $('<i />').addClass('glyphicon glyphicon-indent-right'))
-                .insert(this.buttons_textstyles)
-                .set('outdent');
-            this.img_btn = NewDropBtn
-                .create(this.editor, $('<i class="glyphicon glyphicon-picture">'))
+            this.img_btn = TiptapDropButton
+                .create($$1('<i />').addClass('glyphicon glyphicon-picture'))
                 .addInput(['source', 'title', 'alt'])
                 .insert(this.buttons_textstyles);
-            this.sub_img_btn = NewBtn
-                .create(this.editor, $('<span />').text(`submit`))
+            this.sub_img_btn = TiptapButton
+                .create(this.editor, $$1('<span />').text(`submit`))
                 .addTo(this.img_btn)
                 .set(
                     () => {
-                        let src = $('input.img-source', this.dd_elem).val();
-                        let alt = $('input.img-alt', this.dd_elem).val();
-                        let title = $('input.img-title', this.dd_elem).val();
+                        let src = $$1('input.img-source', this.dd_elem).val();
+                        let alt = $$1('input.img-alt', this.dd_elem).val();
+                        let title = $$1('input.img-title', this.dd_elem).val();
                         this.editor.commands.setImage({
                             src: src,
                             alt: alt,
@@ -344,11 +378,11 @@
         unload_all() {
         }
         hide_all() {
-            $('div.btn-dropdown', this.elem).hide();
+            $$1('div.btn-dropdown', this.elem).hide();
         }
     }
 
-    $(function() {
+    $$1(function() {
         if (window.ts !== undefined) {
             ts.ajax.register(TiptapWidget.initialize, true);
         } else {
