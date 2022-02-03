@@ -33,6 +33,15 @@ div.tiptap-editor button {
     border: 1px solid #ccc;
     border-radius: 6px;
 }
+div.tiptap-editor button:disabled {
+    color: #bbb;
+}
+div.tiptap-editor .btn-group button:disabled:hover {
+    background-color: #f5f5f5!important;
+}
+div.tiptap-editor button:disabled .color {
+    opacity: 20%;
+}
 div.tiptap-editor button.active {
     background-color: #ddd!important;
 }

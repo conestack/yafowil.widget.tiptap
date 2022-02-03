@@ -1,85 +1,29 @@
+import $ from 'jquery';
+
 export class Button {
 
-    static create(content) {
-        let elem = $('<button />');
-        if (content) {
-            elem.append(content);
-        }
-        return new Button(elem);
-    }
+    constructor(editor, action_opts, container_elem) {
+        this.editor = editor;
+        let elem = this.elem = $('<button />')
+            .appendTo(container_elem);
 
-    constructor(elem) {
-        this.elem = elem;
-        this.ops = {};
-
+        this.container_elem = container_elem;
+        this.opts = action_opts;
         this.on_click = this.on_click.bind(this);
         this.elem.on('click', this.on_click);
     }
 
-    on_click(e) {
-        e.preventDefault();
-        for (let op in this.ops) {
-            if (op) { this.ops[op].execute(); }
-        }
-    }
-
-    insert(target) {
-        this.elem.appendTo(target);
-        return this;
-    }
-
-    addTo(target, selectable) {
-        target.add(this, selectable);
-        return this;
-    }
-
-    setName(str) {
-        this.elem.prepend($('<span />').addClass('name').text(str));
-        return this;
-    }
-
-    set(arg) {
-        if (arg && typeof arg === 'function') {
-            this.ops.customFunction = {
-                execute: () => { arg(); }
-            }
-        }
-        return this;
-    }
-
-    setToggle(execute, undo) {
-        this.ops.toggle = {
-            execute: () => {
-                this.active = !this.active ? true : false;
-                if (this.active) {
-                    this.elem.addClass('active');
-                    execute();
-                } else {
-                    this.elem.removeClass('active');
-                    undo();
-                }
-            }
-        }
-    }
-
-    setActive() {
-        if (!this.parent) {return;}
-        this.parent.active_item = this;
+    toggle() {
+        this.active = !this.active ? true : false;
+        this.active ? this.elem.addClass('active') : this.elem.removeClass('active');
     }
 }
 
-export class DropButton extends Button {
+export class DropdownButton extends Button {
 
-    static create(content) {
-        let elem = $('<button />').addClass('drop_btn');
-        if (content) {
-            elem.append(content);
-        }
-        return new DropButton(elem);
-    }
-
-    constructor(elem) {
-        super(elem);
+    constructor(editor, action_opts, container_elem) {
+        super(editor, action_opts, container_elem);
+        this.elem.addClass('drop_btn');
         this.dd_elem = $('<div />')
             .addClass('btn-dropdown')
             .appendTo('body');
@@ -116,41 +60,10 @@ export class DropButton extends Button {
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
         this.dd_elem
             .css('left', `${this.elem.offset().left}px`)
             .css('top', `${this.elem.offset().top + this.elem.outerHeight()}px`)
             .toggle();
-    }
-
-    add(item, selectable) {
-        item.parent = this;
-        item.elem.addClass('dropdown-item');
-
-        if (selectable) {
-            item.ops.activate = {
-                execute: () => {this.active_item = item}
-            }
-        }
-
-        item.insert(this.dd_elem);
-        this.children.push(item);
-    }
-
-    addForm(content, custom_function) {
-        for (let item of content) {
-            let input_elem = $('<span />')
-                .addClass('dropdown-item')
-                .append($('<span />').addClass('name').text(`${item}:`))
-                .append($('<input type="text" />')
-                .addClass(`input-${item}`))
-                .appendTo(this.dd_elem);
-        }
-        this.submit_btn = Button
-            .create($('<span />').text('Submit'))
-            .insert(this.dd_elem)
-            .set(custom_function);
-        this.submit_btn.elem.addClass('submit');
-        return this;
     }
 }
