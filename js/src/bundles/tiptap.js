@@ -15,3 +15,4 @@ export * from '@tiptap/extension-italic';
 export * from '@tiptap/extension-code';
 export * from '@tiptap/extension-code-block';
 export * from '@tiptap/extension-image';
+export * from '@tiptap/extension-link';

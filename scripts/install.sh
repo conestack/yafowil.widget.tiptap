@@ -41,7 +41,8 @@ npm --save install \
     @tiptap/extension-italic \
     @tiptap/extension-code \
     @tiptap/extension-code-block \
-    @tiptap/extension-image
+    @tiptap/extension-image \
+    @tiptap/extension-link
 
 
 npm --no-save install https://github.com/jquery/jquery#main

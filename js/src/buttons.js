@@ -34,14 +34,14 @@ export class Button {
     }
 
     setName(str) {
-        this.elem.prepend($('<span />').text(str));
+        this.elem.prepend($('<span />').addClass('name').text(str));
         return this;
     }
 
     set(arg) {
         if (arg && typeof arg === 'function') {
             this.ops.customFunction = {
-                execute: () => { str(); }
+                execute: () => { arg(); }
             }
         }
         return this;
@@ -137,15 +137,20 @@ export class DropButton extends Button {
         this.children.push(item);
     }
 
-    addInput(content) {
+    addForm(content, custom_function) {
         for (let item of content) {
             let input_elem = $('<span />')
                 .addClass('dropdown-item')
-                .text(`${item}:`)
+                .append($('<span />').addClass('name').text(`${item}:`))
                 .append($('<input type="text" />')
-                .addClass(`img-${item}`))
+                .addClass(`input-${item}`))
                 .appendTo(this.dd_elem);
         }
+        this.submit_btn = Button
+            .create($('<span />').text('Submit'))
+            .insert(this.dd_elem)
+            .set(custom_function);
+        this.submit_btn.elem.addClass('submit');
         return this;
     }
 }

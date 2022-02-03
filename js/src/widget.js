@@ -90,7 +90,6 @@ class TiptapButton extends Button {
 class TiptapDropButton extends DropButton {
 
     static create(content) {
-        console.log(content)
         let elem = $('<button />').addClass('drop_btn');
         if (content) {
             elem.append(content);
@@ -146,7 +145,8 @@ export class TiptapWidget {
                 tiptap.Italic,
                 tiptap.Code,
                 tiptap.CodeBlock,
-                tiptap.Image
+                tiptap.Image,
+                tiptap.Link
             ],
             content: '<p>Hello World!</p>',
         });
@@ -256,25 +256,28 @@ export class TiptapWidget {
 
         this.img_btn = TiptapDropButton
             .create($('<i />').addClass('glyphicon glyphicon-picture'))
-            .addInput(['source', 'title', 'alt'])
-            .insert(this.buttons_textstyles);
-
-        this.sub_img_btn = TiptapButton
-            .create(this.editor, $('<span />').text(`submit`))
-            .addTo(this.img_btn)
-            .set(
+            .addForm(
+                ['source', 'title', 'alt'],
                 () => {
-                    let src = $('input.img-source', this.dd_elem).val();
-                    let alt = $('input.img-alt', this.dd_elem).val();
-                    let title = $('input.img-title', this.dd_elem).val();
+                    let src = $('input.input-source', this.dd_elem).val();
+                    let alt = $('input.input-alt', this.dd_elem).val();
+                    let title = $('input.input-title', this.dd_elem).val();
 
                     this.editor.commands.setImage({
                         src: src,
                         alt: alt,
                         title: title
                     });
-                }
-            );
+                })
+            .insert(this.buttons_textstyles);
+
+        this.link_btn = TiptapDropButton
+            .create($('<span />').text('A'))
+            .insert(this.buttons_textstyles)
+            .addForm(['href'], () => {
+                let href = $('input.input-href', this.dd_elem).val();
+                this.editor.commands.setLink({href: href});
+            });
 
         this.hide_all = this.hide_all.bind(this);
         this.editor.on('update', this.hide_all);

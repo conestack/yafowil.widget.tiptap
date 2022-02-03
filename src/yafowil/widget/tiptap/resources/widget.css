@@ -6,15 +6,25 @@
     padding: 5px 10px;
     margin: 10px 0;
 }
+textarea.ProseMirror {
+    width: 100%;
+    max-width: 100%;
+    display: none;
+}
 
+div.tiptap-editor .glyphicon {
+    top: 0;
+}
 div.tiptap-editor .btn-group {
     height: 25px;
     border-radius: 6px;
     overflow: hidden;
     border: 1px solid #ccc;
 }
+
 div.tiptap-editor button {
-    vertical-align: bottom;
+    display: flex;
+    align-items: center;
     height: 25px;
     margin-left: 5px;
     background-color: #f5f5f5;
@@ -26,6 +36,17 @@ div.tiptap-editor button {
 div.tiptap-editor button.active {
     background-color: #ddd!important;
 }
+div.tiptap-editor button span.name {
+    margin-right: 5px;
+}
+div.tiptap-editor button > .color {
+    width: 14px;
+    height: 14px;
+    background: red;
+    margin: 0;
+    border: 1px solid rgba(0,0,0,0.3);
+    border-radius: 3px;
+}
 
 div.tiptap-editor button.drop_btn > * {
     display: inline-block;
@@ -34,11 +55,13 @@ div.tiptap-editor button.drop_btn::after {
     content: "↓";
     display: inline-block;
 }
+
 div.tiptap-editor .btn-group button {
     float: left;
     margin: 0;
     border: none;
     border-radius: 0;
+    height: 100%;
 }
 div.tiptap-editor .btn-group button:not(:last-child) {
     border-right: 1px solid #ccc;
@@ -56,34 +79,43 @@ div.btn-dropdown {
     z-index: 1000;
     border: 1px solid #ccc;
     border-radius: 6px;
+    overflow: hidden;
 }
-
-div.tiptap-editor button > .color {
-    width: 14px;
-    height: 14px;
-    background: red;
-    margin: 0;
-    border: 1px solid rgba(0,0,0,0.3);
-    border-radius: 3px;
+.btn-dropdown input {
+    line-height: unset;
 }
 .btn-dropdown .dropdown-item {
     display: block;
     width: 100%;
+    min-height: 25px;
+    line-height: 1;
     background: none;
     border: none;
     text-align: left;
     padding: 5px;
 }
+.btn-dropdown .dropdown-item * {
+    display: inline-block;
+    vertical-align: middle;
+}
+.btn-dropdown .dropdown-item span.name {
+    margin-right:10px;
+}
 .btn-dropdown button:hover {
     background-color: #f5f5f5;
 }
 .btn-dropdown button.dropdown-item .color {
-    display: inline-block;
     width: 14px;
     height: 14px;
     border: 1px solid rgba(0,0,0,0.3);
     border-radius: 3px;
-    margin-right: 5px;
+    float: right;
+}
+.btn-dropdown button.submit {
+    width: 100%;
+    border: 0;
+    border-top: 1px solid #ccc;
+
 }
 
 div.tiptap-editor blockquote {
@@ -96,8 +128,3 @@ div.tiptap-editor img {
     max-width: 100%;
 }
 
-textarea.ProseMirror {
-    width: 100%;
-    max-width: 100%;
-    display: none;
-}

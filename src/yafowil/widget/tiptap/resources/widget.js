@@ -30,13 +30,13 @@
             return this;
         }
         setName(str) {
-            this.elem.prepend($('<span />').text(str));
+            this.elem.prepend($('<span />').addClass('name').text(str));
             return this;
         }
         set(arg) {
             if (arg && typeof arg === 'function') {
                 this.ops.customFunction = {
-                    execute: () => { str(); }
+                    execute: () => { arg(); }
                 };
             }
             return this;
@@ -116,15 +116,20 @@
             item.insert(this.dd_elem);
             this.children.push(item);
         }
-        addInput(content) {
+        addForm(content, custom_function) {
             for (let item of content) {
                 $('<span />')
                     .addClass('dropdown-item')
-                    .text(`${item}:`)
+                    .append($('<span />').addClass('name').text(`${item}:`))
                     .append($('<input type="text" />')
-                    .addClass(`img-${item}`))
+                    .addClass(`input-${item}`))
                     .appendTo(this.dd_elem);
             }
+            this.submit_btn = Button
+                .create($('<span />').text('Submit'))
+                .insert(this.dd_elem)
+                .set(custom_function);
+            this.submit_btn.elem.addClass('submit');
             return this;
         }
     }
@@ -209,7 +214,6 @@
     }
     class TiptapDropButton extends DropButton {
         static create(content) {
-            console.log(content);
             let elem = $$1('<button />').addClass('drop_btn');
             if (content) {
                 elem.append(content);
@@ -261,7 +265,8 @@
                     tiptap.Italic,
                     tiptap.Code,
                     tiptap.CodeBlock,
-                    tiptap.Image
+                    tiptap.Image,
+                    tiptap.Link
                 ],
                 content: '<p>Hello World!</p>',
             });
@@ -355,23 +360,26 @@
             }
             this.img_btn = TiptapDropButton
                 .create($$1('<i />').addClass('glyphicon glyphicon-picture'))
-                .addInput(['source', 'title', 'alt'])
-                .insert(this.buttons_textstyles);
-            this.sub_img_btn = TiptapButton
-                .create(this.editor, $$1('<span />').text(`submit`))
-                .addTo(this.img_btn)
-                .set(
+                .addForm(
+                    ['source', 'title', 'alt'],
                     () => {
-                        let src = $$1('input.img-source', this.dd_elem).val();
-                        let alt = $$1('input.img-alt', this.dd_elem).val();
-                        let title = $$1('input.img-title', this.dd_elem).val();
+                        let src = $$1('input.input-source', this.dd_elem).val();
+                        let alt = $$1('input.input-alt', this.dd_elem).val();
+                        let title = $$1('input.input-title', this.dd_elem).val();
                         this.editor.commands.setImage({
                             src: src,
                             alt: alt,
                             title: title
                         });
-                    }
-                );
+                    })
+                .insert(this.buttons_textstyles);
+            this.link_btn = TiptapDropButton
+                .create($$1('<span />').text('A'))
+                .insert(this.buttons_textstyles)
+                .addForm(['href'], () => {
+                    let href = $$1('input.input-href', this.dd_elem).val();
+                    this.editor.commands.setLink({href: href});
+                });
             this.hide_all = this.hide_all.bind(this);
             this.editor.on('update', this.hide_all);
         }
