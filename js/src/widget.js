@@ -56,13 +56,19 @@ class UnderlineAction extends Button {
 class BulletListAction extends Button {
     constructor(editor, action_opts, container_elem) {
         super(editor, action_opts, container_elem);
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-list'));
-
+        this.elem
+            .data('tiptap-bullet-list', this)
+            .append($('<i />').addClass('glyphicon glyphicon-list'));
         this.tooltip = new Tooltip('Bullet List', this.elem);
     }
 
     on_click(e) {
         e.preventDefault();
+        let ordered_list = $('.active', this.elem.parent()).data('tiptap-ordered-list');
+        if (ordered_list) {
+            ordered_list.active = false;
+            ordered_list.elem.removeClass('active');
+        }
         this.toggle();
         this.editor.chain().focus().toggleBulletList().run();
     }
@@ -71,13 +77,20 @@ class BulletListAction extends Button {
 class OrderedListAction extends Button {
     constructor(editor, action_opts, container_elem) {
         super(editor, action_opts, container_elem);
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-th-list'));
+        this.elem
+            .data('tiptap-ordered-list', this)
+            .append($('<i />').addClass('glyphicon glyphicon-th-list'));
 
         this.tooltip = new Tooltip('Ordered List', this.elem);
     }
 
     on_click(e) {
         e.preventDefault();
+        let bullet_list = $('.active', this.elem.parent()).data('tiptap-bullet-list');
+        if (bullet_list) {
+            bullet_list.active = false;
+            bullet_list.elem.removeClass('active');
+        }
         this.toggle();
         this.editor.chain().focus().toggleOrderedList().run();
     }
@@ -114,7 +127,9 @@ class OutdentAction extends Button {
 class HTMLAction extends Button {
     constructor(editor, action_opts, container_elem) {
         super(editor, action_opts, container_elem);
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-pencil'));
+        this.elem
+            .append($('<i />').addClass('glyphicon glyphicon-pencil'))
+            .css('order', '5');
         this.tooltip = new Tooltip('Edit HTML', this.elem);
 
         this.parent = this.elem.closest('div.tiptap-editor');
@@ -197,6 +212,7 @@ class HeadingsAction extends DropdownButton {
     constructor(editor, action_opts, container_elem) {
         super(editor, action_opts, container_elem);
         this.title = $('<i />').addClass('glyphicon glyphicon-font');
+        this.elem.css('order', "1");
 
         this.children.push(
             new ParagraphAction(editor, action_opts, this.dd_elem)
@@ -221,6 +237,7 @@ class HeadingsAction extends DropdownButton {
 class ColorsAction extends DropdownButton {
     constructor(editor, action_opts, container_elem) {
         super(editor, action_opts, container_elem);
+        this.elem.css('order', "2");
 
         for (let color of action_opts) {
             this.children.push(
@@ -245,7 +262,9 @@ class ImageAction extends DropdownButton {
 
         this.tooltip = new Tooltip('Add image', this.elem);
 
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-picture'));
+        this.elem
+            .append($('<i />').addClass('glyphicon glyphicon-picture'))
+            .css('order', '7');
         this.dd_elem.addClass('grid');
         this.src_elem = $('<span />')
             .addClass('dropdown-item')
@@ -288,7 +307,9 @@ class LinkAction extends DropdownButton {
 
         this.tooltip = new Tooltip('Add link', this.elem);
 
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-link'));
+        this.elem
+            .append($('<i />').addClass('glyphicon glyphicon-link'))
+            .css('order', '6');
         this.dd_elem.addClass('grid');
         this.href_elem = $('<span />')
             .addClass('dropdown-item')
@@ -331,7 +352,7 @@ export class TiptapWidget {
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
             let options = {
-                bold: {},
+                bold: true,
                 italic: true,
                 underline: true,
                 bullet_list: true,
@@ -391,14 +412,40 @@ export class TiptapWidget {
             opts = {};
         }
 
-        this.buttons_textstyles = $('<div />')
-            .addClass('btn-group')
+        this.controls = $('<div />')
+            .addClass('tiptap-controls')
             .prependTo(this.elem);
+        this.text_controls = $('<div />')
+            .addClass('btn-group')
+            .css('order', "3")
+            .appendTo(this.controls)
+            .hide();
+        this.format_controls = $('<div />')
+            .addClass('btn-group')
+            .css('order', "4")
+            .appendTo(this.controls)
+            .hide();
 
         for (let option_name in opts) {
             let action_options = opts[option_name];
             let factory = action_factories[option_name];
-            new factory(this.editor, action_options, this.buttons_textstyles);
+            let target = this.controls;
+
+            switch(option_name) {
+                case "bold":
+                case "italic":
+                case "underline":
+                    target = this.text_controls;
+                    target.show();
+                    break;
+                case "bullet_list":
+                case "ordered_list":
+                case "indent":
+                case "outdent":
+                    target = this.format_controls;
+                    target.show();
+            }
+            new factory(this.editor, action_options, target);
         }
 
         this.hide_all = this.hide_all.bind(this);
@@ -410,6 +457,6 @@ export class TiptapWidget {
     }
 
     hide_all() {
-        $('div.btn-dropdown', this.elem).hide();
+        $('div.tiptap-dropdown', this.elem).hide();
     }
 }

@@ -5,13 +5,15 @@ export class Tooltip {
         this.elem = $('<div />')
             .text(name)
             .addClass('tiptap-tooltip')
-            .appendTo('body')
-            .css('left', `${elem.offset().left + 20}px`)
-            .css('top', `${elem.offset().top + elem.outerHeight()}px`);
+            .appendTo('body');
 
         let timeout;
         elem.on('mouseover', (e) => {
+            let left = `${elem.offset().left + 20}px`;
+            let top = `${elem.offset().top + elem.outerHeight()}px`;
+
             timeout = setTimeout(() => {
+                this.elem.css({left: left, top: top});
                 this.elem.fadeIn();
             }, 500);
         });
@@ -26,7 +28,7 @@ export class Button {
 
     constructor(editor, action_opts, container_elem) {
         this.editor = editor;
-        let elem = this.elem = $('<button />')
+        this.elem = $('<button />')
             .appendTo(container_elem);
 
         this.container_elem = container_elem;
@@ -47,7 +49,7 @@ export class DropdownButton extends Button {
         super(editor, action_opts, container_elem);
         this.elem.addClass('drop_btn');
         this.dd_elem = $('<div />')
-            .addClass('btn-dropdown')
+            .addClass('tiptap-dropdown')
             .appendTo('body');
         this.children = [];
         this.title = null;
@@ -66,6 +68,7 @@ export class DropdownButton extends Button {
         if (this.title) {
             this.elem.prepend(this.title);
         }
+        this.dd_elem.hide();
         this._active_item = item;
     }
 
