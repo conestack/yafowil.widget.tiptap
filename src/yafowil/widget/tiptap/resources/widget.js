@@ -1,6 +1,26 @@
 (function (exports, $, tiptap) {
     'use strict';
 
+    class Tooltip {
+        constructor(name, elem) {
+            this.elem = $('<div />')
+                .text(name)
+                .addClass('tiptap-tooltip')
+                .appendTo('body')
+                .css('left', `${elem.offset().left + 20}px`)
+                .css('top', `${elem.offset().top + elem.outerHeight()}px`);
+            let timeout;
+            elem.on('mouseover', (e) => {
+                timeout = setTimeout(() => {
+                    this.elem.fadeIn();
+                }, 500);
+            });
+            elem.on('mouseout', (e) => {
+                clearTimeout(timeout);
+                this.elem.fadeOut();
+            });
+        }
+    }
     class Button {
         constructor(editor, action_opts, container_elem) {
             this.editor = editor;
@@ -24,6 +44,7 @@
                 .addClass('btn-dropdown')
                 .appendTo('body');
             this.children = [];
+            this.title = null;
             this.hide_dropdown = this.hide_dropdown.bind(this);
             $(document).on('click', this.hide_dropdown);
         }
@@ -31,8 +52,12 @@
             return this._active_item;
         }
         set active_item(item) {
+            console.log(this.title);
             let clone = item.elem.children().clone();
             this.elem.empty().append(clone);
+            if (this.title) {
+                this.elem.prepend(this.title);
+            }
             this._active_item = item;
         }
         unload() {
@@ -63,10 +88,12 @@
             this.elem
                 .text('B')
                 .css('font-weight', 'bold');
+            this.tooltip = new Tooltip('Toggle bold', this.elem);
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.toggleBold();
+            this.toggle();
+            this.editor.chain().focus().toggleBold().run();
         }
     }
     class ItalicAction extends Button {
@@ -75,10 +102,12 @@
             this.elem
                 .text('i')
                 .css('font-style', 'italic');
+            this.tooltip = new Tooltip('Toggle italic', this.elem);
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.toggleItalic();
+            this.toggle();
+            this.editor.chain().focus().toggleItalic().run();
         }
     }
     class UnderlineAction extends Button {
@@ -87,56 +116,65 @@
             this.elem
                 .text('U')
                 .css('text-decoration', 'underline');
+            this.tooltip = new Tooltip('Toggle underline', this.elem);
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.toggleUnderline();
+            this.toggle();
+            this.editor.chain().focus().toggleUnderline().run();
         }
     }
     class BulletListAction extends Button {
         constructor(editor, action_opts, container_elem) {
             super(editor, action_opts, container_elem);
             this.elem.append($('<i />').addClass('glyphicon glyphicon-list'));
+            this.tooltip = new Tooltip('Bullet List', this.elem);
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.toggleBulletList();
+            this.toggle();
+            this.editor.chain().focus().toggleBulletList().run();
         }
     }
     class OrderedListAction extends Button {
         constructor(editor, action_opts, container_elem) {
             super(editor, action_opts, container_elem);
             this.elem.append($('<i />').addClass('glyphicon glyphicon-th-list'));
+            this.tooltip = new Tooltip('Ordered List', this.elem);
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.toggleOrderedList();
+            this.toggle();
+            this.editor.chain().focus().toggleOrderedList().run();
         }
     }
     class IndentAction extends Button {
         constructor(editor, action_opts, container_elem) {
             super(editor, action_opts, container_elem);
             this.elem.append($('<i />').addClass('glyphicon glyphicon-indent-left'));
+            this.tooltip = new Tooltip('Indent', this.elem);
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.setBlockquote();
+            this.editor.chain().focus().setBlockquote().run();
         }
     }
     class OutdentAction extends Button {
         constructor(editor, action_opts, container_elem) {
             super(editor, action_opts, container_elem);
             this.elem.append($('<i />').addClass('glyphicon glyphicon-indent-right'));
+            this.tooltip = new Tooltip('Outdent', this.elem);
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.unsetBlockquote();
+            this.editor.chain().focus().unsetBlockquote().run();
         }
     }
     class HTMLAction extends Button {
         constructor(editor, action_opts, container_elem) {
             super(editor, action_opts, container_elem);
             this.elem.append($('<i />').addClass('glyphicon glyphicon-pencil'));
+            this.tooltip = new Tooltip('Edit HTML', this.elem);
             this.parent = this.elem.closest('div.tiptap-editor');
             this.editarea = $('div.ProseMirror', this.parent);
             this.textarea = $('textarea.ProseMirror', this.parent);
@@ -152,7 +190,7 @@
                 $('button', this.parent).prop('disabled', false);
                 this.textarea.hide();
                 this.editarea.show();
-                this.editor.commands.setContent(this.textarea.val());
+                this.editor.chain().focus().setContent(this.textarea.val()).run();
             }
         }
     }
@@ -166,7 +204,7 @@
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.toggleHeading({level: this.level});
+            this.editor.chain().focus().toggleHeading({level: this.level}).run();
         }
     }
     class ParagraphAction extends Button {
@@ -178,7 +216,7 @@
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.setParagraph();
+            this.editor.chain().focus().setParagraph().run();
         }
     }
     class ColorAction extends Button {
@@ -196,12 +234,13 @@
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.commands.setColor(this.color);
+            this.editor.chain().focus().setColor(this.color).run();
         }
     }
     class HeadingsAction extends DropdownButton {
         constructor(editor, action_opts, container_elem) {
             super(editor, action_opts, container_elem);
+            this.title = $('<i />').addClass('glyphicon glyphicon-font');
             this.children.push(
                 new ParagraphAction(editor, action_opts, this.dd_elem)
             );
@@ -239,7 +278,9 @@
     class ImageAction extends DropdownButton {
         constructor(editor, action_opts, container_elem) {
             super(editor, action_opts, container_elem);
+            this.tooltip = new Tooltip('Add image', this.elem);
             this.elem.append($('<i />').addClass('glyphicon glyphicon-picture'));
+            this.dd_elem.addClass('grid');
             this.src_elem = $('<span />')
                 .addClass('dropdown-item')
                 .append($('<span />').addClass('name').text(`src:`))
@@ -264,17 +305,19 @@
         }
         submit(e) {
             e.preventDefault();
-            this.editor.commands.setImage({
+            this.editor.chain().focus().setImage({
                 src: $('input', this.src_elem).val(),
                 alt: $('input', this.alt_elem).val(),
                 title: $('input', this.title_elem).val()
-            });
+            }).run();
         }
     }
     class LinkAction extends DropdownButton {
         constructor(editor, action_opts, container_elem) {
             super(editor, action_opts, container_elem);
-            this.elem.text('A');
+            this.tooltip = new Tooltip('Add link', this.elem);
+            this.elem.append($('<i />').addClass('glyphicon glyphicon-link'));
+            this.dd_elem.addClass('grid');
             this.href_elem = $('<span />')
                 .addClass('dropdown-item')
                 .append($('<span />').addClass('name').text(`href:`))
@@ -290,7 +333,7 @@
         submit(e) {
             e.preventDefault();
             let href = $('input', this.href_elem).val();
-            this.editor.commands.setLink({href: href});
+            this.editor.chain().focus().setLink({href: href}).run();
         }
     }
     let action_factories = {
@@ -321,11 +364,11 @@
                     html_edit: true,
                     heading: true,
                     colors: [
-                        { name: 'default', color: '#333333'},
-                        { name: 'blue', color: '#1a21fb' },
-                        { name: 'lime', color: '#ccff00' },
-                        { name: 'teal', color: '#2acaea' },
-                        { name: 'red', color: '#d0060a' }
+                        { name: 'Default', color: '#333333'},
+                        { name: 'Blue', color: '#1a21fb' },
+                        { name: 'Lime', color: '#ccff00' },
+                        { name: 'Teal', color: '#2acaea' },
+                        { name: 'Red', color: '#d0060a' }
                     ],
                     image: true,
                     link: true

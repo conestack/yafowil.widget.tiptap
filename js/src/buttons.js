@@ -1,5 +1,27 @@
 import $ from 'jquery';
 
+export class Tooltip {
+    constructor(name, elem) {
+        this.elem = $('<div />')
+            .text(name)
+            .addClass('tiptap-tooltip')
+            .appendTo('body')
+            .css('left', `${elem.offset().left + 20}px`)
+            .css('top', `${elem.offset().top + elem.outerHeight()}px`);
+
+        let timeout;
+        elem.on('mouseover', (e) => {
+            timeout = setTimeout(() => {
+                this.elem.fadeIn();
+            }, 500);
+        });
+        elem.on('mouseout', (e) => {
+            clearTimeout(timeout);
+            this.elem.fadeOut();
+        });
+    }
+}
+
 export class Button {
 
     constructor(editor, action_opts, container_elem) {
@@ -28,6 +50,7 @@ export class DropdownButton extends Button {
             .addClass('btn-dropdown')
             .appendTo('body');
         this.children = [];
+        this.title = null;
 
         this.hide_dropdown = this.hide_dropdown.bind(this);
         $(document).on('click', this.hide_dropdown);
@@ -40,6 +63,9 @@ export class DropdownButton extends Button {
     set active_item(item) {
         let clone = item.elem.children().clone();
         this.elem.empty().append(clone);
+        if (this.title) {
+            this.elem.prepend(this.title);
+        }
         this._active_item = item;
     }
 
