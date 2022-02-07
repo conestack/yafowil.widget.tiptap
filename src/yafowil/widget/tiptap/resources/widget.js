@@ -23,10 +23,16 @@
         }
     }
     class Button {
-        constructor(editor, action_opts, container_elem, content) {
+        constructor(editor, action_opts, container_elem, opts) {
             this.editor = editor;
             this.elem = $$1('<button />')
                 .appendTo(container_elem);
+            if (opts && opts.tooltip) {
+                new Tooltip(opts.tooltip, this.elem);
+            }
+            if (opts && opts.order) {
+                this.elem.css('order', opts.order);
+            }
             this.container_elem = container_elem;
             this.opts = action_opts;
             this.on_click = this.on_click.bind(this);
@@ -35,6 +41,22 @@
         toggle() {
             this.active = !this.active ? true : false;
             this.active ? this.elem.addClass('active') : this.elem.removeClass('active');
+        }
+    }
+    class TextButton extends Button {
+        constructor(editor, action_opts, container_elem, opts) {
+            super(editor, action_opts, container_elem, opts);
+            this.elem
+                .text(opts.text)
+                .css(opts.css);
+        }
+    }
+    class IconButton extends Button {
+        constructor(editor, action_opts, container_elem, opts) {
+            super(editor, action_opts, container_elem, opts);
+            $$1('<i />')
+                .addClass(`glyphicon glyphicon-${opts.btn_class}`)
+                .appendTo(this.elem);
         }
     }
     class DropdownButton extends Button {
@@ -95,13 +117,13 @@
         }
     }
 
-    class BoldAction extends Button {
+    class BoldAction extends TextButton {
         constructor(editor, action_opts, container_elem) {
-            super(editor, action_opts, container_elem);
-            this.elem
-                .text('B')
-                .css('font-weight', 'bold');
-            this.tooltip = new Tooltip('Toggle bold', this.elem);
+            super(editor, action_opts, container_elem, {
+                text: 'B',
+                css: {'font-weight': 'bold'},
+                tooltip: 'Toggle Bold'
+            });
         }
         on_click(e) {
             e.preventDefault();
@@ -109,13 +131,13 @@
             this.editor.chain().focus().toggleBold().run();
         }
     }
-    class ItalicAction extends Button {
+    class ItalicAction extends TextButton {
         constructor(editor, action_opts, container_elem) {
-            super(editor, action_opts, container_elem);
-            this.elem
-                .text('i')
-                .css('font-style', 'italic');
-            this.tooltip = new Tooltip('Toggle italic', this.elem);
+            super(editor, action_opts, container_elem, {
+                text: 'i',
+                css: {'font-style': 'italic'},
+                tooltip: 'Toggle Italic'
+            });
         }
         on_click(e) {
             e.preventDefault();
@@ -123,13 +145,13 @@
             this.editor.chain().focus().toggleItalic().run();
         }
     }
-    class UnderlineAction extends Button {
+    class UnderlineAction extends TextButton {
         constructor(editor, action_opts, container_elem) {
-            super(editor, action_opts, container_elem);
-            this.elem
-                .text('U')
-                .css('text-decoration', 'underline');
-            this.tooltip = new Tooltip('Toggle underline', this.elem);
+            super(editor, action_opts, container_elem, {
+                text: 'U',
+                css: {'text-decoration': 'underline'},
+                tooltip: 'Toggle Underline'
+            });
         }
         on_click(e) {
             e.preventDefault();
@@ -175,35 +197,37 @@
             this.editor.chain().focus().toggleOrderedList().run();
         }
     }
-    class IndentAction extends Button {
+    class IndentAction extends IconButton {
         constructor(editor, action_opts, container_elem) {
-            super(editor, action_opts, container_elem);
-            this.elem.append($('<i />').addClass('glyphicon glyphicon-indent-left'));
-            this.tooltip = new Tooltip('Indent', this.elem);
+            super(editor, action_opts, container_elem, {
+                btn_class: 'indent-left',
+                tooltip: 'Indent'
+            });
         }
         on_click(e) {
             e.preventDefault();
             this.editor.chain().focus().setBlockquote().run();
         }
     }
-    class OutdentAction extends Button {
+    class OutdentAction extends IconButton {
         constructor(editor, action_opts, container_elem) {
-            super(editor, action_opts, container_elem);
-            this.elem.append($('<i />').addClass('glyphicon glyphicon-indent-right'));
-            this.tooltip = new Tooltip('Outdent', this.elem);
+            super(editor, action_opts, container_elem, {
+                btn_class: 'indent-right',
+                tooltip: 'Indent'
+            });
         }
         on_click(e) {
             e.preventDefault();
             this.editor.chain().focus().unsetBlockquote().run();
         }
     }
-    class HTMLAction extends Button {
+    class HTMLAction extends IconButton {
         constructor(editor, action_opts, container_elem) {
-            super(editor, action_opts, container_elem);
-            this.elem
-                .append($('<i />').addClass('glyphicon glyphicon-pencil'))
-                .css('order', '5');
-            this.tooltip = new Tooltip('Edit HTML', this.elem);
+            super(editor, action_opts, container_elem, {
+                btn_class: 'pencil',
+                tooltip: 'Edit HTML',
+                order: "5"
+            });
             this.parent = this.elem.closest('div.tiptap-editor');
             this.editarea = $('div.ProseMirror', this.parent);
             this.textarea = $('textarea.ProseMirror', this.parent);
@@ -467,7 +491,6 @@
                 tiptap.TextStyle
             ]);
             for (let option_name in opts) {
-                if (!opts[option_name]) return;
                 actions[option_name].extensions.forEach(ext => extensions.add(ext));
             }
             this.editarea = $$1('div.ProseMirror', this.elem);

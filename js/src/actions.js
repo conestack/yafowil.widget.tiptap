@@ -1,15 +1,14 @@
 
-import {Button, DropdownButton, Tooltip} from './buttons.js';
+import {Button, TextButton, IconButton, DropdownButton, Tooltip} from './buttons.js';
 import tiptap from 'tiptap';
 
-class BoldAction extends Button {
+class BoldAction extends TextButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .text('B')
-            .css('font-weight', 'bold');
-
-        this.tooltip = new Tooltip('Toggle bold', this.elem);
+        super(editor, action_opts, container_elem, {
+            text: 'B',
+            css: {'font-weight': 'bold'},
+            tooltip: 'Toggle Bold'
+        });
     }
 
     on_click(e) {
@@ -19,14 +18,13 @@ class BoldAction extends Button {
     }
 }
 
-class ItalicAction extends Button {
+class ItalicAction extends TextButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .text('i')
-            .css('font-style', 'italic');
-
-        this.tooltip = new Tooltip('Toggle italic', this.elem);
+        super(editor, action_opts, container_elem, {
+            text: 'i',
+            css: {'font-style': 'italic'},
+            tooltip: 'Toggle Italic'
+        });
     }
 
     on_click(e) {
@@ -36,14 +34,13 @@ class ItalicAction extends Button {
     }
 }
 
-class UnderlineAction extends Button {
+class UnderlineAction extends TextButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .text('U')
-            .css('text-decoration', 'underline');
-
-        this.tooltip = new Tooltip('Toggle underline', this.elem);
+        super(editor, action_opts, container_elem, {
+            text: 'U',
+            css: {'text-decoration': 'underline'},
+            tooltip: 'Toggle Underline'
+        });
     }
 
     on_click(e) {
@@ -96,12 +93,12 @@ class OrderedListAction extends Button {
     }
 }
 
-class IndentAction extends Button {
+class IndentAction extends IconButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-indent-left'));
-
-        this.tooltip = new Tooltip('Indent', this.elem);
+        super(editor, action_opts, container_elem, {
+            btn_class: 'indent-left',
+            tooltip: 'Indent'
+        });
     }
 
     on_click(e) {
@@ -110,12 +107,12 @@ class IndentAction extends Button {
     }
 }
 
-class OutdentAction extends Button {
+class OutdentAction extends IconButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-indent-right'));
-
-        this.tooltip = new Tooltip('Outdent', this.elem);
+        super(editor, action_opts, container_elem, {
+            btn_class: 'indent-right',
+            tooltip: 'Indent'
+        });
     }
 
     on_click(e) {
@@ -124,13 +121,13 @@ class OutdentAction extends Button {
     }
 }
 
-class HTMLAction extends Button {
+class HTMLAction extends IconButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .append($('<i />').addClass('glyphicon glyphicon-pencil'))
-            .css('order', '5');
-        this.tooltip = new Tooltip('Edit HTML', this.elem);
+        super(editor, action_opts, container_elem, {
+            btn_class: 'pencil',
+            tooltip: 'Edit HTML',
+            order: "5"
+        });
 
         this.parent = this.elem.closest('div.tiptap-editor');
         this.editarea = $('div.ProseMirror', this.parent);

@@ -40,7 +40,6 @@ export class TiptapWidget {
             tiptap.TextStyle
         ]);
         for (let option_name in opts) {
-            if (!opts[option_name]) return;
             actions[option_name].extensions.forEach(ext => extensions.add(ext));
         }
 

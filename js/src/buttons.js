@@ -26,13 +26,17 @@ export class Tooltip {
 
 export class Button {
 
-    constructor(editor, action_opts, container_elem, content) {
+    constructor(editor, action_opts, container_elem, opts) {
         this.editor = editor;
         this.elem = $('<button />')
             .appendTo(container_elem);
 
-        // content && content instanceof String ?
-        //     this.elem.text(content) : this.elem.append(content);
+        if (opts && opts.tooltip) {
+            new Tooltip(opts.tooltip, this.elem);
+        }
+        if (opts && opts.order) {
+            this.elem.css('order', opts.order);
+        }
 
         this.container_elem = container_elem;
         this.opts = action_opts;
@@ -43,6 +47,24 @@ export class Button {
     toggle() {
         this.active = !this.active ? true : false;
         this.active ? this.elem.addClass('active') : this.elem.removeClass('active');
+    }
+}
+
+export class TextButton extends Button {
+    constructor(editor, action_opts, container_elem, opts) {
+        super(editor, action_opts, container_elem, opts);
+        this.elem
+            .text(opts.text)
+            .css(opts.css);
+    }
+}
+
+export class IconButton extends Button {
+    constructor(editor, action_opts, container_elem, opts) {
+        super(editor, action_opts, container_elem, opts);
+        $('<i />')
+            .addClass(`glyphicon glyphicon-${opts.btn_class}`)
+            .appendTo(this.elem);
     }
 }
 
