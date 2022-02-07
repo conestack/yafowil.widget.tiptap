@@ -26,10 +26,13 @@ export class Tooltip {
 
 export class Button {
 
-    constructor(editor, action_opts, container_elem) {
+    constructor(editor, action_opts, container_elem, content) {
         this.editor = editor;
         this.elem = $('<button />')
             .appendTo(container_elem);
+
+        // content && content instanceof String ?
+        //     this.elem.text(content) : this.elem.append(content);
 
         this.container_elem = container_elem;
         this.opts = action_opts;
@@ -56,6 +59,8 @@ export class DropdownButton extends Button {
 
         this.hide_dropdown = this.hide_dropdown.bind(this);
         $(document).on('click', this.hide_dropdown);
+        this.on_resize = this.on_resize.bind(this);
+        $(window).on('resize', this.on_resize);
     }
 
     get active_item() {
@@ -74,6 +79,11 @@ export class DropdownButton extends Button {
 
     unload() {
         $(document).off('click', this.hide_dropdown);
+        $(window).off('resize', this.on_resize);
+    }
+
+    on_resize(e) {
+        this.dd_elem.hide();
     }
 
     hide_dropdown(e) {
@@ -90,8 +100,16 @@ export class DropdownButton extends Button {
 
     on_click(e) {
         e.preventDefault();
+        let offset_left = this.elem.offset().left,
+            elem_width = this.elem.outerWidth(),
+            dd_width = this.dd_elem.outerWidth(),
+            space_right = $(window).width() - offset_left - elem_width;
+
+        let left = (space_right < dd_width) ?
+            offset_left - dd_width + elem_width : offset_left;
+
         this.dd_elem
-            .css('left', `${this.elem.offset().left}px`)
+            .css('left', `${left}px`)
             .css('top', `${this.elem.offset().top + this.elem.outerHeight()}px`)
             .toggle();
     }

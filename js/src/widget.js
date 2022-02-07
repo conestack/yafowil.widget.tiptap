@@ -1,352 +1,6 @@
 import $ from 'jquery';
 import tiptap from 'tiptap';
-import {Button, DropdownButton, Tooltip} from './buttons.js';
-
-class BoldAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .text('B')
-            .css('font-weight', 'bold');
-
-        this.tooltip = new Tooltip('Toggle bold', this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.toggle();
-        this.editor.chain().focus().toggleBold().run();
-    }
-}
-
-class ItalicAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .text('i')
-            .css('font-style', 'italic');
-
-        this.tooltip = new Tooltip('Toggle italic', this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.toggle();
-        this.editor.chain().focus().toggleItalic().run();
-    }
-}
-
-class UnderlineAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .text('U')
-            .css('text-decoration', 'underline');
-
-        this.tooltip = new Tooltip('Toggle underline', this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.toggle();
-        this.editor.chain().focus().toggleUnderline().run();
-    }
-}
-
-class BulletListAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .data('tiptap-bullet-list', this)
-            .append($('<i />').addClass('glyphicon glyphicon-list'));
-        this.tooltip = new Tooltip('Bullet List', this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        let ordered_list = $('.active', this.elem.parent()).data('tiptap-ordered-list');
-        if (ordered_list) {
-            ordered_list.active = false;
-            ordered_list.elem.removeClass('active');
-        }
-        this.toggle();
-        this.editor.chain().focus().toggleBulletList().run();
-    }
-}
-
-class OrderedListAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .data('tiptap-ordered-list', this)
-            .append($('<i />').addClass('glyphicon glyphicon-th-list'));
-
-        this.tooltip = new Tooltip('Ordered List', this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        let bullet_list = $('.active', this.elem.parent()).data('tiptap-bullet-list');
-        if (bullet_list) {
-            bullet_list.active = false;
-            bullet_list.elem.removeClass('active');
-        }
-        this.toggle();
-        this.editor.chain().focus().toggleOrderedList().run();
-    }
-}
-
-class IndentAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-indent-left'));
-
-        this.tooltip = new Tooltip('Indent', this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.editor.chain().focus().setBlockquote().run();
-    }
-}
-
-class OutdentAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem.append($('<i />').addClass('glyphicon glyphicon-indent-right'));
-
-        this.tooltip = new Tooltip('Outdent', this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.editor.chain().focus().unsetBlockquote().run();
-    }
-}
-
-class HTMLAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .append($('<i />').addClass('glyphicon glyphicon-pencil'))
-            .css('order', '5');
-        this.tooltip = new Tooltip('Edit HTML', this.elem);
-
-        this.parent = this.elem.closest('div.tiptap-editor');
-        this.editarea = $('div.ProseMirror', this.parent);
-        this.textarea = $('textarea.ProseMirror', this.parent);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.toggle();
-
-        if (this.active) {
-            $('button', this.parent).not(this.elem).prop('disabled', true);
-            this.editarea.hide();
-            this.textarea.show().text(this.editor.getHTML());
-        } else {
-            $('button', this.parent).prop('disabled', false);
-            this.textarea.hide();
-            this.editarea.show();
-            this.editor.chain().focus().setContent(this.textarea.val()).run();
-        }
-    }
-}
-
-class HeadingAction extends Button {
-    constructor(editor, action_opts, container_elem, level) {
-        super(editor, action_opts, container_elem, level);
-        this.level = level;
-
-        let content = $('<span />')
-            .text(`Heading ${this.level}`)
-            .appendTo(this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.editor.chain().focus().toggleHeading({level: this.level}).run();
-    }
-}
-
-class ParagraphAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-
-        let content = $('<span />')
-            .text('Text')
-            .appendTo(this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.editor.chain().focus().setParagraph().run();
-    }
-}
-
-class ColorAction extends Button {
-    constructor(editor, action_opts, container_elem, color) {
-        super(editor, action_opts, container_elem, color);
-
-        this.name = color.name;
-        this.color = color.color;
-
-        let content = $('<span />')
-            .text(this.name)
-            .appendTo(this.elem);
-
-        let swatch = $('<div />')
-            .addClass('color')
-            .css('background-color', this.color)
-            .appendTo(this.elem);
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.editor.chain().focus().setColor(this.color).run();
-    }
-}
-
-class HeadingsAction extends DropdownButton {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.title = $('<i />').addClass('glyphicon glyphicon-font');
-        this.elem.css('order', "1");
-
-        this.children.push(
-            new ParagraphAction(editor, action_opts, this.dd_elem)
-        );
-        for (let i=1; i<=6; i++) {
-            this.children.push(
-                new HeadingAction(editor, action_opts, this.dd_elem, i)
-            )
-        }
-
-        for (let child of this.children) {
-            child.elem.addClass('dropdown-item');
-            child.elem.on('click', (e) => {
-                this.active_item = child;
-            });
-        }
-
-        this.active_item = this.children[0];
-    }
-}
-
-class ColorsAction extends DropdownButton {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem.css('order', "2");
-
-        for (let color of action_opts) {
-            this.children.push(
-                new ColorAction(editor, action_opts, this.dd_elem, color)
-            )
-        }
-
-        for (let child of this.children) {
-            child.elem.addClass('dropdown-item');
-            child.elem.on('click', (e) => {
-                this.active_item = child;
-            });
-        }
-
-        this.active_item = this.children[0];
-    }
-}
-
-class ImageAction extends DropdownButton {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-
-        this.tooltip = new Tooltip('Add image', this.elem);
-
-        this.elem
-            .append($('<i />').addClass('glyphicon glyphicon-picture'))
-            .css('order', '7');
-        this.dd_elem.addClass('grid');
-        this.src_elem = $('<span />')
-            .addClass('dropdown-item')
-            .append($('<span />').addClass('name').text(`src:`))
-            .append($('<input type="text" />'))
-            .appendTo(this.dd_elem);
-        this.alt_elem = $('<span />')
-            .addClass('dropdown-item')
-            .append($('<span />').addClass('name').text(`alt:`))
-            .append($('<input type="text" />'))
-            .appendTo(this.dd_elem);
-        this.title_elem = $('<span />')
-            .addClass('dropdown-item')
-            .append($('<span />').addClass('name').text(`title:`))
-            .append($('<input type="text" />'))
-            .appendTo(this.dd_elem);
-
-        this.submit_elem = $('<button />')
-            .addClass('submit')
-            .text('submit')
-            .appendTo(this.dd_elem);
-
-        this.submit = this.submit.bind(this);
-        this.submit_elem.on('click', this.submit);
-    }
-
-    submit(e) {
-        e.preventDefault();
-        this.editor.chain().focus().setImage({
-            src: $('input', this.src_elem).val(),
-            alt: $('input', this.alt_elem).val(),
-            title: $('input', this.title_elem).val()
-        }).run();
-    }
-}
-
-class LinkAction extends DropdownButton {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-
-        this.tooltip = new Tooltip('Add link', this.elem);
-
-        this.elem
-            .append($('<i />').addClass('glyphicon glyphicon-link'))
-            .css('order', '6');
-        this.dd_elem.addClass('grid');
-        this.href_elem = $('<span />')
-            .addClass('dropdown-item')
-            .append($('<span />').addClass('name').text(`href:`))
-            .append($('<input type="text" />'))
-            .appendTo(this.dd_elem);
-
-        this.submit_elem = $('<button />')
-            .addClass('submit')
-            .text('submit')
-            .appendTo(this.dd_elem);
-
-        this.submit = this.submit.bind(this);
-        this.submit_elem.on('click', this.submit);
-    }
-
-    submit(e) {
-        e.preventDefault();
-        let href = $('input', this.href_elem).val();
-        this.editor.chain().focus().setLink({href: href}).run();
-    }
-}
-
-let action_factories = {
-    bold: BoldAction,
-    italic: ItalicAction,
-    underline: UnderlineAction,
-    bullet_list: BulletListAction,
-    ordered_list: OrderedListAction,
-    indent: IndentAction,
-    outdent: OutdentAction,
-    html_edit: HTMLAction,
-    heading: HeadingsAction,
-    colors: ColorsAction,
-    image: ImageAction,
-    link: LinkAction
-}
+import {actions} from './actions';
 
 export class TiptapWidget {
     static initialize(context) {
@@ -359,7 +13,7 @@ export class TiptapWidget {
                 ordered_list: true,
                 indent: true,
                 outdent: true,
-                html_edit: true,
+                html: true,
                 heading: true,
                 colors: [
                     { name: 'Default', color: '#333333'},
@@ -375,85 +29,74 @@ export class TiptapWidget {
         });
     }
 
-    constructor(elem, opts) {
+    constructor(elem, opts = {}) {
         this.elem = elem;
         this.elem.data('tiptap-widget', this);
 
-        this.editor = new tiptap.Editor({
-            element: this.elem[0],
-            extensions: [
-                tiptap.Document,
-                tiptap.Paragraph,
-                tiptap.Text,
-                tiptap.Underline,
-                tiptap.TextStyle,
-                tiptap.Color,
-                tiptap.Heading,
-                tiptap.BulletList,
-                tiptap.OrderedList,
-                tiptap.ListItem,
-                tiptap.Blockquote,
-                tiptap.Bold,
-                tiptap.Italic,
-                tiptap.Code,
-                tiptap.CodeBlock,
-                tiptap.Image,
-                tiptap.Link
-            ],
-            content: '<p>Hello World!</p>',
-        });
+        let extensions = new Set([
+            tiptap.Document,
+            tiptap.Paragraph,
+            tiptap.Text,
+            tiptap.TextStyle
+        ]);
+        for (let option_name in opts) {
+            if (!opts[option_name]) return;
+            actions[option_name].extensions.forEach(ext => extensions.add(ext));
+        }
 
         this.editarea = $('div.ProseMirror', this.elem);
         this.textarea = $('<textarea />')
             .addClass('ProseMirror')
             .appendTo(this.elem);
-
-        if (!opts) {
-            opts = {};
-        }
-
         this.controls = $('<div />')
             .addClass('tiptap-controls')
             .prependTo(this.elem);
-        this.text_controls = $('<div />')
-            .addClass('btn-group')
-            .css('order', "3")
-            .appendTo(this.controls)
-            .hide();
-        this.format_controls = $('<div />')
-            .addClass('btn-group')
-            .css('order', "4")
-            .appendTo(this.controls)
-            .hide();
 
+        if (opts.bold | opts.italic | opts.underline) {
+            this.text_controls = $('<div />')
+                .addClass('btn-group text_controls')
+                .css('order', "3")
+                .appendTo(this.controls);
+        }
+        if (opts.bullet_list | opts.ordered_list | opts.indent | opts.outdent) {
+            this.format_controls = $('<div />')
+                .addClass('btn-group format_controls')
+                .css('order', "4")
+                .appendTo(this.controls);
+        }
+
+        this.editor = new tiptap.Editor({
+            element: this.elem[0],
+            extensions: extensions,
+            content: '<p>Hello World!</p>'
+        });
+
+        this.buttons = [];
         for (let option_name in opts) {
-            let action_options = opts[option_name];
-            let factory = action_factories[option_name];
-            let target = this.controls;
-
-            switch(option_name) {
-                case "bold":
-                case "italic":
-                case "underline":
-                    target = this.text_controls;
-                    target.show();
-                    break;
-                case "bullet_list":
-                case "ordered_list":
-                case "indent":
-                case "outdent":
-                    target = this.format_controls;
-                    target.show();
-            }
-            new factory(this.editor, action_options, target);
+            let options = opts[option_name],
+                factory = actions[option_name].factory,
+                target = actions[option_name].target;
+            let container = target ? $(target, this.controls) : this.controls;
+            this.buttons.push(new factory(this.editor, options, container));
         }
 
         this.hide_all = this.hide_all.bind(this);
         this.editor.on('update', this.hide_all);
     }
 
-    unload_all() {
+    destroy() {
+        this.unload_all();
+        this.editor.destroy();
+        this.elem.empty();
+        this.buttons = null;
+    }
 
+    unload_all() {
+        this.buttons.forEach(btn => {
+            if (btn.unload) {
+                btn.unload();
+            }
+        });
     }
 
     hide_all() {
