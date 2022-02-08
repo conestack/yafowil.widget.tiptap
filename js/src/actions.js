@@ -1,10 +1,11 @@
 
-import {Button, TextButton, IconButton, DropdownButton, Tooltip} from './buttons.js';
+import {Button, DropdownButton} from './buttons.js';
 import tiptap from 'tiptap';
 
-class BoldAction extends TextButton {
+class BoldAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem, {
+        super(editor, action_opts, {
+            container_elem: container_elem,
             text: 'B',
             css: {'font-weight': 'bold'},
             tooltip: 'Toggle Bold'
@@ -18,9 +19,10 @@ class BoldAction extends TextButton {
     }
 }
 
-class ItalicAction extends TextButton {
+class ItalicAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem, {
+        super(editor, action_opts, {
+            container_elem: container_elem,
             text: 'i',
             css: {'font-style': 'italic'},
             tooltip: 'Toggle Italic'
@@ -34,9 +36,10 @@ class ItalicAction extends TextButton {
     }
 }
 
-class UnderlineAction extends TextButton {
+class UnderlineAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem, {
+        super(editor, action_opts, {
+            container_elem: container_elem,
             text: 'U',
             css: {'text-decoration': 'underline'},
             tooltip: 'Toggle Underline'
@@ -52,11 +55,11 @@ class UnderlineAction extends TextButton {
 
 class BulletListAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .data('tiptap-bullet-list', this)
-            .append($('<i />').addClass('glyphicon glyphicon-list'));
-        this.tooltip = new Tooltip('Bullet List', this.elem);
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            icon: 'list',
+            tooltip: 'Bullet List'
+        });
     }
 
     on_click(e) {
@@ -73,12 +76,11 @@ class BulletListAction extends Button {
 
 class OrderedListAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem
-            .data('tiptap-ordered-list', this)
-            .append($('<i />').addClass('glyphicon glyphicon-th-list'));
-
-        this.tooltip = new Tooltip('Ordered List', this.elem);
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            icon: 'th-list',
+            tooltip: 'Ordered List'
+        });
     }
 
     on_click(e) {
@@ -93,10 +95,11 @@ class OrderedListAction extends Button {
     }
 }
 
-class IndentAction extends IconButton {
+class IndentAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem, {
-            btn_class: 'indent-left',
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            icon: 'indent-left',
             tooltip: 'Indent'
         });
     }
@@ -107,10 +110,11 @@ class IndentAction extends IconButton {
     }
 }
 
-class OutdentAction extends IconButton {
+class OutdentAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem, {
-            btn_class: 'indent-right',
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            icon: 'indent-right',
             tooltip: 'Indent'
         });
     }
@@ -121,12 +125,12 @@ class OutdentAction extends IconButton {
     }
 }
 
-class HTMLAction extends IconButton {
+class HTMLAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem, {
-            btn_class: 'pencil',
-            tooltip: 'Edit HTML',
-            order: "5"
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            icon: 'pencil',
+            tooltip: 'Edit HTML'
         });
 
         this.parent = this.elem.closest('div.tiptap-editor');
@@ -153,12 +157,11 @@ class HTMLAction extends IconButton {
 
 class HeadingAction extends Button {
     constructor(editor, action_opts, container_elem, level) {
-        super(editor, action_opts, container_elem, level);
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            text: `Heading ${level}`
+        });
         this.level = level;
-
-        let content = $('<span />')
-            .text(`Heading ${this.level}`)
-            .appendTo(this.elem);
     }
 
     on_click(e) {
@@ -169,11 +172,10 @@ class HeadingAction extends Button {
 
 class ParagraphAction extends Button {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-
-        let content = $('<span />')
-            .text('Text')
-            .appendTo(this.elem);
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            text: 'Text'
+        });
     }
 
     on_click(e) {
@@ -184,19 +186,14 @@ class ParagraphAction extends Button {
 
 class ColorAction extends Button {
     constructor(editor, action_opts, container_elem, color) {
-        super(editor, action_opts, container_elem, color);
+        super(editor, action_opts, {
+            container_elem: container_elem, 
+            text: color.name,
+            color: color.color
+        });
 
         this.name = color.name;
         this.color = color.color;
-
-        let content = $('<span />')
-            .text(this.name)
-            .appendTo(this.elem);
-
-        let swatch = $('<div />')
-            .addClass('color')
-            .css('background-color', this.color)
-            .appendTo(this.elem);
     }
 
     on_click(e) {
@@ -207,9 +204,10 @@ class ColorAction extends Button {
 
 class HeadingsAction extends DropdownButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.title = $('<i />').addClass('glyphicon glyphicon-font');
-        this.elem.css('order', "1");
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            icon: 'font'
+        });
 
         this.children.push(
             new ParagraphAction(editor, action_opts, this.dd_elem)
@@ -219,22 +217,15 @@ class HeadingsAction extends DropdownButton {
                 new HeadingAction(editor, action_opts, this.dd_elem, i)
             )
         }
-
-        for (let child of this.children) {
-            child.elem.addClass('dropdown-item');
-            child.elem.on('click', (e) => {
-                this.active_item = child;
-            });
-        }
-
-        this.active_item = this.children[0];
+        this.set_items();
     }
 }
 
 class ColorsAction extends DropdownButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
-        this.elem.css('order', "2");
+        super(editor, action_opts, {
+            container_elem: container_elem
+        });
 
         for (let color of action_opts) {
             this.children.push(
@@ -242,50 +233,34 @@ class ColorsAction extends DropdownButton {
             )
         }
 
-        for (let child of this.children) {
-            child.elem.addClass('dropdown-item');
-            child.elem.on('click', (e) => {
-                this.active_item = child;
-            });
-        }
-
-        this.active_item = this.children[0];
+        this.set_items();
     }
 }
 
 class ImageAction extends DropdownButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            tooltip: 'Add Image',
+            icon: 'picture',
+            submit: true
+        });
 
-        this.tooltip = new Tooltip('Add image', this.elem);
-
-        this.elem
-            .append($('<i />').addClass('glyphicon glyphicon-picture'))
-            .css('order', '7');
-        this.dd_elem.addClass('grid');
         this.src_elem = $('<span />')
             .addClass('dropdown-item')
             .append($('<span />').addClass('name').text(`src:`))
             .append($('<input type="text" />'))
-            .appendTo(this.dd_elem);
+            .prependTo(this.dd_elem);
         this.alt_elem = $('<span />')
             .addClass('dropdown-item')
             .append($('<span />').addClass('name').text(`alt:`))
             .append($('<input type="text" />'))
-            .appendTo(this.dd_elem);
+            .prependTo(this.dd_elem);
         this.title_elem = $('<span />')
             .addClass('dropdown-item')
             .append($('<span />').addClass('name').text(`title:`))
             .append($('<input type="text" />'))
-            .appendTo(this.dd_elem);
-
-        this.submit_elem = $('<button />')
-            .addClass('submit')
-            .text('submit')
-            .appendTo(this.dd_elem);
-
-        this.submit = this.submit.bind(this);
-        this.submit_elem.on('click', this.submit);
+            .prependTo(this.dd_elem);
     }
 
     submit(e) {
@@ -301,27 +276,18 @@ class ImageAction extends DropdownButton {
 
 class LinkAction extends DropdownButton {
     constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
+        super(editor, action_opts, {
+            container_elem: container_elem,
+            tooltip: 'Add Link',
+            icon: 'link',
+            submit: true
+        });
 
-        this.tooltip = new Tooltip('Add link', this.elem);
-
-        this.elem
-            .append($('<i />').addClass('glyphicon glyphicon-link'))
-            .css('order', '6');
-        this.dd_elem.addClass('grid');
         this.href_elem = $('<span />')
             .addClass('dropdown-item')
             .append($('<span />').addClass('name').text(`href:`))
             .append($('<input type="text" />'))
-            .appendTo(this.dd_elem);
-
-        this.submit_elem = $('<button />')
-            .addClass('submit')
-            .text('submit')
-            .appendTo(this.dd_elem);
-
-        this.submit = this.submit.bind(this);
-        this.submit_elem.on('click', this.submit);
+            .prependTo(this.dd_elem);
     }
 
     submit(e) {
@@ -332,41 +298,43 @@ class LinkAction extends DropdownButton {
     }
 }
 
+export class ActionGroup {
+    constructor(name, target) {
+        this.name = name;
+        this.elem = $('<div />')
+            .addClass(`btn-group ${name}`)
+            .appendTo(target);
+    }
+}
+
 export let actions = {
     bold: {
         factory: BoldAction,
-        extensions: [tiptap.Bold],
-        target: '.text_controls'
+        extensions: [tiptap.Bold]
     },
     italic: {
         factory: ItalicAction,
-        extensions: [tiptap.Italic],
-        target: '.text_controls'
+        extensions: [tiptap.Italic]
     },
     underline: {
         factory: UnderlineAction,
-        extensions: [tiptap.Underline],
-        target: '.text_controls'
+        extensions: [tiptap.Underline]
     },
     bullet_list: {
         factory: BulletListAction,
-        extensions: [tiptap.BulletList, tiptap.ListItem],
-        target: '.format_controls'
+        extensions: [tiptap.BulletList, tiptap.ListItem]
     },
     ordered_list: {
         factory: OrderedListAction,
-        extensions: [tiptap.OrderedList, tiptap.ListIte],
-        target: '.format_controls'
+        extensions: [tiptap.OrderedList, tiptap.ListItem]
     },
     indent: {
         factory: IndentAction,
-        extensions: [tiptap.Blockquote],
-        target: '.format_controls'
+        extensions: [tiptap.Blockquote]
     },
     outdent: {
         factory: OutdentAction,
-        extensions: [tiptap.Blockquote],
-        target: '.format_controls'
+        extensions: [tiptap.Blockquote]
     },
     html: {
         factory: HTMLAction,

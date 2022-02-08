@@ -26,19 +26,40 @@ export class Tooltip {
 
 export class Button {
 
-    constructor(editor, action_opts, container_elem, opts) {
+    constructor(editor, action_opts, opts = {}) {
         this.editor = editor;
         this.elem = $('<button />')
-            .appendTo(container_elem);
+            .appendTo(opts.container_elem);
 
-        if (opts && opts.tooltip) {
+        if (opts.tooltip) {
             new Tooltip(opts.tooltip, this.elem);
         }
-        if (opts && opts.order) {
+        if (opts.order) {
             this.elem.css('order', opts.order);
         }
+        if (opts.icon) {
+            this.icon = $('<i />')
+                .addClass(`glyphicon glyphicon-${opts.icon}`)
+                .appendTo(this.elem);
+        }
+        if (opts.text) {
+            $(`<span />`)
+                .text(opts.text)
+                .appendTo(this.elem);
+        }
+        if (opts.css) {
+            $('> *', this.elem).css(opts.css);
+        }
+        if (opts.color) {
+            $('<div />')
+                .addClass('color')
+                .css('background-color', opts.color)
+                .appendTo(this.elem);
+        }
 
-        this.container_elem = container_elem;
+        this.content = $('> *', this.elem);
+
+        this.container_elem = opts.container_elem;
         this.opts = action_opts;
         this.on_click = this.on_click.bind(this);
         this.elem.on('click', this.on_click);
@@ -50,34 +71,26 @@ export class Button {
     }
 }
 
-export class TextButton extends Button {
-    constructor(editor, action_opts, container_elem, opts) {
-        super(editor, action_opts, container_elem, opts);
-        this.elem
-            .text(opts.text)
-            .css(opts.css);
-    }
-}
-
-export class IconButton extends Button {
-    constructor(editor, action_opts, container_elem, opts) {
-        super(editor, action_opts, container_elem, opts);
-        $('<i />')
-            .addClass(`glyphicon glyphicon-${opts.btn_class}`)
-            .appendTo(this.elem);
-    }
-}
-
 export class DropdownButton extends Button {
 
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, container_elem);
+    constructor(editor, action_opts, opts = {}) {
+        super(editor, action_opts, opts);
         this.elem.addClass('drop_btn');
         this.dd_elem = $('<div />')
             .addClass('tiptap-dropdown')
             .appendTo('body');
         this.children = [];
-        this.title = null;
+
+        if (opts.submit) {
+            this.dd_elem.addClass('grid');
+            this.submit_elem = $('<button />')
+                .addClass('submit')
+                .text('submit')
+                .appendTo(this.dd_elem);
+
+            this.submit = this.submit.bind(this);
+            this.submit_elem.on('click', this.submit);
+        }
 
         this.hide_dropdown = this.hide_dropdown.bind(this);
         $(document).on('click', this.hide_dropdown);
@@ -92,8 +105,8 @@ export class DropdownButton extends Button {
     set active_item(item) {
         let clone = item.elem.children().clone();
         this.elem.empty().append(clone);
-        if (this.title) {
-            this.elem.prepend(this.title);
+        if (this.content) {
+            this.elem.prepend(this.content);
         }
         this.dd_elem.hide();
         this._active_item = item;
@@ -106,6 +119,17 @@ export class DropdownButton extends Button {
 
     on_resize(e) {
         this.dd_elem.hide();
+    }
+
+    set_items() {
+        for (let child of this.children) {
+            child.elem.addClass('dropdown-item');
+            child.elem.on('click', (e) => {
+                this.active_item = child;
+            });
+        }
+
+        this.active_item = this.children[0];
     }
 
     hide_dropdown(e) {

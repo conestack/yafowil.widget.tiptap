@@ -1,19 +1,11 @@
 import $ from 'jquery';
 import tiptap from 'tiptap';
-import {actions} from './actions';
+import {actions, ActionGroup} from './actions';
 
 export class TiptapWidget {
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
             let options = {
-                bold: true,
-                italic: true,
-                underline: true,
-                bullet_list: true,
-                ordered_list: true,
-                indent: true,
-                outdent: true,
-                html: true,
                 heading: true,
                 colors: [
                     { name: 'Default', color: '#333333'},
@@ -22,6 +14,14 @@ export class TiptapWidget {
                     { name: 'Teal', color: '#2acaea' },
                     { name: 'Red', color: '#d0060a' }
                 ],
+                bold: { target: 'text_controls' },
+                italic: { target: 'text_controls' },
+                underline: { target: 'text_controls' },
+                bullet_list: { target: 'format_controls' },
+                ordered_list: { target: 'format_controls' },
+                indent: { target: 'format_controls' },
+                outdent: { target: 'format_controls' },
+                html: true,
                 image: true,
                 link: true
             }
@@ -51,19 +51,6 @@ export class TiptapWidget {
             .addClass('tiptap-controls')
             .prependTo(this.elem);
 
-        if (opts.bold | opts.italic | opts.underline) {
-            this.text_controls = $('<div />')
-                .addClass('btn-group text_controls')
-                .css('order', "3")
-                .appendTo(this.controls);
-        }
-        if (opts.bullet_list | opts.ordered_list | opts.indent | opts.outdent) {
-            this.format_controls = $('<div />')
-                .addClass('btn-group format_controls')
-                .css('order', "4")
-                .appendTo(this.controls);
-        }
-
         this.editor = new tiptap.Editor({
             element: this.elem[0],
             extensions: extensions,
@@ -71,11 +58,26 @@ export class TiptapWidget {
         });
 
         this.buttons = [];
+        let button_groups = [];
+
         for (let option_name in opts) {
             let options = opts[option_name],
                 factory = actions[option_name].factory,
-                target = actions[option_name].target;
-            let container = target ? $(target, this.controls) : this.controls;
+                target = options.target,
+                container = this.controls;
+
+            if (target) {
+                let targ = button_groups.filter(group => {
+                    return group.name === target ?? false
+                });
+                if (targ[0]) {
+                    container = targ[0].elem;
+                } else {
+                    let group = new ActionGroup(target, this.controls);
+                    button_groups.push(group);
+                    container = group.elem;
+                }
+            }
             this.buttons.push(new factory(this.editor, options, container));
         }
 
