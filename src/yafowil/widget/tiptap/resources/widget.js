@@ -250,13 +250,15 @@
                 icon: 'indent-right',
                 tooltip: 'Indent'
             });
-            this.event = new $.Event(
-                'tiptap-outdent-action'
-            );
         }
         on_click(e) {
             super.on_click(e);
-            this.editor.chain().focus().unsetBlockquote().run();
+            if (this.editor.can().unsetBlockquote()) {
+                this.editor_elem.trigger(new $.Event(
+                    'tiptap-outdent-action'
+                ));
+                this.editor.chain().focus().unsetBlockquote().run();
+            }
         }
     }
     class HTMLAction extends Button {
