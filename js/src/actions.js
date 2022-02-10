@@ -8,13 +8,13 @@ class BoldAction extends Button {
             container_elem: container_elem,
             text: 'B',
             css: {'font-weight': 'bold'},
-            tooltip: 'Toggle Bold'
+            tooltip: 'Toggle Bold',
+            toggle: true
         });
     }
 
     on_click(e) {
-        e.preventDefault();
-        this.toggle();
+        super.on_click(e);
         this.editor.chain().focus().toggleBold().run();
     }
 }
@@ -25,13 +25,13 @@ class ItalicAction extends Button {
             container_elem: container_elem,
             text: 'i',
             css: {'font-style': 'italic'},
-            tooltip: 'Toggle Italic'
+            tooltip: 'Toggle Italic',
+            toggle: true
         });
     }
 
     on_click(e) {
-        e.preventDefault();
-        this.toggle();
+        super.on_click(e);
         this.editor.chain().focus().toggleItalic().run();
     }
 }
@@ -42,13 +42,13 @@ class UnderlineAction extends Button {
             container_elem: container_elem,
             text: 'U',
             css: {'text-decoration': 'underline'},
-            tooltip: 'Toggle Underline'
+            tooltip: 'Toggle Underline',
+            toggle: true
         });
     }
 
     on_click(e) {
-        e.preventDefault();
-        this.toggle();
+        super.on_click(e);
         this.editor.chain().focus().toggleUnderline().run();
     }
 }
@@ -58,18 +58,19 @@ class BulletListAction extends Button {
         super(editor, action_opts, {
             container_elem: container_elem,
             icon: 'list',
-            tooltip: 'Bullet List'
+            tooltip: 'Bullet List',
+            toggle: true
+        });
+        this.event = new $.Event(
+            'tiptap-bl-action'
+        );
+        this.editor_elem.on('tiptap-ol-action tiptap-paragraph-action', (e) => {
+            this.active = false;
         });
     }
 
     on_click(e) {
-        e.preventDefault();
-        let ordered_list = $('.active', this.elem.parent()).data('tiptap-ordered-list');
-        if (ordered_list) {
-            ordered_list.active = false;
-            ordered_list.elem.removeClass('active');
-        }
-        this.toggle();
+        super.on_click(e);
         this.editor.chain().focus().toggleBulletList().run();
     }
 }
@@ -79,18 +80,19 @@ class OrderedListAction extends Button {
         super(editor, action_opts, {
             container_elem: container_elem,
             icon: 'th-list',
-            tooltip: 'Ordered List'
+            tooltip: 'Ordered List',
+            toggle: true
+        });
+        this.event = new $.Event(
+            'tiptap-ol-action'
+        );
+        this.editor_elem.on('tiptap-bl-action tiptap-paragraph-action', (e) => {
+            this.active = false;
         });
     }
 
     on_click(e) {
-        e.preventDefault();
-        let bullet_list = $('.active', this.elem.parent()).data('tiptap-bullet-list');
-        if (bullet_list) {
-            bullet_list.active = false;
-            bullet_list.elem.removeClass('active');
-        }
-        this.toggle();
+        super.on_click(e);
         this.editor.chain().focus().toggleOrderedList().run();
     }
 }
@@ -105,7 +107,7 @@ class IndentAction extends Button {
     }
 
     on_click(e) {
-        e.preventDefault();
+        super.on_click(e);
         this.editor.chain().focus().setBlockquote().run();
     }
 }
@@ -120,7 +122,7 @@ class OutdentAction extends Button {
     }
 
     on_click(e) {
-        e.preventDefault();
+        super.on_click(e);
         this.editor.chain().focus().unsetBlockquote().run();
     }
 }
@@ -130,7 +132,8 @@ class HTMLAction extends Button {
         super(editor, action_opts, {
             container_elem: container_elem,
             icon: 'pencil',
-            tooltip: 'Edit HTML'
+            tooltip: 'Edit HTML',
+            toggle: true
         });
 
         this.parent = this.elem.closest('div.tiptap-editor');
@@ -139,8 +142,7 @@ class HTMLAction extends Button {
     }
 
     on_click(e) {
-        e.preventDefault();
-        this.toggle();
+        super.on_click(e);
 
         if (this.active) {
             $('button', this.parent).not(this.elem).prop('disabled', true);
@@ -165,7 +167,7 @@ class HeadingAction extends Button {
     }
 
     on_click(e) {
-        e.preventDefault();
+        super.on_click(e);
         this.editor.chain().focus().toggleHeading({level: this.level}).run();
     }
 }
@@ -176,10 +178,13 @@ class ParagraphAction extends Button {
             container_elem: container_elem,
             text: 'Text'
         });
+        this.event = new $.Event(
+            'tiptap-paragraph-action'
+        );
     }
 
     on_click(e) {
-        e.preventDefault();
+        super.on_click(e);
         this.editor.chain().focus().setParagraph().run();
     }
 }
@@ -197,7 +202,7 @@ class ColorAction extends Button {
     }
 
     on_click(e) {
-        e.preventDefault();
+        super.on_click(e);
         this.editor.chain().focus().setColor(this.color).run();
     }
 }

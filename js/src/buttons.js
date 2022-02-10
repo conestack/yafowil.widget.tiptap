@@ -28,9 +28,11 @@ export class Button {
 
     constructor(editor, action_opts, opts = {}) {
         this.editor = editor;
+        this.editor_elem = $(editor.options.element);
         this.elem = $('<button />')
             .appendTo(opts.container_elem);
 
+        this.toggleable = opts.toggle;
         if (opts.tooltip) {
             new Tooltip(opts.tooltip, this.elem);
         }
@@ -58,16 +60,30 @@ export class Button {
         }
 
         this.content = $('> *', this.elem);
-
+        // this.event = null;
+        // this.active = false;
         this.container_elem = opts.container_elem;
-        this.opts = action_opts;
+        // this.opts = action_opts;
         this.on_click = this.on_click.bind(this);
         this.elem.on('click', this.on_click);
     }
 
-    toggle() {
+    get active() {
+        return this._active;
+    }
+    set active(active) {
+        if (active && this.event) {
+            this.editor_elem.trigger(this.event);
+        }
+        if (this.toggleable) {
+            active ? this.elem.addClass('active') : this.elem.removeClass('active');
+        }
+        this._active = active;
+    }
+
+    on_click(e) {
+        e.preventDefault();
         this.active = !this.active ? true : false;
-        this.active ? this.elem.addClass('active') : this.elem.removeClass('active');
     }
 }
 
