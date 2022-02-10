@@ -67,7 +67,8 @@ class BulletListAction extends Button {
         this.editor_elem.on(`
             tiptap-ol-action
             tiptap-paragraph-action
-            tiptap-outdent-action`, (e) => {
+            tiptap-outdent-action
+            tiptap-heading-action`, (e) => {
             this.active = false;
         });
     }
@@ -92,7 +93,8 @@ class OrderedListAction extends Button {
         this.editor_elem.on(`
             tiptap-bl-action
             tiptap-paragraph-action
-            tiptap-outdent-action`, (e) => {
+            tiptap-outdent-action
+            tiptap-heading-action`, (e) => {
             this.active = false;
         });
     }
@@ -114,7 +116,9 @@ class IndentAction extends Button {
 
     on_click(e) {
         super.on_click(e);
-        this.editor.chain().focus().setBlockquote().run();
+        if (this.editor.can().setBlockquote()) {
+            this.editor.chain().focus().setBlockquote().run();
+        }
     }
 }
 
@@ -175,6 +179,9 @@ class HeadingAction extends Button {
             text: `Heading ${opts.level}`
         });
         this.level = opts.level;
+        this.event = new $.Event(
+            'tiptap-heading-action'
+        );
     }
 
     on_click(e) {

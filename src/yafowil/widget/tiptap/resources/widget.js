@@ -198,7 +198,8 @@
             this.editor_elem.on(`
             tiptap-ol-action
             tiptap-paragraph-action
-            tiptap-outdent-action`, (e) => {
+            tiptap-outdent-action
+            tiptap-heading-action`, (e) => {
                 this.active = false;
             });
         }
@@ -221,7 +222,8 @@
             this.editor_elem.on(`
             tiptap-bl-action
             tiptap-paragraph-action
-            tiptap-outdent-action`, (e) => {
+            tiptap-outdent-action
+            tiptap-heading-action`, (e) => {
                 this.active = false;
             });
         }
@@ -240,7 +242,9 @@
         }
         on_click(e) {
             super.on_click(e);
-            this.editor.chain().focus().setBlockquote().run();
+            if (this.editor.can().setBlockquote()) {
+                this.editor.chain().focus().setBlockquote().run();
+            }
         }
     }
     class OutdentAction extends Button {
@@ -294,6 +298,9 @@
                 text: `Heading ${opts.level}`
             });
             this.level = opts.level;
+            this.event = new $.Event(
+                'tiptap-heading-action'
+            );
         }
         on_click(e) {
             super.on_click(e);
@@ -520,7 +527,8 @@
                 tiptap.Document,
                 tiptap.Paragraph,
                 tiptap.Text,
-                tiptap.TextStyle
+                tiptap.TextStyle,
+                tiptap.Dropcursor
             ]);
             for (let option_name in opts) {
                 actions[option_name].extensions.forEach(ext => extensions.add(ext));

@@ -29,6 +29,7 @@ npm --save install \
     @tiptap/extension-document \
     @tiptap/extension-paragraph \
     @tiptap/extension-text \
+    @tiptap/extension-dropcursor \
     @tiptap/extension-bullet-list \
     @tiptap/extension-ordered-list \
     @tiptap/extension-list-item \

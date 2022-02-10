@@ -37,7 +37,8 @@ export class TiptapWidget {
             tiptap.Document,
             tiptap.Paragraph,
             tiptap.Text,
-            tiptap.TextStyle
+            tiptap.TextStyle,
+            tiptap.Dropcursor
         ]);
         for (let option_name in opts) {
             actions[option_name].extensions.forEach(ext => extensions.add(ext));
