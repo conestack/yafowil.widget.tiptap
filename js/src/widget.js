@@ -78,7 +78,10 @@ export class TiptapWidget {
                     container = group.elem;
                 }
             }
-            this.buttons.push(new factory(this.editor, options, container));
+            this.buttons.push(new factory(this.editor, {
+                action_opts: options,
+                container_elem: container
+            }));
         }
 
         this.hide_all = this.hide_all.bind(this);

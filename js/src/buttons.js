@@ -26,19 +26,16 @@ export class Tooltip {
 
 export class Button {
 
-    constructor(editor, action_opts, opts = {}) {
+    constructor(editor, opts = {}) {
         this.editor = editor;
         this.editor_elem = $(editor.options.element);
         this.elem = $('<button />')
             .appendTo(opts.container_elem);
 
-        this.toggleable = opts.toggle;
-        if (opts.tooltip) {
-            new Tooltip(opts.tooltip, this.elem);
-        }
-        if (opts.order) {
-            this.elem.css('order', opts.order);
-        }
+        this.opts = opts;
+
+        if (opts.tooltip) { new Tooltip(opts.tooltip, this.elem); }
+        if (opts.order) { this.elem.css('order', opts.order); }
         if (opts.icon) {
             this.icon = $('<i />')
                 .addClass(`glyphicon glyphicon-${opts.icon}`)
@@ -49,21 +46,10 @@ export class Button {
                 .text(opts.text)
                 .appendTo(this.elem);
         }
-        if (opts.css) {
-            $('> *', this.elem).css(opts.css);
-        }
-        if (opts.color) {
-            $('<div />')
-                .addClass('color')
-                .css('background-color', opts.color)
-                .appendTo(this.elem);
-        }
+        if (opts.css) { $('> *', this.elem).css(opts.css); }
 
         this.content = $('> *', this.elem);
-        // this.event = null;
-        // this.active = false;
         this.container_elem = opts.container_elem;
-        // this.opts = action_opts;
         this.on_click = this.on_click.bind(this);
         this.elem.on('click', this.on_click);
     }
@@ -75,7 +61,7 @@ export class Button {
         if (active && this.event) {
             this.editor_elem.trigger(this.event);
         }
-        if (this.toggleable) {
+        if (this.opts.toggle) {
             active ? this.elem.addClass('active') : this.elem.removeClass('active');
         }
         this._active = active;
@@ -89,8 +75,8 @@ export class Button {
 
 export class DropdownButton extends Button {
 
-    constructor(editor, action_opts, opts = {}) {
-        super(editor, action_opts, opts);
+    constructor(editor, opts = {}) {
+        super(editor, opts);
         this.elem.addClass('drop_btn');
         this.dd_elem = $('<div />')
             .addClass('tiptap-dropdown')

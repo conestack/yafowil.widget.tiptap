@@ -3,9 +3,9 @@ import {Button, DropdownButton} from './buttons.js';
 import tiptap from 'tiptap';
 
 class BoldAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             text: 'B',
             css: {'font-weight': 'bold'},
             tooltip: 'Toggle Bold',
@@ -20,9 +20,9 @@ class BoldAction extends Button {
 }
 
 class ItalicAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             text: 'i',
             css: {'font-style': 'italic'},
             tooltip: 'Toggle Italic',
@@ -37,9 +37,9 @@ class ItalicAction extends Button {
 }
 
 class UnderlineAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             text: 'U',
             css: {'text-decoration': 'underline'},
             tooltip: 'Toggle Underline',
@@ -54,9 +54,9 @@ class UnderlineAction extends Button {
 }
 
 class BulletListAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             icon: 'list',
             tooltip: 'Bullet List',
             toggle: true
@@ -64,7 +64,10 @@ class BulletListAction extends Button {
         this.event = new $.Event(
             'tiptap-bl-action'
         );
-        this.editor_elem.on('tiptap-ol-action tiptap-paragraph-action', (e) => {
+        this.editor_elem.on(`
+            tiptap-ol-action
+            tiptap-paragraph-action
+            tiptap-outdent-action`, (e) => {
             this.active = false;
         });
     }
@@ -76,9 +79,9 @@ class BulletListAction extends Button {
 }
 
 class OrderedListAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             icon: 'th-list',
             tooltip: 'Ordered List',
             toggle: true
@@ -86,7 +89,10 @@ class OrderedListAction extends Button {
         this.event = new $.Event(
             'tiptap-ol-action'
         );
-        this.editor_elem.on('tiptap-bl-action tiptap-paragraph-action', (e) => {
+        this.editor_elem.on(`
+            tiptap-bl-action
+            tiptap-paragraph-action
+            tiptap-outdent-action`, (e) => {
             this.active = false;
         });
     }
@@ -98,9 +104,9 @@ class OrderedListAction extends Button {
 }
 
 class IndentAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             icon: 'indent-left',
             tooltip: 'Indent'
         });
@@ -113,12 +119,15 @@ class IndentAction extends Button {
 }
 
 class OutdentAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             icon: 'indent-right',
             tooltip: 'Indent'
         });
+        this.event = new $.Event(
+            'tiptap-outdent-action'
+        );
     }
 
     on_click(e) {
@@ -128,9 +137,9 @@ class OutdentAction extends Button {
 }
 
 class HTMLAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             icon: 'pencil',
             tooltip: 'Edit HTML',
             toggle: true
@@ -158,12 +167,12 @@ class HTMLAction extends Button {
 }
 
 class HeadingAction extends Button {
-    constructor(editor, action_opts, container_elem, level) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
-            text: `Heading ${level}`
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
+            text: `Heading ${opts.level}`
         });
-        this.level = level;
+        this.level = opts.level;
     }
 
     on_click(e) {
@@ -173,9 +182,9 @@ class HeadingAction extends Button {
 }
 
 class ParagraphAction extends Button {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             text: 'Text'
         });
         this.event = new $.Event(
@@ -190,36 +199,43 @@ class ParagraphAction extends Button {
 }
 
 class ColorAction extends Button {
-    constructor(editor, action_opts, container_elem, color) {
-        super(editor, action_opts, {
-            container_elem: container_elem, 
-            text: color.name,
-            color: color.color
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem, 
+            text: opts.swatch.name
         });
+        this.swatch = opts.swatch;
 
-        this.name = color.name;
-        this.color = color.color;
+        $('<div />')
+            .addClass('color')
+            .css('background-color', this.swatch.color)
+            .appendTo(this.elem);
     }
 
     on_click(e) {
         super.on_click(e);
-        this.editor.chain().focus().setColor(this.color).run();
+        this.editor.chain().focus().setColor(this.swatch.color).run();
     }
 }
 
 class HeadingsAction extends DropdownButton {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             icon: 'font'
         });
 
         this.children.push(
-            new ParagraphAction(editor, action_opts, this.dd_elem)
+            new ParagraphAction(editor, {
+                container_elem: this.dd_elem
+            })
         );
         for (let i=1; i<=6; i++) {
             this.children.push(
-                new HeadingAction(editor, action_opts, this.dd_elem, i)
+                new HeadingAction(editor, {
+                    container_elem: this.dd_elem,
+                    level: i
+                })
             )
         }
         this.set_items();
@@ -227,14 +243,17 @@ class HeadingsAction extends DropdownButton {
 }
 
 class ColorsAction extends DropdownButton {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem
         });
 
-        for (let color of action_opts) {
+        for (let swatch of opts.action_opts) {
             this.children.push(
-                new ColorAction(editor, action_opts, this.dd_elem, color)
+                new ColorAction(editor, {
+                    container_elem: this.dd_elem,
+                    swatch: swatch
+                })
             )
         }
 
@@ -243,9 +262,9 @@ class ColorsAction extends DropdownButton {
 }
 
 class ImageAction extends DropdownButton {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             tooltip: 'Add Image',
             icon: 'picture',
             submit: true
@@ -280,9 +299,9 @@ class ImageAction extends DropdownButton {
 }
 
 class LinkAction extends DropdownButton {
-    constructor(editor, action_opts, container_elem) {
-        super(editor, action_opts, {
-            container_elem: container_elem,
+    constructor(editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
             tooltip: 'Add Link',
             icon: 'link',
             submit: true
