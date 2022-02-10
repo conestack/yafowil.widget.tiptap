@@ -351,6 +351,9 @@
                     })
                 );
             }
+            this.editor_elem.on('tiptap-bl-action tiptap-ol-action', (e) => {
+                this.active_item = this.children[0];
+            });
             this.set_items();
         }
     }
