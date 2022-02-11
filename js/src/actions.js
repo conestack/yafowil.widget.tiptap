@@ -3,7 +3,10 @@ import {Button, DropdownButton} from './buttons.js';
 import tiptap from 'tiptap';
 
 class BoldAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Bold];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             text: 'B',
@@ -11,16 +14,25 @@ class BoldAction extends Button {
             tooltip: 'Toggle Bold',
             toggle: true
         });
+        this.id = 'bold';
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
+        this.active = !this.active;
         this.editor.chain().focus().toggleBold().run();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class ItalicAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Italic];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             text: 'i',
@@ -28,16 +40,25 @@ class ItalicAction extends Button {
             tooltip: 'Toggle Italic',
             toggle: true
         });
+        this.id = 'italic';
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
+        this.active = !this.active;
         this.editor.chain().focus().toggleItalic().run();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class UnderlineAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Underline];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             text: 'U',
@@ -45,119 +66,143 @@ class UnderlineAction extends Button {
             tooltip: 'Toggle Underline',
             toggle: true
         });
+        this.id = 'underline';
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
+        this.active = !this.active;
         this.editor.chain().focus().toggleUnderline().run();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class BulletListAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.BulletList, tiptap.ListItem];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             icon: 'list',
             tooltip: 'Bullet List',
             toggle: true
         });
-        this.event = new $.Event(
-            'tiptap-bl-action'
-        );
-        this.editor_elem.on(`
-            tiptap-ol-action
-            tiptap-paragraph-action
-            tiptap-outdent-action
-            tiptap-heading-action`, (e) => {
-            this.active = false;
-        });
+
+        this.id = 'bullet_list';
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
+        this.active = !this.active;
         this.editor.chain().focus().toggleBulletList().run();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class OrderedListAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.OrderedList, tiptap.ListItem];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             icon: 'th-list',
             tooltip: 'Ordered List',
             toggle: true
         });
-        this.event = new $.Event(
-            'tiptap-ol-action'
-        );
-        this.editor_elem.on(`
-            tiptap-bl-action
-            tiptap-paragraph-action
-            tiptap-outdent-action
-            tiptap-heading-action`, (e) => {
-            this.active = false;
-        });
+
+        this.id = 'ordered_list';
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
+        this.active = !this.active;
         this.editor.chain().focus().toggleOrderedList().run();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class IndentAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Blockquote];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             icon: 'indent-left',
             tooltip: 'Indent'
         });
+        this.id = 'indent';
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
         if (this.editor.can().setBlockquote()) {
             this.editor.chain().focus().setBlockquote().run();
         }
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class OutdentAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Blockquote];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             icon: 'indent-right',
-            tooltip: 'Indent'
+            tooltip: 'Outdent'
         });
+        this.id = 'outdent';
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
         if (this.editor.can().unsetBlockquote()) {
-            this.editor_elem.trigger(new $.Event(
-                'tiptap-outdent-action'
-            ));
             this.editor.chain().focus().unsetBlockquote().run();
+            this.widget_elem.trigger(new $.Event('tiptap-action', {
+                action: this
+            }));
         }
     }
 }
 
 class HTMLAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             icon: 'pencil',
             tooltip: 'Edit HTML',
             toggle: true
         });
-
+        this.id = 'html';
+        this.widget_elem = widget.elem;
         this.parent = this.elem.closest('div.tiptap-editor');
         this.editarea = $('div.ProseMirror', this.parent);
         this.textarea = $('textarea.ProseMirror', this.parent);
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
+        this.active = !this.active;
 
         if (this.active) {
             $('button', this.parent).not(this.elem).prop('disabled', true);
@@ -169,52 +214,65 @@ class HTMLAction extends Button {
             this.editarea.show();
             this.editor.chain().focus().setContent(this.textarea.val()).run();
         }
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class HeadingAction extends Button {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Heading];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             text: `Heading ${opts.level}`
         });
+        this.id = 'heading';
         this.level = opts.level;
-        this.event = new $.Event(
-            'tiptap-heading-action'
-        );
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
         this.editor.chain().focus().toggleHeading({level: this.level}).run();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class ParagraphAction extends Button {
-    constructor(editor, opts) {
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             text: 'Text'
         });
-        this.event = new $.Event(
-            'tiptap-paragraph-action'
-        );
+        this.id = 'paragraph';
+        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
         this.editor.chain().focus().setParagraph().run();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class ColorAction extends Button {
-    constructor(editor, opts) {
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem, 
             text: opts.swatch.name
         });
+        this.id = 'color';
         this.swatch = opts.swatch;
-
+        this.widget_elem = widget.elem;
         $('<div />')
             .addClass('color')
             .css('background-color', this.swatch.color)
@@ -222,67 +280,81 @@ class ColorAction extends Button {
     }
 
     on_click(e) {
-        super.on_click(e);
+        e.preventDefault();
         this.editor.chain().focus().setColor(this.swatch.color).run();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class HeadingsAction extends DropdownButton {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Heading];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             icon: 'font'
         });
+        this.id = 'headings';
 
         this.children.push(
-            new ParagraphAction(editor, {
+            new ParagraphAction(widget, editor, {
                 container_elem: this.dd_elem
             })
         );
         for (let i=1; i<=6; i++) {
             this.children.push(
-                new HeadingAction(editor, {
+                new HeadingAction(widget, editor, {
                     container_elem: this.dd_elem,
                     level: i
                 })
             )
         }
-
-        this.editor_elem.on('tiptap-bl-action tiptap-ol-action', (e) => {
-            this.active_item = this.children[0];
-        });
-
         this.set_items();
+    }
+
+    reset() {
+        this.active_item = this.children[0];
     }
 }
 
 class ColorsAction extends DropdownButton {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Color];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem
         });
+        this.id = 'colors';
 
         for (let swatch of opts.action_opts) {
             this.children.push(
-                new ColorAction(editor, {
+                new ColorAction(widget, editor, {
                     container_elem: this.dd_elem,
                     swatch: swatch
                 })
             )
         }
-
         this.set_items();
     }
 }
 
 class ImageAction extends DropdownButton {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Image];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             tooltip: 'Add Image',
             icon: 'picture',
             submit: true
         });
+        this.id = 'image';
+        this.widget_elem = widget.elem;
 
         this.src_elem = $('<span />')
             .addClass('dropdown-item')
@@ -309,17 +381,25 @@ class ImageAction extends DropdownButton {
             title: $('input', this.title_elem).val()
         }).run();
         this.dd_elem.hide();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 class LinkAction extends DropdownButton {
-    constructor(editor, opts) {
+
+    static extensions = [tiptap.Link];
+
+    constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
             tooltip: 'Add Link',
             icon: 'link',
             submit: true
         });
+        this.id = 'link';
+        this.widget_elem = widget.elem;
 
         this.href_elem = $('<span />')
             .addClass('dropdown-item')
@@ -333,10 +413,14 @@ class LinkAction extends DropdownButton {
         let href = $('input', this.href_elem).val();
         this.editor.chain().focus().setLink({href: href}).run();
         this.dd_elem.hide();
+        this.widget_elem.trigger(new $.Event('tiptap-action', {
+            action: this
+        }));
     }
 }
 
 export class ActionGroup {
+
     constructor(name, target) {
         this.name = name;
         this.elem = $('<div />')
@@ -347,51 +431,39 @@ export class ActionGroup {
 
 export let actions = {
     bold: {
-        factory: BoldAction,
-        extensions: [tiptap.Bold]
+        factory: BoldAction
     },
     italic: {
-        factory: ItalicAction,
-        extensions: [tiptap.Italic]
+        factory: ItalicAction
     },
     underline: {
-        factory: UnderlineAction,
-        extensions: [tiptap.Underline]
+        factory: UnderlineAction
     },
     bullet_list: {
-        factory: BulletListAction,
-        extensions: [tiptap.BulletList, tiptap.ListItem]
+        factory: BulletListAction
     },
     ordered_list: {
-        factory: OrderedListAction,
-        extensions: [tiptap.OrderedList, tiptap.ListItem]
+        factory: OrderedListAction
     },
     indent: {
-        factory: IndentAction,
-        extensions: [tiptap.Blockquote]
+        factory: IndentAction
     },
     outdent: {
-        factory: OutdentAction,
-        extensions: [tiptap.Blockquote]
+        factory: OutdentAction
     },
     html: {
-        factory: HTMLAction,
-        extensions: []
+        factory: HTMLAction
     },
     heading: {
-        factory: HeadingsAction,
-        extensions: [tiptap.Heading]
+        factory: HeadingsAction
     },
     colors: {
-        factory: ColorsAction,
-        extensions: [tiptap.Color]
+        factory: ColorsAction
     },
     image: {
-        factory: ImageAction,
-        extensions: [tiptap.Image]
+        factory: ImageAction
     },
     link: {
-        factory: LinkAction,
-        extensions: [tiptap.Link]
+        factory: LinkAction
     }
 }

@@ -13,6 +13,10 @@
     margin: 10px 0;
     padding: 5px 10px;
 }
+div.ProseMirror {
+    overflow: auto;
+    resize: both;
+}
 textarea.ProseMirror {
     display: none;
     width: 100%;

@@ -1,6 +1,7 @@
 import $ from 'jquery';
 
 export class Tooltip {
+
     constructor(name, elem) {
         this.elem = $('<div />')
             .text(name)
@@ -58,18 +59,10 @@ export class Button {
         return this._active;
     }
     set active(active) {
-        if (active && this.event) {
-            this.editor_elem.trigger(this.event);
-        }
         if (this.opts.toggle) {
             active ? this.elem.addClass('active') : this.elem.removeClass('active');
         }
         this._active = active;
-    }
-
-    on_click(e) {
-        e.preventDefault();
-        this.active = !this.active ? true : false;
     }
 }
 
@@ -121,6 +114,7 @@ export class DropdownButton extends Button {
 
     on_resize(e) {
         this.dd_elem.hide();
+        this.active = false;
     }
 
     set_items() {
@@ -143,6 +137,7 @@ export class DropdownButton extends Button {
             $(e.target).closest(this.elem).length === 0)
         {
             this.dd_elem.hide();
+            this.active = false;
         }
     }
 
