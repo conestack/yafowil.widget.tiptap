@@ -151,9 +151,6 @@
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleBold().run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class ItalicAction extends Button {
@@ -173,9 +170,6 @@
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleItalic().run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class UnderlineAction extends Button {
@@ -195,9 +189,6 @@
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleUnderline().run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class BulletListAction extends Button {
@@ -209,16 +200,13 @@
                 tooltip: 'Bullet List',
                 toggle: true
             });
-            this.id = 'bullet_list';
+            this.id = 'bulletList';
             this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleBulletList().run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class OrderedListAction extends Button {
@@ -230,16 +218,13 @@
                 tooltip: 'Ordered List',
                 toggle: true
             });
-            this.id = 'ordered_list';
+            this.id = 'orderedList';
             this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleOrderedList().run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class IndentAction extends Button {
@@ -258,9 +243,6 @@
             if (this.editor.can().setBlockquote()) {
                 this.editor.chain().focus().setBlockquote().run();
             }
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class OutdentAction extends Button {
@@ -278,9 +260,6 @@
             e.preventDefault();
             if (this.editor.can().unsetBlockquote()) {
                 this.editor.chain().focus().unsetBlockquote().run();
-                this.widget_elem.trigger(new $.Event('tiptap-action', {
-                    action: this
-                }));
             }
         }
     }
@@ -312,9 +291,6 @@
                 this.editarea.show();
                 this.editor.chain().focus().setContent(this.textarea.val()).run();
             }
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class HeadingAction extends Button {
@@ -331,9 +307,6 @@
         on_click(e) {
             e.preventDefault();
             this.editor.chain().focus().toggleHeading({level: this.level}).run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class ParagraphAction extends Button {
@@ -348,9 +321,6 @@
         on_click(e) {
             e.preventDefault();
             this.editor.chain().focus().setParagraph().run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class ColorAction extends Button {
@@ -370,9 +340,6 @@
         on_click(e) {
             e.preventDefault();
             this.editor.chain().focus().setColor(this.swatch.color).run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class HeadingsAction extends DropdownButton {
@@ -455,9 +422,6 @@
                 title: $('input', this.title_elem).val()
             }).run();
             this.dd_elem.hide();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class LinkAction extends DropdownButton {
@@ -482,9 +446,6 @@
             let href = $('input', this.href_elem).val();
             this.editor.chain().focus().setLink({href: href}).run();
             this.dd_elem.hide();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
     class ActionGroup {
@@ -540,11 +501,11 @@
                 let options = {
                     heading: true,
                     colors: [
-                        { name: 'Default', color: '#333333'},
-                        { name: 'Blue', color: '#1a21fb' },
-                        { name: 'Lime', color: '#ccff00' },
-                        { name: 'Teal', color: '#2acaea' },
-                        { name: 'Red', color: '#d0060a' }
+                        { name: 'Default', color: 'rgb(51, 51, 51)'},
+                        { name: 'Blue', color: 'rgb(53 39 245)' },
+                        { name: 'Lime', color: 'rgb(204, 255, 0)' },
+                        { name: 'Teal', color: 'rgb(42, 202, 234)' },
+                        { name: 'Red', color: 'rgb(208, 6, 10)' }
                     ],
                     bold: { target: 'text_controls' },
                     italic: { target: 'text_controls' },
@@ -611,33 +572,11 @@
                     container_elem: container
                 }));
             }
-            this.hide_all = this.hide_all.bind(this);
-            this.editor.on('update', this.hide_all);
-            this.editor.on('selectionUpdate', () => {
-            });
-            this.on_event = this.on_event.bind(this);
-            this.elem.on('tiptap-action', this.on_event);
-            $$1(document).on('keyup', (e) => {
-                let ul = this.buttons.find(x => x.id === 'bullet_list');
-                let ol = this.buttons.find(x => x.id === 'ordered_list');
-                if (!ol && !ul) return;
-                let bold = this.buttons.find(x => x.id === 'bold');
-                let italic = this.buttons.find(x => x.id === 'italic');
-                let underline = this.buttons.find(x => x.id === 'underline');
-                if (e.key === 'Enter') {
-                    if (ul && ul.active || ol && ol.active) {
-                        if (bold && bold.active) {
-                            this.editor.commands.setBold();
-                        }
-                        if (italic && italic.active) {
-                            this.editor.commands.setItalic();
-                        }
-                        if (underline && underline.active) {
-                            this.editor.commands.setUnderline();
-                        }
-                    }
-                }
-            });
+            this.swatches = opts.colors ?? [];
+            this.on_update = this.on_update.bind(this);
+            this.editor.on('update', this.on_update);
+            this.on_selection_update = this.on_selection_update.bind(this);
+            this.editor.on('selectionUpdate', this.on_selection_update);
         }
         destroy() {
             this.unload_all();
@@ -652,48 +591,51 @@
                 }
             });
         }
-        hide_all() {
-            console.log('update');
-            $$1('div.tiptap-dropdown', this.elem).hide();
+        on_update() {
+            this.buttons.forEach(btn => { if(btn.dd_elem) btn.dd_elem.hide(); });
+            let ul = this.buttons.find(x => x.id === 'bulletList');
+            let ol = this.buttons.find(x => x.id === 'orderedList');
+            if (this.editor.isActive('bulletList') && ol) {
+                ol.active = false;
+            }
+            if (this.editor.isActive('orderedList') && ul) {
+                ul.active = false;
+            }
         }
-        on_event(e) {
-            let find = (id) => {
-                return this.buttons.find(x => x.id === id);
-            };
-            let deactivate = (id) => {
+        on_selection_update() {
+            let ids = ['bold', 'italic', 'underline', 'bulletList', 'orderedList'];
+            for (let id of ids) {
                 let btn = this.buttons.find(x => x.id === id);
-                if (btn) btn.active = false;
-            };
-            switch(e.action.id) {
-                case 'bullet_list':
-                    deactivate('ordered_list');
-                    find('headings').reset();
-                    break;
-                case 'ordered_list':
-                    deactivate('bullet_list');
-                    find('headings').reset();
-                    break;
-                case 'paragraph':
-                case 'outdent':
-                    deactivate('ordered_list');
-                    deactivate('bullet_list');
-                    break;
-                case 'heading':
-                    deactivate('ordered_list');
-                    deactivate('bullet_list');
-                    let bold = find('bold');
-                    let italic = find('italic');
-                    let underline = find('underline');
-                    if (bold && bold.active) {
-                        this.editor.commands.setBold();
+                if (btn) {
+                    if (this.editor.isActive(id)) {
+                        btn.active = true;
+                    } else {
+                        btn.active = false;
                     }
-                    if (italic && italic.active) {
-                        this.editor.commands.setItalic();
-                    }
-                    if (underline && underline.active) {
-                        this.editor.commands.setUnderline();
-                    }
-                    break;
+                }
+            }
+            if (this.editor.isActive('paragraph')) {
+                let headings = this.buttons.find(x => x.id === 'headings');
+                if (headings) headings.active_item = headings.children[0];
+            }
+            for (let i = 1; i <=6; i++) {
+                if (this.editor.isActive('heading', {level: i})) {
+                    let headings = this.buttons.find(x => x.id === 'headings');
+                    if (headings) headings.active_item = headings.children[i];
+                }
+            }
+            for (let swatch of this.swatches) {
+                let index = this.swatches.indexOf(swatch);
+                let colors = this.buttons.find(x => x.id === 'colors');
+                if (this.editor.isActive('textStyle', {color: swatch.color})) {
+                    colors.active_item = colors.children[index];
+                }
+            }
+            if (!this.editor.isActive('textStyle', { color: /.*/ })) {
+                let colors = this.buttons.find(x => x.id === 'colors');
+                if (colors) {
+                    colors.active_item = colors.children[0];
+                }
             }
         }
     }

@@ -22,9 +22,6 @@ class BoldAction extends Button {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleBold().run();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -48,9 +45,6 @@ class ItalicAction extends Button {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleItalic().run();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -74,9 +68,6 @@ class UnderlineAction extends Button {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleUnderline().run();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -92,7 +83,7 @@ class BulletListAction extends Button {
             toggle: true
         });
 
-        this.id = 'bullet_list';
+        this.id = 'bulletList';
         this.widget_elem = widget.elem;
     }
 
@@ -100,9 +91,6 @@ class BulletListAction extends Button {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleBulletList().run();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -118,7 +106,7 @@ class OrderedListAction extends Button {
             toggle: true
         });
 
-        this.id = 'ordered_list';
+        this.id = 'orderedList';
         this.widget_elem = widget.elem;
     }
 
@@ -126,9 +114,6 @@ class OrderedListAction extends Button {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleOrderedList().run();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -151,9 +136,6 @@ class IndentAction extends Button {
         if (this.editor.can().setBlockquote()) {
             this.editor.chain().focus().setBlockquote().run();
         }
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -175,9 +157,6 @@ class OutdentAction extends Button {
         e.preventDefault();
         if (this.editor.can().unsetBlockquote()) {
             this.editor.chain().focus().unsetBlockquote().run();
-            this.widget_elem.trigger(new $.Event('tiptap-action', {
-                action: this
-            }));
         }
     }
 }
@@ -214,9 +193,6 @@ class HTMLAction extends Button {
             this.editarea.show();
             this.editor.chain().focus().setContent(this.textarea.val()).run();
         }
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -237,9 +213,6 @@ class HeadingAction extends Button {
     on_click(e) {
         e.preventDefault();
         this.editor.chain().focus().toggleHeading({level: this.level}).run();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -257,9 +230,6 @@ class ParagraphAction extends Button {
     on_click(e) {
         e.preventDefault();
         this.editor.chain().focus().setParagraph().run();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -282,9 +252,6 @@ class ColorAction extends Button {
     on_click(e) {
         e.preventDefault();
         this.editor.chain().focus().setColor(this.swatch.color).run();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -381,9 +348,6 @@ class ImageAction extends DropdownButton {
             title: $('input', this.title_elem).val()
         }).run();
         this.dd_elem.hide();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
@@ -413,9 +377,6 @@ class LinkAction extends DropdownButton {
         let href = $('input', this.href_elem).val();
         this.editor.chain().focus().setLink({href: href}).run();
         this.dd_elem.hide();
-        this.widget_elem.trigger(new $.Event('tiptap-action', {
-            action: this
-        }));
     }
 }
 
