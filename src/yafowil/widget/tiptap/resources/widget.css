@@ -204,3 +204,21 @@ div.tiptap-dropdown {
 .tiptap-dropdown button.submit:hover {
     background-color: #5096d2;
 }
+
+a.help-btn {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #ccc;
+    background: white;
+    text-decoration: none;
+}
+a.help-btn * {
+    font-size: 10px;
+    font-weight: bold;
+    color: #bbb;
+    text-decoration: none;
+}

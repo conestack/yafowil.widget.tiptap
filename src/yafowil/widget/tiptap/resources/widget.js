@@ -543,6 +543,14 @@
             this.controls = $$1('<div />')
                 .addClass('tiptap-controls')
                 .prependTo(this.elem);
+            this.help_elem = $$1('<a />')
+                .attr('href', 'https://tiptap.dev/api/keyboard-shortcuts#predefined-keyboard-shortcuts')
+                .attr('target', '_blank')
+                .addClass('help-btn')
+                .append(
+                    $$1('<div />')
+                    .text('?'))
+                .insertAfter(this.elem);
             this.editor = new tiptap.Editor({
                 element: this.elem[0],
                 extensions: extensions,
