@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import tiptap from 'tiptap';
 import {actions, ActionGroup} from './actions';
 
 export class TiptapWidget {
@@ -7,24 +6,24 @@ export class TiptapWidget {
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
             let options = {
-                heading: true,
-                colors: [ // pass color values as rgb, browser issue with hex
-                    { name: 'Default', color: 'rgb(51, 51, 51)'},
-                    { name: 'Blue', color: 'rgb(53 39 245)' },
-                    { name: 'Lime', color: 'rgb(204, 255, 0)' },
-                    { name: 'Teal', color: 'rgb(42, 202, 234)' },
-                    { name: 'Red', color: 'rgb(208, 6, 10)' }
-                ],
+                // heading: true,
+                // colors: [ // pass color values as rgb, browser issue with hex
+                //     { name: 'Default', color: 'rgb(51, 51, 51)'},
+                //     { name: 'Blue', color: 'rgb(53 39 245)' },
+                //     { name: 'Lime', color: 'rgb(204, 255, 0)' },
+                //     { name: 'Teal', color: 'rgb(42, 202, 234)' },
+                //     { name: 'Red', color: 'rgb(208, 6, 10)' }
+                // ],
                 bold: { target: 'text_controls' },
-                italic: { target: 'text_controls' },
-                underline: { target: 'text_controls' },
-                bullet_list: { target: 'format_controls' },
-                ordered_list: { target: 'format_controls' },
-                indent: { target: 'format_controls' },
-                outdent: { target: 'format_controls' },
-                html: true,
-                image: true,
-                link: true
+                // italic: { target: 'text_controls' },
+                // underline: { target: 'text_controls' },
+                // bullet_list: { target: 'format_controls' },
+                // ordered_list: { target: 'format_controls' },
+                // indent: { target: 'format_controls' },
+                // outdent: { target: 'format_controls' },
+                // html: true,
+                // image: true,
+                // link: true
             }
             new TiptapWidget($(this), options);
         });
@@ -42,9 +41,8 @@ export class TiptapWidget {
             tiptap.Dropcursor
         ]);
         for (let option_name in opts) {
-            actions[option_name].factory.extensions.forEach(
-                ext => extensions.add(ext)
-            );
+            let exts = actions[option_name].factory.extensions();
+            exts.forEach(ext => extensions.add(ext));
         }
 
         this.editarea = $('div.ProseMirror', this.elem);
@@ -80,7 +78,7 @@ export class TiptapWidget {
 
             if (target) {
                 let targ = button_groups.filter(group => {
-                    return group.name === target ?? false
+                    return group.name === target ? target : false
                 });
                 if (targ[0]) {
                     container = targ[0].elem;
@@ -95,7 +93,7 @@ export class TiptapWidget {
                 container_elem: container
             }));
         }
-        this.swatches = opts.colors ?? [];
+        this.swatches = opts.colors ? opts.colors : [];
         this.on_update = this.on_update.bind(this);
         this.editor.on('update', this.on_update);
         this.on_selection_update = this.on_selection_update.bind(this);

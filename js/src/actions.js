@@ -1,10 +1,12 @@
 
+import $ from 'jquery';
 import {Button, DropdownButton} from './buttons.js';
-import tiptap from 'tiptap';
 
 class BoldAction extends Button {
 
-    static extensions = [tiptap.Bold];
+    static extensions() {
+        return[tiptap.Bold];
+    }
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -27,7 +29,7 @@ class BoldAction extends Button {
 
 class ItalicAction extends Button {
 
-    static extensions = [tiptap.Italic];
+    // static extensions = [tiptap.Italic];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -50,7 +52,7 @@ class ItalicAction extends Button {
 
 class UnderlineAction extends Button {
 
-    static extensions = [tiptap.Underline];
+    // static extensions = [tiptap.Underline];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -73,7 +75,7 @@ class UnderlineAction extends Button {
 
 class BulletListAction extends Button {
 
-    static extensions = [tiptap.BulletList, tiptap.ListItem];
+    // static extensions = [tiptap.BulletList, tiptap.ListItem];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -96,7 +98,7 @@ class BulletListAction extends Button {
 
 class OrderedListAction extends Button {
 
-    static extensions = [tiptap.OrderedList, tiptap.ListItem];
+    // static extensions = [tiptap.OrderedList, tiptap.ListItem];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -119,7 +121,7 @@ class OrderedListAction extends Button {
 
 class IndentAction extends Button {
 
-    static extensions = [tiptap.Blockquote];
+    // static extensions = [tiptap.Blockquote];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -141,7 +143,7 @@ class IndentAction extends Button {
 
 class OutdentAction extends Button {
 
-    static extensions = [tiptap.Blockquote];
+    // static extensions = [tiptap.Blockquote];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -163,7 +165,7 @@ class OutdentAction extends Button {
 
 class HTMLAction extends Button {
 
-    static extensions = [];
+    // static extensions = [];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -198,7 +200,7 @@ class HTMLAction extends Button {
 
 class HeadingAction extends Button {
 
-    static extensions = [tiptap.Heading];
+    // static extensions = [tiptap.Heading];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -257,7 +259,7 @@ class ColorAction extends Button {
 
 class HeadingsAction extends DropdownButton {
 
-    static extensions = [tiptap.Heading];
+    // static extensions = [tiptap.Heading];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -289,7 +291,7 @@ class HeadingsAction extends DropdownButton {
 
 class ColorsAction extends DropdownButton {
 
-    static extensions = [tiptap.Color];
+    // static extensions = [tiptap.Color];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -311,7 +313,7 @@ class ColorsAction extends DropdownButton {
 
 class ImageAction extends DropdownButton {
 
-    static extensions = [tiptap.Image];
+    // static extensions = [tiptap.Image];
 
     constructor(widget, editor, opts) {
         super(editor, {
@@ -353,7 +355,7 @@ class ImageAction extends DropdownButton {
 
 class LinkAction extends DropdownButton {
 
-    static extensions = [tiptap.Link];
+    // static extensions = [tiptap.Link];
 
     constructor(widget, editor, opts) {
         super(editor, {

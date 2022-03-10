@@ -1,6 +1,7 @@
 import {TiptapWidget} from '../src/widget.js';
+import $ from 'jquery';
 
-let elem = $('<input/>');
+let elem = $('<div/>').addClass('tiptap-editor');
 let widget;
 
 QUnit.module('TiptapWidget', hooks => {
@@ -11,16 +12,18 @@ QUnit.module('TiptapWidget', hooks => {
     hooks.beforeEach(() => {
         $('#container').append(elem);
     });
-    hooks.afterEach(() => {
-        $('#container').empty();
-        widget = null;
-    });
-    hooks.after(() => {
-        $('#container').empty().remove();
-    });
+    // hooks.afterEach(() => {
+    //     $('#container').empty();
+    //     widget = null;
+    // });
+    // hooks.after(() => {
+    //     $('#container').empty().remove();
+    // });
 
     QUnit.test('initialize', assert => {
         assert.ok(true)
-        widget = new TiptapWidget(elem);
+        TiptapWidget.initialize();
+        widget = elem.data('tiptap-widget');
+        console.log(widget.elem)
     });
 });

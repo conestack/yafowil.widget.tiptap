@@ -1,9 +1,9 @@
-(function (exports, $$1, tiptap) {
+(function (exports, $) {
     'use strict';
 
     class Tooltip {
         constructor(name, elem) {
-            this.elem = $$1('<div />')
+            this.elem = $('<div />')
                 .text(name)
                 .addClass('tiptap-tooltip')
                 .appendTo('body');
@@ -25,24 +25,24 @@
     class Button {
         constructor(editor, opts = {}) {
             this.editor = editor;
-            this.editor_elem = $$1(editor.options.element);
-            this.elem = $$1('<button />')
+            this.editor_elem = $(editor.options.element);
+            this.elem = $('<button />')
                 .appendTo(opts.container_elem);
             this.opts = opts;
             if (opts.tooltip) { new Tooltip(opts.tooltip, this.elem); }
             if (opts.order) { this.elem.css('order', opts.order); }
             if (opts.icon) {
-                this.icon = $$1('<i />')
+                this.icon = $('<i />')
                     .addClass(`glyphicon glyphicon-${opts.icon}`)
                     .appendTo(this.elem);
             }
             if (opts.text) {
-                $$1(`<span />`)
+                $(`<span />`)
                     .text(opts.text)
                     .appendTo(this.elem);
             }
-            if (opts.css) { $$1('> *', this.elem).css(opts.css); }
-            this.content = $$1('> *', this.elem);
+            if (opts.css) { $('> *', this.elem).css(opts.css); }
+            this.content = $('> *', this.elem);
             this.container_elem = opts.container_elem;
             this.on_click = this.on_click.bind(this);
             this.elem.on('click', this.on_click);
@@ -61,13 +61,13 @@
         constructor(editor, opts = {}) {
             super(editor, opts);
             this.elem.addClass('drop_btn');
-            this.dd_elem = $$1('<div />')
+            this.dd_elem = $('<div />')
                 .addClass('tiptap-dropdown')
                 .appendTo('body');
             this.children = [];
             if (opts.submit) {
                 this.dd_elem.addClass('grid');
-                this.submit_elem = $$1('<button />')
+                this.submit_elem = $('<button />')
                     .addClass('submit')
                     .text('submit')
                     .appendTo(this.dd_elem);
@@ -75,9 +75,9 @@
                 this.submit_elem.on('click', this.submit);
             }
             this.hide_dropdown = this.hide_dropdown.bind(this);
-            $$1(document).on('click', this.hide_dropdown);
+            $(document).on('click', this.hide_dropdown);
             this.on_resize = this.on_resize.bind(this);
-            $$1(window).on('resize', this.on_resize);
+            $(window).on('resize', this.on_resize);
         }
         get active_item() {
             return this._active_item;
@@ -92,8 +92,8 @@
             this._active_item = item;
         }
         unload() {
-            $$1(document).off('click', this.hide_dropdown);
-            $$1(window).off('resize', this.on_resize);
+            $(document).off('click', this.hide_dropdown);
+            $(window).off('resize', this.on_resize);
         }
         on_resize(e) {
             this.dd_elem.hide();
@@ -112,8 +112,8 @@
             if (!this.dd_elem.is(':visible')) { return; }
             if (e.target !== this.dd_elem[0] &&
                 e.target !== this.elem[0] &&
-                $$1(e.target).closest(this.dd_elem).length === 0 &&
-                $$1(e.target).closest(this.elem).length === 0)
+                $(e.target).closest(this.dd_elem).length === 0 &&
+                $(e.target).closest(this.elem).length === 0)
             {
                 this.dd_elem.hide();
                 this.active = false;
@@ -124,7 +124,7 @@
             let offset_left = this.elem.offset().left,
                 elem_width = this.elem.outerWidth(),
                 dd_width = this.dd_elem.outerWidth(),
-                space_right = $$1(window).width() - offset_left - elem_width;
+                space_right = $(window).width() - offset_left - elem_width;
             let left = (space_right < dd_width) ?
                 offset_left - dd_width + elem_width : offset_left;
             this.dd_elem
@@ -135,7 +135,9 @@
     }
 
     class BoldAction extends Button {
-        static extensions = [tiptap.Bold];
+        static extensions() {
+            return [tiptap.Bold];
+        }
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -154,7 +156,6 @@
         }
     }
     class ItalicAction extends Button {
-        static extensions = [tiptap.Italic];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -173,7 +174,6 @@
         }
     }
     class UnderlineAction extends Button {
-        static extensions = [tiptap.Underline];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -192,7 +192,6 @@
         }
     }
     class BulletListAction extends Button {
-        static extensions = [tiptap.BulletList, tiptap.ListItem];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -210,7 +209,6 @@
         }
     }
     class OrderedListAction extends Button {
-        static extensions = [tiptap.OrderedList, tiptap.ListItem];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -228,7 +226,6 @@
         }
     }
     class IndentAction extends Button {
-        static extensions = [tiptap.Blockquote];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -246,7 +243,6 @@
         }
     }
     class OutdentAction extends Button {
-        static extensions = [tiptap.Blockquote];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -264,7 +260,6 @@
         }
     }
     class HTMLAction extends Button {
-        static extensions = [];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -294,7 +289,6 @@
         }
     }
     class HeadingAction extends Button {
-        static extensions = [tiptap.Heading];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -343,7 +337,6 @@
         }
     }
     class HeadingsAction extends DropdownButton {
-        static extensions = [tiptap.Heading];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -370,7 +363,6 @@
         }
     }
     class ColorsAction extends DropdownButton {
-        static extensions = [tiptap.Color];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem
@@ -388,7 +380,6 @@
         }
     }
     class ImageAction extends DropdownButton {
-        static extensions = [tiptap.Image];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -425,7 +416,6 @@
         }
     }
     class LinkAction extends DropdownButton {
-        static extensions = [tiptap.Link];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -497,28 +487,11 @@
 
     class TiptapWidget {
         static initialize(context) {
-            $$1('div.tiptap-editor', context).each(function() {
+            $('div.tiptap-editor', context).each(function() {
                 let options = {
-                    heading: true,
-                    colors: [
-                        { name: 'Default', color: 'rgb(51, 51, 51)'},
-                        { name: 'Blue', color: 'rgb(53 39 245)' },
-                        { name: 'Lime', color: 'rgb(204, 255, 0)' },
-                        { name: 'Teal', color: 'rgb(42, 202, 234)' },
-                        { name: 'Red', color: 'rgb(208, 6, 10)' }
-                    ],
                     bold: { target: 'text_controls' },
-                    italic: { target: 'text_controls' },
-                    underline: { target: 'text_controls' },
-                    bullet_list: { target: 'format_controls' },
-                    ordered_list: { target: 'format_controls' },
-                    indent: { target: 'format_controls' },
-                    outdent: { target: 'format_controls' },
-                    html: true,
-                    image: true,
-                    link: true
                 };
-                new TiptapWidget($$1(this), options);
+                new TiptapWidget($(this), options);
             });
         }
         constructor(elem, opts = {}) {
@@ -532,23 +505,22 @@
                 tiptap.Dropcursor
             ]);
             for (let option_name in opts) {
-                actions[option_name].factory.extensions.forEach(
-                    ext => extensions.add(ext)
-                );
+                let exts = actions[option_name].factory.extensions();
+                exts.forEach(ext => extensions.add(ext));
             }
-            this.editarea = $$1('div.ProseMirror', this.elem);
-            this.textarea = $$1('<textarea />')
+            this.editarea = $('div.ProseMirror', this.elem);
+            this.textarea = $('<textarea />')
                 .addClass('ProseMirror')
                 .appendTo(this.elem);
-            this.controls = $$1('<div />')
+            this.controls = $('<div />')
                 .addClass('tiptap-controls')
                 .prependTo(this.elem);
-            this.help_elem = $$1('<a />')
+            this.help_elem = $('<a />')
                 .attr('href', 'https://tiptap.dev/api/keyboard-shortcuts#predefined-keyboard-shortcuts')
                 .attr('target', '_blank')
                 .addClass('help-btn')
                 .append(
-                    $$1('<div />')
+                    $('<div />')
                     .text('?'))
                 .insertAfter(this.elem);
             this.editor = new tiptap.Editor({
@@ -565,7 +537,7 @@
                     container = this.controls;
                 if (target) {
                     let targ = button_groups.filter(group => {
-                        return group.name === target ?? false
+                        return group.name === target ? target : false
                     });
                     if (targ[0]) {
                         container = targ[0].elem;
@@ -580,7 +552,7 @@
                     container_elem: container
                 }));
             }
-            this.swatches = opts.colors ?? [];
+            this.swatches = opts.colors ? opts.colors : [];
             this.on_update = this.on_update.bind(this);
             this.editor.on('update', this.on_update);
             this.on_selection_update = this.on_selection_update.bind(this);
@@ -648,7 +620,7 @@
         }
     }
 
-    $$1(function() {
+    $(function() {
         if (window.ts !== undefined) {
             ts.ajax.register(TiptapWidget.initialize, true);
         } else {
@@ -669,5 +641,5 @@
 
     return exports;
 
-})({}, jQuery, tiptap);
+})({}, jQuery);
 //# sourceMappingURL=widget.js.map

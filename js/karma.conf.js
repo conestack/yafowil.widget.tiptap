@@ -14,14 +14,16 @@ module.exports = function(config) {
             type: 'module',
             included: false
         }, {
+            pattern: '../../src/yafowil/widget/tiptap/resources/tiptap.js',
+            included: true
+        }, {
             pattern: '../src/*.js',
             type: 'module',
             included: false
         }, {
             pattern: '../tests/test_*.js',
             type: 'module'
-        },
-        {
+        }, {
             pattern: '../../src/yafowil/widget/tiptap/resources/widget.css',
             included: true
         }],
@@ -48,7 +50,8 @@ module.exports = function(config) {
             customResolver: null,
             ecmaVersion: 6,
             aliases: {
-                jquery: '../../node_modules/jquery/src/jquery.js'
+                jquery: '../../node_modules/jquery/src/jquery.js',
+                tiptap: '../../src/yafowil/widget/tiptap/resources/tiptap.js'
             }
         }
     });

@@ -13146,7 +13146,7 @@ img.ProseMirror-separator {
       },
   });
 
-  const inputRegex = /(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))/;
+  const inputRegex = /(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/;
   const Image = Node.create({
       name: 'image',
       addOptions() {
