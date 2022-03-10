@@ -22,7 +22,7 @@ npm --save-dev install \
     @rollup/plugin-node-resolve \
     rollup-plugin-cleanup \
     rollup-plugin-terser
-    
+
 
 npm --save install \
     @tiptap/core \
@@ -47,6 +47,7 @@ npm --save install \
 
 
 npm --no-save install https://github.com/jquery/jquery#main
+
 
 python3 -m venv .
 ./bin/pip install wheel
