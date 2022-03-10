@@ -28,7 +28,7 @@ module.exports = function(config) {
             included: true
         }],
         browsers: [
-            'ChromeHeadless'
+            'Chrome'
         ],
         singlerun: true,
         reporters: [

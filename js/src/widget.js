@@ -6,24 +6,24 @@ export class TiptapWidget {
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
             let options = {
-                // heading: true,
-                // colors: [ // pass color values as rgb, browser issue with hex
-                //     { name: 'Default', color: 'rgb(51, 51, 51)'},
-                //     { name: 'Blue', color: 'rgb(53 39 245)' },
-                //     { name: 'Lime', color: 'rgb(204, 255, 0)' },
-                //     { name: 'Teal', color: 'rgb(42, 202, 234)' },
-                //     { name: 'Red', color: 'rgb(208, 6, 10)' }
-                // ],
+                heading: true,
+                colors: [ // pass color values as rgb, browser issue with hex
+                    { name: 'Default', color: 'rgb(51, 51, 51)'},
+                    { name: 'Blue', color: 'rgb(53 39 245)' },
+                    { name: 'Lime', color: 'rgb(204, 255, 0)' },
+                    { name: 'Teal', color: 'rgb(42, 202, 234)' },
+                    { name: 'Red', color: 'rgb(208, 6, 10)' }
+                ],
                 bold: { target: 'text_controls' },
-                // italic: { target: 'text_controls' },
-                // underline: { target: 'text_controls' },
-                // bullet_list: { target: 'format_controls' },
-                // ordered_list: { target: 'format_controls' },
-                // indent: { target: 'format_controls' },
-                // outdent: { target: 'format_controls' },
-                // html: true,
-                // image: true,
-                // link: true
+                italic: { target: 'text_controls' },
+                underline: { target: 'text_controls' },
+                bullet_list: { target: 'format_controls' },
+                ordered_list: { target: 'format_controls' },
+                indent: { target: 'format_controls' },
+                outdent: { target: 'format_controls' },
+                html: true,
+                image: true,
+                link: true
             }
             new TiptapWidget($(this), options);
         });
