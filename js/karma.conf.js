@@ -46,9 +46,7 @@ module.exports = function(config) {
             ]
         },
         moduleResolverPreprocessor: {
-            addExtension: 'js',
-            customResolver: null,
-            ecmaVersion: 6,
+            ecmaVersion: 2022,
             aliases: {
                 jquery: '../../node_modules/jquery/src/jquery.js',
                 tiptap: '../../src/yafowil/widget/tiptap/resources/tiptap.js'

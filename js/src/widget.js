@@ -41,7 +41,7 @@ export class TiptapWidget {
             tiptap.Dropcursor
         ]);
         for (let option_name in opts) {
-            let exts = actions[option_name].factory.extensions();
+            let exts = actions[option_name].extensions;
             exts.forEach(ext => extensions.add(ext));
         }
 
@@ -72,7 +72,7 @@ export class TiptapWidget {
 
         for (let option_name in opts) {
             let options = opts[option_name],
-                factory = actions[option_name].factory,
+                factory = actions[option_name],
                 target = options.target,
                 container = this.controls;
 

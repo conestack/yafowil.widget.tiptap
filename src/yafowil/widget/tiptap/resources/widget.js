@@ -135,9 +135,7 @@
     }
 
     class BoldAction extends Button {
-        static extensions() {
-            return [tiptap.Bold];
-        }
+        static extensions = [tiptap.Bold];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -156,9 +154,7 @@
         }
     }
     class ItalicAction extends Button {
-        static extensions() {
-            return [tiptap.Italic];
-        }
+        static extensions = [tiptap.Italic];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -177,9 +173,7 @@
         }
     }
     class UnderlineAction extends Button {
-        static extensions() {
-            return [tiptap.Underline];
-        }
+        static extensions = [tiptap.Underline];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -198,9 +192,7 @@
         }
     }
     class BulletListAction extends Button {
-        static extensions() {
-            return [tiptap.BulletList, tiptap.ListItem];
-        }
+        static extensions = [tiptap.BulletList, tiptap.ListItem];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -218,9 +210,7 @@
         }
     }
     class OrderedListAction extends Button {
-        static extensions() {
-            return [tiptap.OrderedList, tiptap.ListItem];
-        }
+        static extensions = [tiptap.OrderedList, tiptap.ListItem];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -238,9 +228,7 @@
         }
     }
     class IndentAction extends Button {
-        static extensions() {
-            return [tiptap.Blockquote];
-        }
+        static extensions = [tiptap.Blockquote];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -258,9 +246,7 @@
         }
     }
     class OutdentAction extends Button {
-        static extensions() {
-            return [tiptap.Blockquote];
-        }
+        static extensions = [tiptap.Blockquote];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -278,9 +264,7 @@
         }
     }
     class HTMLAction extends Button {
-        static extensions() {
-            return [];
-        }
+        static extensions = [];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -310,9 +294,7 @@
         }
     }
     class HeadingAction extends Button {
-        static extensions() {
-            return [tiptap.Heading];
-        }
+        static extensions = [tiptap.Heading];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -361,9 +343,7 @@
         }
     }
     class HeadingsAction extends DropdownButton {
-        static extensions() {
-            return [tiptap.Heading];
-        }
+        static extensions = [tiptap.Heading];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -390,9 +370,7 @@
         }
     }
     class ColorsAction extends DropdownButton {
-        static extensions() {
-            return [tiptap.Color];
-        }
+        static extensions = [tiptap.Color];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem
@@ -410,9 +388,7 @@
         }
     }
     class ImageAction extends DropdownButton {
-        static extensions() {
-            return [tiptap.Image];
-        }
+        static extensions = [tiptap.Image];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -449,9 +425,7 @@
         }
     }
     class LinkAction extends DropdownButton {
-        static extensions() {
-            return [tiptap.Link];
-        }
+        static extensions = [tiptap.Link];
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
@@ -483,42 +457,18 @@
         }
     }
     let actions = {
-        bold: {
-            factory: BoldAction
-        },
-        italic: {
-            factory: ItalicAction
-        },
-        underline: {
-            factory: UnderlineAction
-        },
-        bullet_list: {
-            factory: BulletListAction
-        },
-        ordered_list: {
-            factory: OrderedListAction
-        },
-        indent: {
-            factory: IndentAction
-        },
-        outdent: {
-            factory: OutdentAction
-        },
-        html: {
-            factory: HTMLAction
-        },
-        heading: {
-            factory: HeadingsAction
-        },
-        colors: {
-            factory: ColorsAction
-        },
-        image: {
-            factory: ImageAction
-        },
-        link: {
-            factory: LinkAction
-        }
+        bold: BoldAction,
+        italic: ItalicAction,
+        underline: UnderlineAction,
+        bullet_list: BulletListAction,
+        ordered_list: OrderedListAction,
+        indent: IndentAction,
+        outdent: OutdentAction,
+        html: HTMLAction,
+        heading: HeadingsAction,
+        colors: ColorsAction,
+        image: ImageAction,
+        link: LinkAction
     };
 
     class TiptapWidget {
@@ -558,7 +508,7 @@
                 tiptap.Dropcursor
             ]);
             for (let option_name in opts) {
-                let exts = actions[option_name].factory.extensions();
+                let exts = actions[option_name].extensions;
                 exts.forEach(ext => extensions.add(ext));
             }
             this.editarea = $('div.ProseMirror', this.elem);
@@ -585,7 +535,7 @@
             let button_groups = [];
             for (let option_name in opts) {
                 let options = opts[option_name],
-                    factory = actions[option_name].factory,
+                    factory = actions[option_name],
                     target = options.target,
                     container = this.controls;
                 if (target) {
