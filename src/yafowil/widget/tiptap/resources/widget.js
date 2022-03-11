@@ -448,6 +448,42 @@
             this.dd_elem.hide();
         }
     }
+    class CodeAction extends Button {
+        static extensions = [tiptap.Code];
+        constructor(widget, editor, opts) {
+            super(editor, {
+                container_elem: opts.container_elem,
+                text: '< / >',
+                tooltip: 'Toggle Code',
+                toggle: true
+            });
+            this.id = 'code';
+            this.widget_elem = widget.elem;
+        }
+        on_click(e) {
+            e.preventDefault();
+            this.active = !this.active;
+            this.editor.chain().focus().toggleCode().run();
+        }
+    }
+    class CodeBlockAction extends Button {
+        static extensions = [tiptap.CodeBlock];
+        constructor(widget, editor, opts) {
+            super(editor, {
+                container_elem: opts.container_elem,
+                text: '{ }',
+                tooltip: 'Toggle Code Block',
+                toggle: true
+            });
+            this.id = 'codeBlock';
+            this.widget_elem = widget.elem;
+        }
+        on_click(e) {
+            e.preventDefault();
+            this.active = !this.active;
+            this.editor.chain().focus().toggleCodeBlock().run();
+        }
+    }
     class ActionGroup {
         constructor(name, target) {
             this.name = name;
@@ -468,7 +504,9 @@
         heading: HeadingsAction,
         colors: ColorsAction,
         image: ImageAction,
-        link: LinkAction
+        link: LinkAction,
+        code: CodeAction,
+        code_block: CodeBlockAction
     };
 
     class TiptapWidget {
@@ -492,7 +530,9 @@
                     outdent: { target: 'format_controls' },
                     html: true,
                     image: true,
-                    link: true
+                    link: true,
+                    code: true,
+                    code_block: true
                 };
                 new TiptapWidget($(this), options);
             });
@@ -586,7 +626,15 @@
             }
         }
         on_selection_update() {
-            let ids = ['bold', 'italic', 'underline', 'bulletList', 'orderedList'];
+            let ids = [
+                'bold',
+                'italic',
+                'underline',
+                'bulletList',
+                'orderedList',
+                'code',
+                'codeBlock'
+            ];
             for (let id of ids) {
                 let btn = this.buttons.find(x => x.id === id);
                 if (btn) {

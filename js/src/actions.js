@@ -367,6 +367,48 @@ class LinkAction extends DropdownButton {
     }
 }
 
+class CodeAction extends Button {
+    static extensions = [tiptap.Code];
+
+    constructor(widget, editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
+            text: '< / >',
+            tooltip: 'Toggle Code',
+            toggle: true
+        });
+        this.id = 'code';
+        this.widget_elem = widget.elem;
+    }
+
+    on_click(e) {
+        e.preventDefault();
+        this.active = !this.active;
+        this.editor.chain().focus().toggleCode().run();
+    }
+}
+
+class CodeBlockAction extends Button {
+    static extensions = [tiptap.CodeBlock];
+
+    constructor(widget, editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem,
+            text: '{ }',
+            tooltip: 'Toggle Code Block',
+            toggle: true
+        });
+        this.id = 'codeBlock';
+        this.widget_elem = widget.elem;
+    }
+
+    on_click(e) {
+        e.preventDefault();
+        this.active = !this.active;
+        this.editor.chain().focus().toggleCodeBlock().run();
+    }
+}
+
 export class ActionGroup {
 
     constructor(name, target) {
@@ -389,5 +431,7 @@ export let actions = {
     heading: HeadingsAction,
     colors: ColorsAction,
     image: ImageAction,
-    link: LinkAction
+    link: LinkAction,
+    code: CodeAction,
+    code_block: CodeBlockAction
 }

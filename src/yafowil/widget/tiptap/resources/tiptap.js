@@ -4386,7 +4386,8 @@ var tiptap = (function (exports) {
       if (node == targetNode && off == targetOff) { return true }
       if (off == (dir < 0 ? 0 : nodeSize(node))) {
         var parent = node.parentNode;
-        if (parent.nodeType != 1 || hasBlockDesc(node) || atomElements.test(node.nodeName) || node.contentEditable == "false")
+        if (!parent || parent.nodeType != 1 || hasBlockDesc(node) || atomElements.test(node.nodeName) ||
+            node.contentEditable == "false")
           { return false }
         off = domIndex(node) + (dir < 0 ? 0 : 1);
         node = parent;
@@ -5876,10 +5877,13 @@ var tiptap = (function (exports) {
         if (!next.isText) { break }
         str += next.text;
       }
-      if (pos >= from && childStart < to) {
-        var found = str.lastIndexOf(text, to - childStart - 1);
+      if (pos >= from) {
+        var found = childStart < to ? str.lastIndexOf(text, to - childStart - 1) : -1;
         if (found >= 0 && found + text.length + childStart >= from)
           { return childStart + found }
+        if (from == to && str.length >= (to + text.length) - childStart &&
+            str.slice(to - childStart, to - childStart + text.length) == text)
+          { return to }
       }
     }
     return -1
@@ -6409,9 +6413,11 @@ var tiptap = (function (exports) {
     if (view.state.selection.from < view.state.selection.to &&
         change.start == change.endB &&
         view.state.selection instanceof TextSelection) {
-      if (change.start > view.state.selection.from && change.start <= view.state.selection.from + 2) {
+      if (change.start > view.state.selection.from && change.start <= view.state.selection.from + 2 &&
+          view.state.selection.from >= parse.from) {
         change.start = view.state.selection.from;
-      } else if (change.endA < view.state.selection.to && change.endA >= view.state.selection.to - 2) {
+      } else if (change.endA < view.state.selection.to && change.endA >= view.state.selection.to - 2 &&
+                 view.state.selection.to <= parse.to) {
         change.endB += (view.state.selection.to - change.endA);
         change.endA = view.state.selection.to;
       }
@@ -6916,7 +6922,7 @@ var tiptap = (function (exports) {
         checkCSS(this.view);
       }
       this.handleDOMChange(from, to, typeOver, added);
-      if (this.view.docView.dirty) { this.view.updateState(this.view.state); }
+      if (this.view.docView && this.view.docView.dirty) { this.view.updateState(this.view.state); }
       else if (!this.currentSelection.eq(sel)) { selectionToDOM(this.view); }
       this.currentSelection.set(sel);
     }
@@ -7354,7 +7360,7 @@ var tiptap = (function (exports) {
     if (result.android && view.domObserver.flushingSoon >= 0) { return }
     view.domObserver.forceFlush();
     clearComposition(view);
-    if (forceUpdate || view.docView.dirty) {
+    if (forceUpdate || view.docView && view.docView.dirty) {
       var sel = selectionFromDOM(view);
       if (sel && !sel.eq(view.state.selection)) { view.dispatch(view.state.tr.setSelection(sel)); }
       else { view.updateState(view.state); }

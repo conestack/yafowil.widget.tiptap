@@ -23,7 +23,9 @@ export class TiptapWidget {
                 outdent: { target: 'format_controls' },
                 html: true,
                 image: true,
-                link: true
+                link: true,
+                code: true,
+                code_block: true
             }
             new TiptapWidget($(this), options);
         });
@@ -130,7 +132,15 @@ export class TiptapWidget {
     }
 
     on_selection_update() {
-        let ids = ['bold', 'italic', 'underline', 'bulletList', 'orderedList'];
+        let ids = [
+            'bold',
+            'italic',
+            'underline',
+            'bulletList',
+            'orderedList',
+            'code',
+            'codeBlock'
+        ];
         for (let id of ids) {
             let btn = this.buttons.find(x => x.id === id);
             if (btn) {
