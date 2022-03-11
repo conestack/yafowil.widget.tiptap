@@ -25,7 +25,8 @@ export class TiptapWidget {
                 image: true,
                 link: true,
                 code: true,
-                code_block: true
+                code_block: true,
+                help: true
             }
             new TiptapWidget($(this), options);
         });
@@ -54,14 +55,6 @@ export class TiptapWidget {
         this.controls = $('<div />')
             .addClass('tiptap-controls')
             .prependTo(this.elem);
-        this.help_elem = $('<a />')
-            .attr('href', 'https://tiptap.dev/api/keyboard-shortcuts#predefined-keyboard-shortcuts')
-            .attr('target', '_blank')
-            .addClass('help-btn')
-            .append(
-                $('<div />')
-                .text('?'))
-            .insertAfter(this.elem);
 
         this.editor = new tiptap.Editor({
             element: this.elem[0],

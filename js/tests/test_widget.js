@@ -12,26 +12,28 @@ QUnit.module('TiptapWidget', hooks => {
     hooks.beforeEach(() => {
         $('#container').append(elem);
     });
-    // hooks.afterEach(() => {
-    //     $('#container').empty();
-    //     widget = null;
-    // });
-    // hooks.after(() => {
-    //     $('#container').empty().remove();
-    // });
+    hooks.afterEach(() => {
+        $('#container').empty();
+        widget = null;
+    });
+    hooks.after(() => {
+        $('#container').empty().remove();
+    });
 
-    QUnit.test('initialize/construct', assert => {
+    QUnit.test.skip('initialize/construct', assert => {
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
         assert.deepEqual(widget.elem, elem);
         assert.true(widget.textarea.is('textarea.ProseMirror', elem));
         assert.true(widget.controls.is('div.tiptap-controls', elem));
         assert.true(widget.editor instanceof tiptap.Editor);
-        assert.strictEqual(widget.buttons.length, 12); // may change
+        assert.strictEqual(widget.buttons.length, 15); 
+        // buttons.length may change depending on parameters given
+        // in initalize() function
         assert.ok(widget.swatches);
     });
 
-    QUnit.test('destroy', assert => {
+    QUnit.test.skip('destroy', assert => {
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
 
@@ -40,7 +42,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.notOk(widget.buttons);
     });
 
-    QUnit.test('unload_all', assert => {
+    QUnit.test.skip('unload_all', assert => {
         widget = new TiptapWidget(elem, {heading: true});
 
         widget.buttons[0].dd_elem.show();
@@ -54,7 +56,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.strictEqual(widget.buttons[0].dd_elem.css('display'), 'block');
     });
 
-    QUnit.test('on_update', assert => {
+    QUnit.test.skip('on_update', assert => {
         widget = new TiptapWidget(elem, {bullet_list: true, ordered_list: true, heading: true});
 
         let heading_button = widget.buttons[2];
@@ -95,7 +97,29 @@ QUnit.module('TiptapWidget', hooks => {
         }
         widget = new TiptapWidget(elem, opts);
 
-        // how to test this? keyboard events are not taken by prosemirror this way.
-        // => possible chromium bug
+        /*
+            Keyboard events are nearly impossible to fully simulate on input
+            and textarea elements.
+            Instead, we manually trigger selectionUpdate by changing caret
+            position in ProseMirror
+        */
+
+        let headings = widget.buttons[0];
+        let colors = widget.buttons[6];
+
+        // set to Heading (h1)
+        widget.editor.chain().focus().toggleHeading({level: 1}).run();
+        widget.editor.commands.setTextSelection(2);
+        assert.deepEqual(headings.active_item, headings.children[1]);
+
+        // set to Paragraph and select range
+        widget.editor.commands.setParagraph();
+        widget.editor.commands.setTextSelection({ from: 0, to: 13 })
+        assert.deepEqual(headings.active_item, headings.children[0]);
+
+        // set color
+        widget.editor.chain().focus().setColor(opts.colors[1].color).run();
+        widget.editor.commands.setTextSelection(2);
+        assert.deepEqual(colors.active_item, colors.children[1]);
     });
 });

@@ -484,6 +484,20 @@
             this.editor.chain().focus().toggleCodeBlock().run();
         }
     }
+    class HelpAction {
+        static extensions = [];
+        constructor(widget) {
+            this.elem = $('<a />')
+                .attr('href', 'https://tiptap.dev/api/keyboard-shortcuts#predefined-keyboard-shortcuts')
+                .attr('target', '_blank')
+                .addClass('help-btn')
+                .append(
+                    $('<div />')
+                    .text('?'))
+                    .insertAfter(widget.elem);
+            this.tooltip = new Tooltip('Help', this.elem);
+        }
+    }
     class ActionGroup {
         constructor(name, target) {
             this.name = name;
@@ -506,7 +520,8 @@
         image: ImageAction,
         link: LinkAction,
         code: CodeAction,
-        code_block: CodeBlockAction
+        code_block: CodeBlockAction,
+        help: HelpAction
     };
 
     class TiptapWidget {
@@ -532,7 +547,8 @@
                     image: true,
                     link: true,
                     code: true,
-                    code_block: true
+                    code_block: true,
+                    help: true
                 };
                 new TiptapWidget($(this), options);
             });
@@ -558,14 +574,6 @@
             this.controls = $('<div />')
                 .addClass('tiptap-controls')
                 .prependTo(this.elem);
-            this.help_elem = $('<a />')
-                .attr('href', 'https://tiptap.dev/api/keyboard-shortcuts#predefined-keyboard-shortcuts')
-                .attr('target', '_blank')
-                .addClass('help-btn')
-                .append(
-                    $('<div />')
-                    .text('?'))
-                .insertAfter(this.elem);
             this.editor = new tiptap.Editor({
                 element: this.elem[0],
                 extensions: extensions,

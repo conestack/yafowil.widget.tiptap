@@ -1,6 +1,6 @@
 
 import $ from 'jquery';
-import {Button, DropdownButton} from './buttons.js';
+import {Button, DropdownButton, Tooltip} from './buttons.js';
 
 class BoldAction extends Button {
     static extensions = [tiptap.Bold];
@@ -409,6 +409,22 @@ class CodeBlockAction extends Button {
     }
 }
 
+class HelpAction {
+    static extensions = [];
+
+    constructor(widget) {
+        this.elem = $('<a />')
+            .attr('href', 'https://tiptap.dev/api/keyboard-shortcuts#predefined-keyboard-shortcuts')
+            .attr('target', '_blank')
+            .addClass('help-btn')
+            .append(
+                $('<div />')
+                .text('?'))
+                .insertAfter(widget.elem);
+        this.tooltip = new Tooltip('Help', this.elem);
+    }
+}
+
 export class ActionGroup {
 
     constructor(name, target) {
@@ -433,5 +449,6 @@ export let actions = {
     image: ImageAction,
     link: LinkAction,
     code: CodeAction,
-    code_block: CodeBlockAction
+    code_block: CodeBlockAction,
+    help: HelpAction
 }

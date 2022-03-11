@@ -26,6 +26,7 @@
     "@tiptap/extension-bullet-list": "^2.0.0-beta.26",
     "@tiptap/extension-code": "^2.0.0-beta.26",
     "@tiptap/extension-code-block": "^2.0.0-beta.37",
+    "@tiptap/extension-code-block-lowlight": "^2.0.0-beta.68",
     "@tiptap/extension-color": "^2.0.0-beta.9",
     "@tiptap/extension-document": "^2.0.0-beta.15",
     "@tiptap/extension-dropcursor": "^2.0.0-beta.25",
