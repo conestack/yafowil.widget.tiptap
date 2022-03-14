@@ -56,6 +56,9 @@
             }
             this._active = active;
         }
+        on_click(e) {
+            e.preventDefault();
+        }
     }
     class DropdownButton extends Button {
         constructor(editor, opts = {}) {

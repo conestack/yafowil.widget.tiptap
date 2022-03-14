@@ -64,6 +64,9 @@ export class Button {
         }
         this._active = active;
     }
+    on_click(e) {
+        e.preventDefault();
+    }
 }
 
 export class DropdownButton extends Button {
@@ -128,19 +131,6 @@ export class DropdownButton extends Button {
         this.active_item = this.children[0];
     }
 
-    hide_dropdown(e) {
-        if (!this.dd_elem.is(':visible')) { return; }
-
-        if (e.target !== this.dd_elem[0] &&
-            e.target !== this.elem[0] &&
-            $(e.target).closest(this.dd_elem).length === 0 &&
-            $(e.target).closest(this.elem).length === 0)
-        {
-            this.dd_elem.hide();
-            this.active = false;
-        }
-    }
-
     on_click(e) {
         e.preventDefault();
         let offset_left = this.elem.offset().left,
@@ -155,5 +145,23 @@ export class DropdownButton extends Button {
             .css('left', `${left}px`)
             .css('top', `${this.elem.offset().top + this.elem.outerHeight()}px`)
             .toggle();
+    }
+
+    hide_dropdown(e) {
+        if (!this.dd_elem.is(':visible')) { return; }
+
+        if (e.target !== this.dd_elem[0] &&
+            e.target !== this.elem[0] &&
+            $(e.target).closest(this.dd_elem).length === 0 &&
+            $(e.target).closest(this.elem).length === 0)
+        {
+            this.dd_elem.hide();
+            this.active = false;
+        }
+    }
+
+    /* istanbul ignore next */
+    submit(e) {
+        e.preventDefault();
     }
 }

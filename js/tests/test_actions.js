@@ -33,7 +33,7 @@ QUnit.module('Actions', hooks => {
         assert.deepEqual(bold_btn.widget_elem, widget.elem);
 
         // on click
-        assert.notOk(bold_btn.active);// undefined on init
+        assert.notOk(bold_btn.active); // undefined on init
         assert.false(widget.editor.isActive('bold'));
         bold_btn.elem.trigger('click');
         assert.true(bold_btn.active);
@@ -186,6 +186,19 @@ QUnit.module('Actions', hooks => {
         assert.strictEqual(headings_button.id, 'headings');
         assert.strictEqual(headings_button.children.length, 7);
 
+        // set to h1
+        headings_button.elem.trigger('click');
+        let h_button = headings_button.children[1];
+        h_button.elem.trigger('click');
+        assert.true(widget.editor.isActive('heading', {level: 1}));
+
+        // set to paragraph
+        let p_button = headings_button.children[0];
+        assert.strictEqual(p_button.id, 'paragraph');
+        assert.strictEqual($('span', p_button.elem).text(), 'Text');
+        p_button.elem.trigger('click');
+        assert.true(widget.editor.isActive('paragraph'));
+
         for (let i = 1; i < headings_button.children.length; i++) {
             headings_button.elem.trigger('click');
             assert.strictEqual(headings_button.dd_elem.css('display'), 'block');
@@ -300,7 +313,7 @@ QUnit.module('Actions', hooks => {
         assert.deepEqual(code_button.widget_elem, widget.elem);
 
         // on click
-        assert.notOk(code_button.active);// undefined on init
+        assert.notOk(code_button.active);
         assert.false(widget.editor.isActive('code'));
         code_button.elem.trigger('click');
         assert.true(code_button.active);
@@ -318,7 +331,7 @@ QUnit.module('Actions', hooks => {
         assert.deepEqual(codeblock_button.widget_elem, widget.elem);
 
         // on click
-        assert.notOk(codeblock_button.active);// undefined on init
+        assert.notOk(codeblock_button.active);
         assert.false(widget.editor.isActive('codeBlock'));
         codeblock_button.elem.trigger('click');
         assert.true(codeblock_button.active);

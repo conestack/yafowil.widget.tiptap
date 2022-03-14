@@ -20,7 +20,7 @@ QUnit.module('TiptapWidget', hooks => {
         $('#container').empty().remove();
     });
 
-    QUnit.test.skip('initialize/construct', assert => {
+    QUnit.test('initialize/construct', assert => {
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
         assert.deepEqual(widget.elem, elem);
@@ -29,11 +29,11 @@ QUnit.module('TiptapWidget', hooks => {
         assert.true(widget.editor instanceof tiptap.Editor);
         assert.strictEqual(widget.buttons.length, 15); 
         // buttons.length may change depending on parameters given
-        // in initalize() function
+        // in initialize() function
         assert.ok(widget.swatches);
     });
 
-    QUnit.test.skip('destroy', assert => {
+    QUnit.test('destroy', assert => {
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
 
@@ -42,7 +42,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.notOk(widget.buttons);
     });
 
-    QUnit.test.skip('unload_all', assert => {
+    QUnit.test('unload_all', assert => {
         widget = new TiptapWidget(elem, {heading: true});
 
         widget.buttons[0].dd_elem.show();
@@ -56,7 +56,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.strictEqual(widget.buttons[0].dd_elem.css('display'), 'block');
     });
 
-    QUnit.test.skip('on_update', assert => {
+    QUnit.test('on_update', assert => {
         widget = new TiptapWidget(elem, {bullet_list: true, ordered_list: true, heading: true});
 
         let heading_button = widget.buttons[2];
@@ -82,7 +82,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.false(ol_button.active);
     });
 
-    QUnit.test.skip('on_selection_update', assert => {
+    QUnit.test('on_selection_update', assert => {
         let opts = {
             heading: true,
             bold: true,
