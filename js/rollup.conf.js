@@ -19,6 +19,7 @@ export default args => {
             cleanup()
         ],
         output: [{
+            name: 'yafowil_tiptap',
             file: `${out_dir}/widget.js`,
             format: 'iife',
             outro: outro,
@@ -26,9 +27,7 @@ export default args => {
                 jquery: 'jQuery',
                 tiptap: 'tiptap'
             },
-            interop: 'default',
-            sourcemap: true,
-            sourcemapExcludeSources: true
+            interop: 'default'
         }],
         external: [
             'jquery',
@@ -37,6 +36,7 @@ export default args => {
     };
     if (args.configDebug !== true) {
         conf.output.push({
+            name: 'yafowil_tiptap',
             file: `${out_dir}/widget.min.js`,
             format: 'iife',
             plugins: [
@@ -47,9 +47,7 @@ export default args => {
                 jquery: 'jQuery',
                 tiptap: 'tiptap'
             },
-            interop: 'default',
-            sourcemap: true,
-            sourcemapExcludeSources: true
+            interop: 'default'
         });
     }
     return conf;

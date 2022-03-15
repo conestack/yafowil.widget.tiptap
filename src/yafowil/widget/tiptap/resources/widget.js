@@ -1,4 +1,4 @@
-(function (exports, $) {
+var yafowil_tiptap = (function (exports, $) {
     'use strict';
 
     class Tooltip {
@@ -111,17 +111,6 @@
             }
             this.active_item = this.children[0];
         }
-        hide_dropdown(e) {
-            if (!this.dd_elem.is(':visible')) { return; }
-            if (e.target !== this.dd_elem[0] &&
-                e.target !== this.elem[0] &&
-                $(e.target).closest(this.dd_elem).length === 0 &&
-                $(e.target).closest(this.elem).length === 0)
-            {
-                this.dd_elem.hide();
-                this.active = false;
-            }
-        }
         on_click(e) {
             e.preventDefault();
             let offset_left = this.elem.offset().left,
@@ -134,6 +123,20 @@
                 .css('left', `${left}px`)
                 .css('top', `${this.elem.offset().top + this.elem.outerHeight()}px`)
                 .toggle();
+        }
+        hide_dropdown(e) {
+            if (!this.dd_elem.is(':visible')) { return; }
+            if (e.target !== this.dd_elem[0] &&
+                e.target !== this.elem[0] &&
+                $(e.target).closest(this.dd_elem).length === 0 &&
+                $(e.target).closest(this.elem).length === 0)
+            {
+                this.dd_elem.hide();
+                this.active = false;
+            }
+        }
+        submit(e) {
+            e.preventDefault();
         }
     }
 
@@ -704,4 +707,3 @@
     return exports;
 
 })({}, jQuery);
-//# sourceMappingURL=widget.js.map
