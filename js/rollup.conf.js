@@ -12,7 +12,43 @@ window.yafowil.tiptap = exports;
 `;
 
 export default args => {
-    let conf = {
+    let conf = [];
+
+    let conf_tiptap = {
+        input: 'js/src/bundles/tiptap.js',
+        plugins: [
+            nodeResolve(),
+            cleanup()
+        ],
+        output: [{
+            file: `${out_dir}/tiptap.js`,
+            name: 'tiptap',
+            format: 'iife',
+            interop: 'default',
+            sourcemap: false,
+            globals: {
+                tiptap: 'tiptap'
+            }
+        }]
+    };
+    if (args.configDebug !== true) {
+        conf_tiptap.output.push({
+            file: `${out_dir}/tiptap.min.js`,
+            name: 'tiptap',
+            format: 'iife',
+            plugins: [
+                terser()
+            ],
+            interop: 'default',
+            sourcemap: false,
+            globals: {
+                tiptap: 'tiptap'
+            }
+        });
+    }
+    conf.push(conf_tiptap);
+
+    let conf_widget = {
         input: 'js/src/bundles/yafowil.bundle.js',
         plugins: [
             nodeResolve(),
@@ -35,7 +71,7 @@ export default args => {
         ]
     };
     if (args.configDebug !== true) {
-        conf.output.push({
+        conf_widget.output.push({
             name: 'yafowil_tiptap',
             file: `${out_dir}/widget.min.js`,
             format: 'iife',
@@ -50,5 +86,7 @@ export default args => {
             interop: 'default'
         });
     }
+    conf.push(conf_widget);
+
     return conf;
 };

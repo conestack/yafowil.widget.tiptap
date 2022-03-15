@@ -5746,7 +5746,10 @@ var tiptap = (function (exports) {
       this.index++;
     } else {
       var dom = document.createElement(nodeName);
-      if (nodeName == "IMG") { dom.className = "ProseMirror-separator"; }
+      if (nodeName == "IMG") {
+        dom.className = "ProseMirror-separator";
+        dom.alt = "";
+      }
       if (nodeName == "BR") { dom.className = "ProseMirror-trailingBreak"; }
       this.top.children.splice(this.index++, 0, new TrailingHackViewDesc(this.top, nothing, dom, null));
       this.changed = true;
@@ -8253,6 +8256,7 @@ var tiptap = (function (exports) {
       var dom = document.createElement("img");
       dom.className = "ProseMirror-separator";
       dom.setAttribute("mark-placeholder", "true");
+      dom.setAttribute("alt", "");
       view.cursorWrapper = {dom: dom, deco: Decoration.widget(view.state.selection.head, dom, {raw: true, marks: view.markCursor})};
     } else {
       view.cursorWrapper = null;
