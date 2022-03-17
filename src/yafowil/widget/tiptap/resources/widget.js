@@ -527,40 +527,19 @@ var yafowil_tiptap = (function (exports, $) {
         link: LinkAction,
         code: CodeAction,
         code_block: CodeBlockAction,
-        help: HelpAction
+        help_link: HelpAction
     };
 
     class TiptapWidget {
         static initialize(context) {
             $('div.tiptap-editor', context).each(function() {
-                let options = {
-                    heading: true,
-                    colors: [
-                        { name: 'Default', color: 'rgb(51, 51, 51)'},
-                        { name: 'Blue', color: 'rgb(53 39 245)' },
-                        { name: 'Lime', color: 'rgb(204, 255, 0)' },
-                        { name: 'Teal', color: 'rgb(42, 202, 234)' },
-                        { name: 'Red', color: 'rgb(208, 6, 10)' }
-                    ],
-                    bold: { target: 'text_controls' },
-                    italic: { target: 'text_controls' },
-                    underline: { target: 'text_controls' },
-                    bullet_list: { target: 'format_controls' },
-                    ordered_list: { target: 'format_controls' },
-                    indent: { target: 'format_controls' },
-                    outdent: { target: 'format_controls' },
-                    html: true,
-                    image: true,
-                    link: true,
-                    code: true,
-                    code_block: true,
-                    help: true
-                };
-                new TiptapWidget($(this), options);
+                new TiptapWidget($(this));
             });
         }
         constructor(elem, opts = {}) {
             this.elem = elem;
+            opts = this.parse_options();
+            console.log(opts);
             this.elem.data('tiptap-widget', this);
             let extensions = new Set([
                 tiptap.Document,
@@ -627,6 +606,17 @@ var yafowil_tiptap = (function (exports, $) {
                     btn.unload();
                 }
             });
+        }
+        parse_options() {
+            let data = {};
+            [].forEach.call(this.elem[0].attributes, function (attr) {
+                if (/^data-tiptap-/.test(attr.name)) {
+                    let name = attr.name.substr(12);
+                    let res = JSON.parse(attr.value);
+                    data[name] = res;
+                }
+            });
+            return data;
         }
         on_update() {
             this.buttons.forEach(btn => { if(btn.dd_elem) btn.dd_elem.hide(); });
