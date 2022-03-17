@@ -450,5 +450,5 @@ export let actions = {
     link: LinkAction,
     code: CodeAction,
     code_block: CodeBlockAction,
-    help: HelpAction
+    help_link: HelpAction
 }

@@ -5,35 +5,14 @@ export class TiptapWidget {
 
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
-            let options = {
-                heading: true,
-                colors: [ // pass color values as rgb, browser issue with hex
-                    { name: 'Default', color: 'rgb(51, 51, 51)'},
-                    { name: 'Blue', color: 'rgb(53 39 245)' },
-                    { name: 'Lime', color: 'rgb(204, 255, 0)' },
-                    { name: 'Teal', color: 'rgb(42, 202, 234)' },
-                    { name: 'Red', color: 'rgb(208, 6, 10)' }
-                ],
-                bold: { target: 'text_controls' },
-                italic: { target: 'text_controls' },
-                underline: { target: 'text_controls' },
-                bullet_list: { target: 'format_controls' },
-                ordered_list: { target: 'format_controls' },
-                indent: { target: 'format_controls' },
-                outdent: { target: 'format_controls' },
-                html: true,
-                image: true,
-                link: true,
-                code: true,
-                code_block: true,
-                help: true
-            }
-            new TiptapWidget($(this), options);
+            new TiptapWidget($(this));
         });
     }
 
     constructor(elem, opts = {}) {
         this.elem = elem;
+
+        opts = this.parse_options();
         this.elem.data('tiptap-widget', this);
 
         let extensions = new Set([
@@ -108,6 +87,20 @@ export class TiptapWidget {
                 btn.unload();
             }
         });
+    }
+
+    parse_options() {
+        let data = {};
+
+        [].forEach.call(this.elem[0].attributes, function (attr) {
+            if (/^data-tiptap-/.test(attr.name)) {
+                let name = attr.name.substr(12);
+                let res = JSON.parse(attr.value);
+                data[name] = res;
+            }
+        });
+
+        return data;
     }
 
     on_update() {
