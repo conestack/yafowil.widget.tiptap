@@ -3,9 +3,10 @@ from yafowil.base import factory
 from yafowil.base import fetch_value
 from yafowil.common import generic_extractor
 from yafowil.common import generic_required_extractor
+from yafowil.common import textarea_renderer
 from yafowil.tsf import TSF
-from yafowil.utils import attr_value
 from yafowil.utils import as_data_attrs
+from yafowil.utils import attr_value
 from yafowil.utils import cssclasses
 from yafowil.utils import cssid
 from yafowil.utils import data_attrs_helper
@@ -13,6 +14,7 @@ from yafowil.utils import managedprops
 
 
 # _ = TSF('yafowil.widget.tiptap')
+
 
 tiptap_options = [
     'heading',
@@ -32,25 +34,19 @@ tiptap_options = [
     'help_link'
 ]
 
+
 @managedprops(*tiptap_options)
-def tiptap_extractor(widget, data):
-    pass
-
-
 def tiptap_edit_renderer(widget, data):
     attrs = dict(
         id=cssid(widget, 'input'),
         class_=cssclasses(widget, data)
     )
-
+    # XXX: extend data_attrs_helper to accept optional prefix
     custom_attrs = data_attrs_helper(widget, data, tiptap_options)
-
     for key in custom_attrs:
         name = key[:5] + 'tiptap-' + key[5:]
         attrs[name] = custom_attrs[key]
-
-    attrs.update(as_data_attrs({}))
-
+    # return textarea_renderer(widget, data, custom_attrs=custom_attrs)
     return data.tag('div', **attrs)
 
 

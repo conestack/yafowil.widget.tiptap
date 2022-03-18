@@ -19,3 +19,6 @@ class TestTiptapWidget(YafowilTestCase):
 
     def test_display_renderer(self):
         pass
+
+    def test_extractor(self):
+        pass

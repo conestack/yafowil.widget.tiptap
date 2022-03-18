@@ -5,15 +5,19 @@ export class TiptapWidget {
 
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
-            let opts = {};
-
-            ['heading', 'colors', 'bold', 'italic', 'underline', 'bullet_list',
-             'ordered_list', 'indent', 'outdent', 'html', 'image', 'link',
-             'code', 'code_block', 'help_link'].forEach(name => {
-                let data = $(this).data(`tiptap-${name}`);
-                if (data) { opts[name] = data; }
+            let opts = {},
+                elem = $(this);
+            let known_opts = [
+                'heading', 'colors', 'bold', 'italic', 'underline',
+                'bullet_list', 'ordered_list', 'indent', 'outdent', 'html',
+                'image', 'link', 'code', 'code_block', 'help_link'
+            ]
+            known_opts.forEach(name => {
+                let data = elem.data(`tiptap-${name}`);
+                if (data) {
+                    opts[name] = data;
+                }
             });
-
             new TiptapWidget($(this), opts);
         });
     }
