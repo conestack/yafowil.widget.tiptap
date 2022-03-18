@@ -5,14 +5,22 @@ export class TiptapWidget {
 
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
-            new TiptapWidget($(this));
+            let opts = {};
+
+            ['heading', 'colors', 'bold', 'italic', 'underline', 'bullet_list',
+             'ordered_list', 'indent', 'outdent', 'html', 'image', 'link',
+             'code', 'code_block', 'help_link'].forEach(name => {
+                let data = $(this).data(`tiptap-${name}`);
+                if (data) { opts[name] = data; }
+            });
+
+            new TiptapWidget($(this), opts);
         });
     }
 
     constructor(elem, opts = {}) {
         this.elem = elem;
 
-        opts = this.parse_options();
         this.elem.data('tiptap-widget', this);
 
         let extensions = new Set([
@@ -87,20 +95,6 @@ export class TiptapWidget {
                 btn.unload();
             }
         });
-    }
-
-    parse_options() {
-        let data = {};
-
-        [].forEach.call(this.elem[0].attributes, function (attr) {
-            if (/^data-tiptap-/.test(attr.name)) {
-                let name = attr.name.substr(12);
-                let res = JSON.parse(attr.value);
-                data[name] = res;
-            }
-        });
-
-        return data;
     }
 
     on_update() {
