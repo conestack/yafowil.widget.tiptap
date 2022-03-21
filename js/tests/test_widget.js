@@ -1,15 +1,24 @@
 import {TiptapWidget} from '../src/widget.js';
 import $ from 'jquery';
 
-let elem = $('<div/>').addClass('tiptap-editor');
+function create_elem() {
+    let elem = $('<div/>').addClass('tiptap-editor');
+    let textarea = $('<textarea />')
+        .text('<p>Hello World!</p>')
+        .appendTo(elem);
+
+    return elem;
+}
 let widget;
 
 QUnit.module('TiptapWidget', hooks => {
+    let elem;
 
     hooks.before(() => {
         $('body').append('<div id="container" />');
     });
     hooks.beforeEach(() => {
+        elem = create_elem();
         $('#container').append(elem);
     });
     hooks.afterEach(() => {
@@ -28,7 +37,7 @@ QUnit.module('TiptapWidget', hooks => {
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
         assert.deepEqual(widget.elem, elem);
-        assert.true(widget.textarea.is('textarea.tiptap-editor', elem));
+        assert.true(widget.textarea.is('textarea', elem));
         assert.strictEqual(widget.textarea.text(), widget.editor.getHTML());
         assert.true(widget.controls.is('div.tiptap-controls', elem));
         assert.true(widget.editor instanceof tiptap.Editor);
@@ -37,13 +46,17 @@ QUnit.module('TiptapWidget', hooks => {
         assert.strictEqual(widget.buttons.length, 1);
         assert.strictEqual(widget.buttons[0].id, 'bold');
         assert.ok(widget.swatches);
+
+        elem.removeAttr('data-tiptap-bold');
+        elem.removeAttr('data-tiptap-italic');
     });
 
-    QUnit.test('initialize/construct, no textarea', assert => {
+    QUnit.test('initialize/construct no textarea', assert => {
+        elem.empty();
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
         assert.deepEqual(widget.elem, elem);
-        assert.true(widget.textarea.is('textarea.tiptap-editor', elem));
+        assert.true(widget.textarea.is('textarea', elem));
     });
 
     QUnit.test('destroy', assert => {
@@ -70,7 +83,11 @@ QUnit.module('TiptapWidget', hooks => {
     });
 
     QUnit.test('on_update', assert => {
-        widget = new TiptapWidget(elem, {bullet_list: true, ordered_list: true, heading: true});
+        widget = new TiptapWidget(elem, {
+            bullet_list: true,
+            ordered_list: true,
+            heading: true
+        });
 
         let heading_button = widget.buttons[2];
         let bl_button = widget.buttons[0];

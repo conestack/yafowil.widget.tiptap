@@ -2,15 +2,24 @@ import {actions, ActionGroup} from '../src/actions.js';
 import {TiptapWidget} from '../src/widget.js';
 import $ from 'jquery';
 
-let elem = $('<div/>').addClass('tiptap-editor');
+function create_elem() {
+    let elem = $('<div/>').addClass('tiptap-editor');
+    let textarea = $('<textarea />')
+        .text('<p>Hello World!</p>')
+        .appendTo(elem);
+
+    return elem;
+}
 let widget;
 
 QUnit.module('Actions', hooks => {
+    let elem;
 
     hooks.before(() => {
         $('body').append('<div id="container" />');
     });
     hooks.beforeEach(() => {
+        elem = create_elem();
         $('#container').append(elem);
     });
     hooks.afterEach(() => {
@@ -30,7 +39,6 @@ QUnit.module('Actions', hooks => {
         assert.strictEqual($('span', bold_btn.elem).css('font-weight'), '700');
         assert.true(bold_btn.opts.toggle);
         assert.strictEqual(bold_btn.id, 'bold');
-        assert.deepEqual(bold_btn.widget_elem, widget.elem);
 
         // on click
         assert.notOk(bold_btn.active); // undefined on init
@@ -49,7 +57,6 @@ QUnit.module('Actions', hooks => {
         assert.strictEqual($('span', italic_btn.elem).css('font-style'), 'italic');
         assert.true(italic_btn.opts.toggle);
         assert.strictEqual(italic_btn.id, 'italic');
-        assert.deepEqual(italic_btn.widget_elem, widget.elem);
 
         // on click
         assert.notOk(italic_btn.active);// undefined on init
@@ -71,7 +78,6 @@ QUnit.module('Actions', hooks => {
         );
         assert.true(underline_btn.opts.toggle);
         assert.strictEqual(underline_btn.id, 'underline');
-        assert.deepEqual(underline_btn.widget_elem, widget.elem);
 
         // on click
         assert.notOk(underline_btn.active); // undefined on init
@@ -89,7 +95,6 @@ QUnit.module('Actions', hooks => {
         assert.true($('i', bullet_btn.elem).hasClass('glyphicon-list'));
         assert.true(bullet_btn.opts.toggle);
         assert.strictEqual(bullet_btn.id, 'bulletList');
-        assert.deepEqual(bullet_btn.widget_elem, widget.elem);
 
         // on click
         assert.notOk(bullet_btn.active); // undefined on init
@@ -107,7 +112,6 @@ QUnit.module('Actions', hooks => {
         assert.true($('i', list_btn.elem).hasClass('glyphicon-th-list'));
         assert.true(list_btn.opts.toggle);
         assert.strictEqual(list_btn.id, 'orderedList');
-        assert.deepEqual(list_btn.widget_elem, widget.elem);
 
         // on click
         assert.notOk(list_btn.active); // undefined on init
@@ -125,7 +129,6 @@ QUnit.module('Actions', hooks => {
         assert.true($('i', indent_btn.elem).hasClass('glyphicon-indent-left'));
         assert.notOk(indent_btn.opts.toggle);
         assert.strictEqual(indent_btn.id, 'indent');
-        assert.deepEqual(indent_btn.widget_elem, widget.elem);
 
         // on click
         assert.false(widget.editor.isActive('blockquote'));
@@ -141,7 +144,6 @@ QUnit.module('Actions', hooks => {
         assert.true($('i', outdent_btn.elem).hasClass('glyphicon-indent-right'));
         assert.notOk(outdent_btn.opts.toggle);
         assert.strictEqual(outdent_btn.id, 'outdent');
-        assert.deepEqual(outdent_btn.widget_elem, widget.elem);
 
         // on click
         widget.editor.commands.setBlockquote();
@@ -258,7 +260,6 @@ QUnit.module('Actions', hooks => {
         assert.ok(img_btn.submit_elem);
         assert.notOk(img_btn.opts.toggle);
         assert.strictEqual(img_btn.id, 'image');
-        assert.deepEqual(img_btn.widget_elem, widget.elem);
         assert.ok(img_btn.src_elem.is('span.dropdown-item'));
         assert.ok(img_btn.alt_elem.is('span.dropdown-item'));
         assert.ok(img_btn.title_elem.is('span.dropdown-item'));
@@ -287,7 +288,6 @@ QUnit.module('Actions', hooks => {
         assert.true(link_btn.dd_elem.hasClass('grid'));
         assert.notOk(link_btn.opts.toggle);
         assert.strictEqual(link_btn.id, 'link');
-        assert.deepEqual(link_btn.widget_elem, widget.elem);
         assert.ok(link_btn.href_elem.is('span.dropdown-item'));
 
         // on click
@@ -310,7 +310,6 @@ QUnit.module('Actions', hooks => {
         assert.strictEqual($('span', code_button.elem).text(), '< / >');
         assert.true(code_button.opts.toggle);
         assert.strictEqual(code_button.id, 'code');
-        assert.deepEqual(code_button.widget_elem, widget.elem);
 
         // on click
         assert.notOk(code_button.active);
@@ -328,7 +327,6 @@ QUnit.module('Actions', hooks => {
         assert.strictEqual($('span', codeblock_button.elem).text(), '{ }');
         assert.true(codeblock_button.opts.toggle);
         assert.strictEqual(codeblock_button.id, 'codeBlock');
-        assert.deepEqual(codeblock_button.widget_elem, widget.elem);
 
         // on click
         assert.notOk(codeblock_button.active);
