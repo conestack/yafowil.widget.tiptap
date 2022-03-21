@@ -25,7 +25,54 @@ def default_example():
     return {
         'widget': part,
         'doc': DOC_DEFAULT_TIPTAP,
-        'title': 'Tiptap',
+        'title': 'Tiptap'
+    }
+
+
+DOC_ORDER_TIPTAP = """
+Ordered Tiptap widget
+---------------------
+
+Change the order of elements in the 'actions' option to order elements.
+
+.. code-block:: python
+
+    tiptap = factory('tiptap', value="<p>The buttons are ordered differently!</p>", props={
+        'label': 'Ordered Tiptap Widget',
+        'actions': [
+            'color',
+            ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+            'html',
+            'code', 'code_block',
+            'link',
+            'image',
+            ['bold', 'italic', 'underline']
+        ]
+    })
+"""
+
+
+def order_example():
+    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part['tiptap'] = factory(
+        '#field:tiptap',
+        value="<p>The buttons are ordered differently!</p>",
+        props={
+            'label': 'Ordered Tiptap Widget',
+            'actions': [
+                'color',
+                ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+                'html',
+                'code', 'code_block',
+                'link',
+                'image',
+                ['bold', 'italic', 'underline']
+            ]
+        })
+    return {
+        'widget': part,
+        'doc': DOC_ORDER_TIPTAP,
+        'title': 'Ordered Tiptap Widget',
     }
 
 
@@ -34,8 +81,7 @@ Tiptap Widget with custom groups
 --------------------------------
 
 Grouped buttons lead to a more connected feel.
-Group buttons by assigning {'target': 'your_name'} to the corresponding buttons.
-Button groups receive their name as a css class.
+Buttons can be grouped together by putting them in a list.
 
 .. code-block:: python
 
@@ -43,21 +89,15 @@ Button groups receive their name as a css class.
         'tiptap',
         value="<p>This widget has multiple button groups.</p>",
         props={
-        'label': 'Tiptap Widget with custom groups',
-        'heading': {'target': 'font_group'},
-        'bold': {'target': 'font_group'},
-        'italic': {'target': 'font_group'},
-        'underline': {'target': 'font_group'},
-        'bullet_list': {'target': 'formatting'},
-        'ordered_list': {'target': 'formatting'},
-        'indent': {'target': 'formatting'},
-        'outdent': {'target': 'formatting'},
-        'html': True,
-        'image': {'target': 'add_content'},
-        'link': {'target': 'add_content'},
-        'code': {'target': 'code'},
-        'code_block': {'target': 'code'},
-        'help_link': True
+            'label': 'Tiptap Widget with custom groups',
+            'actions': [
+                ['heading', 'color'],
+                ['bold', 'italic', 'underline'],
+                ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+                'html',
+                ['image', 'link'],
+                ['code', 'code_block']
+            ]
     })
 """
 
@@ -69,20 +109,14 @@ def groups_example():
         value="<p>This widget has multiple button groups.</p>",
         props={
             'label': 'Tiptap Widget with custom groups',
-            'heading': {'target': 'font_group'},
-            'bold': {'target': 'font_group'},
-            'italic': {'target': 'font_group'},
-            'underline': {'target': 'font_group'},
-            'bullet_list': {'target': 'formatting'},
-            'ordered_list': {'target': 'formatting'},
-            'indent': {'target': 'formatting'},
-            'outdent': {'target': 'formatting'},
-            'html': True,
-            'image': {'target': 'add_content'},
-            'link': {'target': 'add_content'},
-            'code': {'target': 'code'},
-            'code_block': {'target': 'code'},
-            'help_link': True
+            'actions': [
+                ['heading', 'color'],
+                ['bold', 'italic', 'underline'],
+                ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+                'html',
+                ['image', 'link'],
+                ['code', 'code_block']
+            ]
         })
     return {
         'widget': part,
@@ -96,7 +130,7 @@ DOC_COLORS_TIPTAP = """
 Tiptap Widget with custom colors
 --------------------------------
 
-You can add your own text colors to the widget by adding a list of dict like 
+You can add your own text colors to the widget by adding a list of dict like
 items to the 'colors' option.
 
 Color items may only be supplied as rgb() values.
@@ -108,6 +142,11 @@ Color items may only be supplied as rgb() values.
         value='<p><span style="color: rgb(66, 209, 245)">This widget</span> has <span style="color: rgb(161, 66, 245)">custom colors</span>.</p>',
         props={
         'label': 'Tiptap Widget with custom colors',
+        'actions': [
+            ['bold', 'italic', 'underline'],
+            'color',
+            'html'
+        ],
         'colors': [
             {'name': 'Purple', 'color': 'rgb(161, 66, 245)'},
             {'name': 'Blue', 'color': 'rgb(66, 111, 245)'},
@@ -116,15 +155,7 @@ Color items may only be supplied as rgb() values.
             {'name': 'Yellow', 'color': 'rgb(245, 236, 66)'},
             {'name': 'Orange', 'color': 'rgb(245, 167, 66'},
             {'name': 'Red', 'color': 'rgb(245, 66, 66)'}
-        ],
-        'bullet_list': False,
-        'ordered_list': False,
-        'indent': False,
-        'outdent': False,
-        'image': False,
-        'link': False,
-        'code': False,
-        'code_block': False
+        ]
     })
 """
 
@@ -136,6 +167,11 @@ def colors_example():
         value='<p><span style="color: rgb(66, 209, 245)">This widget</span> has <span style="color: rgb(161, 66, 245)">custom colors</span>.</p>',
         props={
             'label': 'Tiptap Widget with custom colors',
+            'actions': [
+                ['bold', 'italic', 'underline'],
+                'color',
+                'html'
+            ],
             'colors': [
                 {'name': 'Purple', 'color': 'rgb(161, 66, 245)'},
                 {'name': 'Blue', 'color': 'rgb(66, 111, 245)'},
@@ -144,15 +180,7 @@ def colors_example():
                 {'name': 'Yellow', 'color': 'rgb(245, 236, 66)'},
                 {'name': 'Orange', 'color': 'rgb(245, 167, 66'},
                 {'name': 'Red', 'color': 'rgb(245, 66, 66)'}
-            ],
-            'bullet_list': False,
-            'ordered_list': False,
-            'indent': False,
-            'outdent': False,
-            'image': False,
-            'link': False,
-            'code': False,
-            'code_block': False
+            ]
         })
     return {
         'widget': part,
@@ -162,74 +190,10 @@ def colors_example():
 
 
 
-DOC_ORDER_TIPTAP = """
-Tiptap Widget with custom groups
---------------------------------
-
-Grouped buttons lead to a more connected feel.
-Group buttons by assigning {'target': 'your_name'} to the corresponding buttons.
-Button groups receive their name as a css class.
-
-.. code-block:: python
-
-    tiptap = factory(
-        'tiptap',
-        value="<p>This widget has multiple button groups.</p>",
-        props={
-        'label': 'Tiptap Widget with custom groups',
-        'heading': {'target': 'font_group'},
-        'bold': {'target': 'font_group'},
-        'italic': {'target': 'font_group'},
-        'underline': {'target': 'font_group'},
-        'bullet_list': {'target': 'formatting'},
-        'ordered_list': {'target': 'formatting'},
-        'indent': {'target': 'formatting'},
-        'outdent': {'target': 'formatting'},
-        'html': True,
-        'image': {'target': 'add_content'},
-        'link': {'target': 'add_content'},
-        'code': {'target': 'code'},
-        'code_block': {'target': 'code'},
-        'help_link': True
-    })
-"""
-
-
-def order_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
-    part['tiptap'] = factory(
-        '#field:tiptap',
-        value="<p>This widget has multiple button groups.</p>",
-        props={
-            'label': 'Tiptap Widget with custom groups',
-            'heading': {'order': 2},
-            'bold': {'order': 1},
-            'italic': False,
-            'underline': False,
-            'bullet_list': False,
-            'ordered_list': False,
-            'indent': False,
-            'outdent': False,
-            'html': False,
-            'image': False,
-            'link': False,
-            'code': False,
-            'code_block': False,
-            'help_link': False
-        })
-    return {
-        'widget': part,
-        'doc': DOC_GROUPS_TIPTAP,
-        'title': 'Tiptap Widget with custom groups',
-    }
-
-
-
-
 def get_example():
     return [
         default_example(),
+        order_example(),
         groups_example(),
-        colors_example(),
-        order_example()
+        colors_example()
     ]

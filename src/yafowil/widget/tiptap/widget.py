@@ -17,20 +17,8 @@ from yafowil.utils import managedprops
 
 
 tiptap_options = [
-    'heading',
+    'actions',
     'colors',
-    'bold',
-    'italic',
-    'underline',
-    'bullet_list',
-    'ordered_list',
-    'indent',
-    'outdent',
-    'html',
-    'image',
-    'link',
-    'code',
-    'code_block',
     'help_link'
 ]
 
@@ -81,100 +69,38 @@ CSS classes for tiptap widget wrapper DOM element.
 
 # Additional Options
 
-factory.defaults['tiptap.heading'] = True
-factory.doc['props']['tiptap.heading'] = """\
-Show heading button and enable heading actions.
-Values: [True|{target:''}|None].
+factory.defaults['tiptap.actions'] = [
+    'heading',
+    ['bold', 'italic', 'underline'],
+    'color',
+    ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+    'html',
+    'image',
+    'link',
+    'code',
+    'code_block'
+]
+factory.doc['props']['tiptap.actions'] = """\
+Specifies the order of elements and button groups.
+Elements will be displayed in list order.
+Group buttons together by putting them in a list.
 """
 
 factory.defaults['tiptap.colors'] = [
-    {'name': 'Default', 'color': 'rgb(51, 51, 51)'},
     {'name': 'Blue', 'color': 'rgb(53 39 245)'},
     {'name': 'Lime', 'color': 'rgb(204, 255, 0)'},
     {'name': 'Teal', 'color': 'rgb(42, 202, 234)'},
     {'name': 'Red', 'color': 'rgb(208, 6, 10)'}
 ]
 factory.doc['props']['tiptap.colors'] = """\
-Show text color button and enable color change.
+Specify custom font colors.
 Values: [array|None].
-Supply an array of color objects with the following format:
-{'name': 'Red', 'color': 'rgb(208, 6, 10)'}
-"""
-
-factory.defaults['tiptap.bold'] = { 'target': 'text_controls' }
-factory.doc['props']['tiptap.bold'] = """\
-Show bold button and enable bold actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.italic'] = { 'target': 'text_controls' }
-factory.doc['props']['tiptap.italic'] = """\
-Show italic button and enable italic actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.underline'] = { 'target': 'text_controls' }
-factory.doc['props']['tiptap.underline'] = """\
-Show underline button and enable underline actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.bullet_list'] = { 'target': 'format_controls' }
-factory.doc['props']['tiptap.bullet_list'] = """\
-Show bullet list button and enable bullet list actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.ordered_list'] = { 'target': 'format_controls' }
-factory.doc['props']['tiptap.ordered_list'] = """\
-Show ordered list button and enable ordered list actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.indent'] = { 'target': 'format_controls' }
-factory.doc['props']['tiptap.indent'] = """\
-Show indent button and enable indent actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.outdent'] = { 'target': 'format_controls' }
-factory.doc['props']['tiptap.outdent'] = """\
-Show outdent button and enable outdent actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.html'] = True
-factory.doc['props']['tiptap.html'] = """\
-Show html edit button and enable html edit actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.image'] = True
-factory.doc['props']['tiptap.image'] = """\
-Show image button and enable image actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.link'] = True
-factory.doc['props']['tiptap.link'] = """\
-Show link button and enable link actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.code'] = True
-factory.doc['props']['tiptap.code'] = """\
-Show code button and enable code actions.
-Values: [True|{target:''}|None].
-"""
-
-factory.defaults['tiptap.code_block'] = True
-factory.doc['props']['tiptap.code_block'] = """\
-Show code_block button and enable code_block actions.
-Values: [True|{target:''}|None].
+Supply a list of dict like color objects:
+[{'name': 'Red', 'color': 'rgb(208, 6, 10)'}]
 """
 
 factory.defaults['tiptap.help_link'] = True
 factory.doc['props']['tiptap.help_link'] = """\
-Show help button.
-Values: [True|{target:''}|None].
+Add a 'help' button linked to tiptap shortcuts.
+Values: [True|False|None].
 """
