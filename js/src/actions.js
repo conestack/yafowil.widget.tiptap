@@ -14,7 +14,6 @@ class BoldAction extends Button {
             toggle: true
         });
         this.id = 'bold';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -36,7 +35,6 @@ class ItalicAction extends Button {
             toggle: true
         });
         this.id = 'italic';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -58,7 +56,6 @@ class UnderlineAction extends Button {
             toggle: true
         });
         this.id = 'underline';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -80,7 +77,6 @@ class BulletListAction extends Button {
         });
 
         this.id = 'bulletList';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -102,7 +98,6 @@ class OrderedListAction extends Button {
         });
 
         this.id = 'orderedList';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -122,7 +117,6 @@ class IndentAction extends Button {
             tooltip: 'Indent'
         });
         this.id = 'indent';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -143,7 +137,6 @@ class OutdentAction extends Button {
             tooltip: 'Outdent'
         });
         this.id = 'outdent';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -205,7 +198,6 @@ class HeadingAction extends Button {
         });
         this.id = 'heading';
         this.level = opts.level;
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -222,7 +214,6 @@ class ParagraphAction extends Button {
             text: 'Text'
         });
         this.id = 'paragraph';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -240,7 +231,6 @@ class ColorAction extends Button {
         });
         this.id = 'color';
         this.swatch = opts.swatch;
-        this.widget_elem = widget.elem;
         $('<div />')
             .addClass('color')
             .css('background-color', this.swatch.color)
@@ -250,6 +240,27 @@ class ColorAction extends Button {
     on_click(e) {
         e.preventDefault();
         this.editor.chain().focus().setColor(this.swatch.color).run();
+    }
+}
+
+class UnsetColorAction extends Button {
+
+    constructor(widget, editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem, 
+            text: 'None'
+        });
+        this.id = 'color';
+
+        $('<div />')
+            .addClass('color')
+            .css('background-color', 'rgb(51, 51, 51)')
+            .appendTo(this.elem);
+    }
+
+    on_click(e) {
+        e.preventDefault();
+        this.editor.chain().focus().unsetColor().run();
     }
 }
 
@@ -293,6 +304,12 @@ class ColorsAction extends DropdownButton {
         });
         this.id = 'colors';
 
+        this.children.push(
+            new UnsetColorAction(widget, editor, {
+                container_elem: this.dd_elem
+            })
+        );
+
         for (let swatch of opts.action_opts) {
             this.children.push(
                 new ColorAction(widget, editor, {
@@ -316,7 +333,6 @@ class ImageAction extends DropdownButton {
             submit: true
         });
         this.id = 'image';
-        this.widget_elem = widget.elem;
 
         this.src_elem = $('<span />')
             .addClass('dropdown-item')
@@ -357,7 +373,6 @@ class LinkAction extends DropdownButton {
             submit: true
         });
         this.id = 'link';
-        this.widget_elem = widget.elem;
 
         this.href_elem = $('<span />')
             .addClass('dropdown-item')
@@ -385,7 +400,6 @@ class CodeAction extends Button {
             toggle: true
         });
         this.id = 'code';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -406,7 +420,6 @@ class CodeBlockAction extends Button {
             toggle: true
         });
         this.id = 'codeBlock';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {

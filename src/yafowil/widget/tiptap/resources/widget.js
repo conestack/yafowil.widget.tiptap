@@ -151,7 +151,6 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'bold';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -170,7 +169,6 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'italic';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -189,7 +187,6 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'underline';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -207,7 +204,6 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'bulletList';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -225,7 +221,6 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'orderedList';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -242,7 +237,6 @@ var yafowil_tiptap = (function (exports, $) {
                 tooltip: 'Indent'
             });
             this.id = 'indent';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -260,7 +254,6 @@ var yafowil_tiptap = (function (exports, $) {
                 tooltip: 'Outdent'
             });
             this.id = 'outdent';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -281,7 +274,7 @@ var yafowil_tiptap = (function (exports, $) {
             this.id = 'html';
             this.widget = widget;
             this.editarea = $('div.ProseMirror', this.widget.elem);
-            this.textarea = $('textarea.tiptap-editor', this.widget.elem);
+            this.textarea = this.widget.textarea;
         }
         on_click(e) {
             e.preventDefault();
@@ -315,7 +308,6 @@ var yafowil_tiptap = (function (exports, $) {
             });
             this.id = 'heading';
             this.level = opts.level;
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -329,7 +321,6 @@ var yafowil_tiptap = (function (exports, $) {
                 text: 'Text'
             });
             this.id = 'paragraph';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -344,7 +335,6 @@ var yafowil_tiptap = (function (exports, $) {
             });
             this.id = 'color';
             this.swatch = opts.swatch;
-            this.widget_elem = widget.elem;
             $('<div />')
                 .addClass('color')
                 .css('background-color', this.swatch.color)
@@ -353,6 +343,23 @@ var yafowil_tiptap = (function (exports, $) {
         on_click(e) {
             e.preventDefault();
             this.editor.chain().focus().setColor(this.swatch.color).run();
+        }
+    }
+    class UnsetColorAction extends Button {
+        constructor(widget, editor, opts) {
+            super(editor, {
+                container_elem: opts.container_elem,
+                text: 'None'
+            });
+            this.id = 'color';
+            $('<div />')
+                .addClass('color')
+                .css('background-color', 'rgb(51, 51, 51)')
+                .appendTo(this.elem);
+        }
+        on_click(e) {
+            e.preventDefault();
+            this.editor.chain().focus().unsetColor().run();
         }
     }
     class HeadingsAction extends DropdownButton {
@@ -389,6 +396,11 @@ var yafowil_tiptap = (function (exports, $) {
                 container_elem: opts.container_elem
             });
             this.id = 'colors';
+            this.children.push(
+                new UnsetColorAction(widget, editor, {
+                    container_elem: this.dd_elem
+                })
+            );
             for (let swatch of opts.action_opts) {
                 this.children.push(
                     new ColorAction(widget, editor, {
@@ -410,7 +422,6 @@ var yafowil_tiptap = (function (exports, $) {
                 submit: true
             });
             this.id = 'image';
-            this.widget_elem = widget.elem;
             this.src_elem = $('<span />')
                 .addClass('dropdown-item')
                 .append($('<span />').addClass('name').text(`src:`))
@@ -447,7 +458,6 @@ var yafowil_tiptap = (function (exports, $) {
                 submit: true
             });
             this.id = 'link';
-            this.widget_elem = widget.elem;
             this.href_elem = $('<span />')
                 .addClass('dropdown-item')
                 .append($('<span />').addClass('name').text(`href:`))
@@ -471,7 +481,6 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'code';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -489,7 +498,6 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'codeBlock';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -558,7 +566,7 @@ var yafowil_tiptap = (function (exports, $) {
         }
         constructor(elem, opts={}) {
             this.elem = elem;
-            this.elem.data('tiptap-widget', this);
+            elem.data('tiptap-widget', this);
             let extensions = new Set([
                 tiptap.Document,
                 tiptap.Paragraph,
@@ -572,19 +580,19 @@ var yafowil_tiptap = (function (exports, $) {
             }
             this.controls = $('<div />')
                 .addClass('tiptap-controls')
-                .prependTo(this.elem);
-            this.editor = new tiptap.Editor({
-                element: this.elem[0],
-                extensions: extensions,
-                content: '<p>Hello World!</p>'
-            });
-            this.textarea = $('textarea.tiptap-editor');
+                .prependTo(elem);
+            this.textarea = $('textarea', elem);
             if (!this.textarea.length) {
                 this.textarea = $('<textarea />')
                     .addClass('tiptap-editor')
-                    .appendTo(this.elem);
+                    .text('<p></p>')
+                    .appendTo(elem);
             }
-            this.textarea.text(this.editor.getHTML());
+            this.editor = new tiptap.Editor({
+                element: elem[0],
+                extensions: extensions,
+                content: this.textarea.text()
+            });
             this.buttons = [];
             let button_groups = [];
             for (let option_name in opts) {
@@ -592,9 +600,6 @@ var yafowil_tiptap = (function (exports, $) {
                     factory = actions[option_name],
                     target = options.target,
                     container = this.controls;
-                if (!options) {
-                    return;
-                }
                 if (target) {
                     let targ = button_groups.filter(group => {
                         return group.name === target ? target : false
@@ -674,7 +679,7 @@ var yafowil_tiptap = (function (exports, $) {
                 }
             }
             for (let swatch of this.swatches) {
-                let index = this.swatches.indexOf(swatch);
+                let index = this.swatches.indexOf(swatch) + 1;
                 let colors = this.buttons.find(x => x.id === 'colors');
                 if (this.editor.isActive('textStyle', {color: swatch.color})) {
                     colors.active_item = colors.children[index];

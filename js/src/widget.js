@@ -47,6 +47,7 @@ export class TiptapWidget {
         if (!this.textarea.length) {
             this.textarea = $('<textarea />')
                 .addClass('tiptap-editor')
+                .text('<p></p>')
                 .appendTo(elem);
         }
 
@@ -151,7 +152,7 @@ export class TiptapWidget {
             }
         }
         for (let swatch of this.swatches) {
-            let index = this.swatches.indexOf(swatch);
+            let index = this.swatches.indexOf(swatch) + 1;
             let colors = this.buttons.find(x => x.id === 'colors');
             if (this.editor.isActive('textStyle', {color: swatch.color})) {
                 colors.active_item = colors.children[index];
