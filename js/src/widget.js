@@ -25,7 +25,7 @@ export class TiptapWidget {
     constructor(elem, opts={}) {
         this.elem = elem;
 
-        this.elem.data('tiptap-widget', this);
+        elem.data('tiptap-widget', this);
 
         let extensions = new Set([
             tiptap.Document,
@@ -41,21 +41,20 @@ export class TiptapWidget {
 
         this.controls = $('<div />')
             .addClass('tiptap-controls')
-            .prependTo(this.elem);
+            .prependTo(elem);
 
-        this.editor = new tiptap.Editor({
-            element: this.elem[0],
-            extensions: extensions,
-            content: '<p>Hello World!</p>'
-        });
-
-        this.textarea = $('textarea.tiptap-editor');
+        this.textarea = $('textarea', elem);
         if (!this.textarea.length) {
             this.textarea = $('<textarea />')
                 .addClass('tiptap-editor')
-                .appendTo(this.elem);
+                .appendTo(elem);
         }
-        this.textarea.text(this.editor.getHTML());
+
+        this.editor = new tiptap.Editor({
+            element: elem[0],
+            extensions: extensions,
+            content: this.textarea.text()
+        });
 
         this.buttons = [];
         let button_groups = [];
