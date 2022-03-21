@@ -21,16 +21,29 @@ QUnit.module('TiptapWidget', hooks => {
     });
 
     QUnit.test('initialize/construct', assert => {
+        // set data attr
+        elem.data('tiptap-bold', true);
+        elem.data('tiptap-italic', false);
+
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
         assert.deepEqual(widget.elem, elem);
-        assert.true(widget.textarea.is('textarea.ProseMirror', elem));
+        assert.true(widget.textarea.is('textarea.tiptap-editor', elem));
+        assert.strictEqual(widget.textarea.text(), widget.editor.getHTML());
         assert.true(widget.controls.is('div.tiptap-controls', elem));
         assert.true(widget.editor instanceof tiptap.Editor);
-        assert.strictEqual(widget.buttons.length, 15); 
-        // buttons.length may change depending on parameters given
-        // in initialize() function
+
+        // since italic is set as false, length of buttons must be 1
+        assert.strictEqual(widget.buttons.length, 1);
+        assert.strictEqual(widget.buttons[0].id, 'bold');
         assert.ok(widget.swatches);
+    });
+
+    QUnit.test('initialize/construct, no textarea', assert => {
+        TiptapWidget.initialize();
+        widget = elem.data('tiptap-widget');
+        assert.deepEqual(widget.elem, elem);
+        assert.true(widget.textarea.is('textarea.tiptap-editor', elem));
     });
 
     QUnit.test('destroy', assert => {

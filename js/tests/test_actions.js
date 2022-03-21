@@ -157,14 +157,14 @@ QUnit.module('Actions', hooks => {
         assert.true($('i', html_button.elem).hasClass('glyphicon-pencil'));
         assert.true(html_button.opts.toggle);
         assert.strictEqual(html_button.id, 'html');
-        assert.deepEqual(html_button.widget_elem, widget.elem);
+        assert.deepEqual(html_button.textarea, widget.textarea);
 
         // on click
         assert.notOk(html_button.active);
         html_button.elem.trigger('click');
         assert.true(html_button.active);
         assert.true(widget.buttons[1].elem.prop('disabled'));
-        assert.strictEqual(widget.editarea.css('display'), 'none');
+        assert.strictEqual(html_button.editarea.css('display'), 'none');
         assert.strictEqual(widget.textarea.css('display'), 'inline-block');
         assert.strictEqual(widget.textarea.text(), widget.editor.getHTML());
 
@@ -172,7 +172,7 @@ QUnit.module('Actions', hooks => {
         html_button.elem.trigger('click');
         assert.false(html_button.active);
         assert.false(widget.buttons[1].elem.prop('disabled'));
-        assert.strictEqual(widget.editarea.css('display'), 'block');
+        assert.strictEqual(html_button.editarea.css('display'), 'block');
         assert.strictEqual(widget.textarea.css('display'), 'none');
     });
 
@@ -339,10 +339,10 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('Help', assert => {
-        widget = new TiptapWidget(elem, {help: true});
+        widget = new TiptapWidget(elem, {help_link: true});
 
         let help_button = widget.buttons[0];
-        assert.true(help_button instanceof actions.help);
+        assert.true(help_button instanceof actions.help_link);
         assert.true(help_button.elem.is('a.help-btn'));
     });
 
