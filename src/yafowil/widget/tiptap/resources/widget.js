@@ -279,20 +279,27 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'html';
-            this.widget_elem = widget.elem;
-            this.parent = this.elem.closest('div.tiptap-editor');
-            this.editarea = $('div.ProseMirror', this.parent);
-            this.textarea = $('textarea.ProseMirror', this.parent);
+            this.widget = widget;
+            this.editarea = $('div.ProseMirror', this.widget.elem);
+            this.textarea = $('textarea.tiptap-editor', this.widget.elem);
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             if (this.active) {
-                $('button', this.parent).not(this.elem).prop('disabled', true);
+                for (let btn of this.widget.buttons) {
+                    if (btn !== this) {
+                        btn.elem.prop('disabled', true);
+                    }
+                }
                 this.editarea.hide();
-                this.textarea.show().text(this.editor.getHTML());
+                this.textarea.show();
             } else {
-                $('button', this.parent).prop('disabled', false);
+                for (let btn of this.widget.buttons) {
+                    if (btn !== this) {
+                        btn.elem.prop('disabled', false);
+                    }
+                }
                 this.textarea.hide();
                 this.editarea.show();
                 this.editor.chain().focus().setContent(this.textarea.val()).run();
@@ -533,17 +540,23 @@ var yafowil_tiptap = (function (exports, $) {
     class TiptapWidget {
         static initialize(context) {
             $('div.tiptap-editor', context).each(function() {
-                let opts = {};
-                ['heading', 'colors', 'bold', 'italic', 'underline', 'bullet_list',
-                 'ordered_list', 'indent', 'outdent', 'html', 'image', 'link',
-                 'code', 'code_block', 'help_link'].forEach(name => {
-                    let data = $(this).data(`tiptap-${name}`);
-                    if (data) { opts[name] = data; }
+                let opts = {},
+                    elem = $(this);
+                let available_opts = [
+                    'heading', 'colors', 'bold', 'italic', 'underline',
+                    'bullet_list', 'ordered_list', 'indent', 'outdent', 'html',
+                    'image', 'link', 'code', 'code_block', 'help_link'
+                ];
+                available_opts.forEach(name => {
+                    let data = elem.data(`tiptap-${name}`);
+                    if (data) {
+                        opts[name] = data;
+                    }
                 });
                 new TiptapWidget($(this), opts);
             });
         }
-        constructor(elem, opts = {}) {
+        constructor(elem, opts={}) {
             this.elem = elem;
             this.elem.data('tiptap-widget', this);
             let extensions = new Set([
@@ -557,10 +570,6 @@ var yafowil_tiptap = (function (exports, $) {
                 let exts = actions[option_name].extensions;
                 exts.forEach(ext => extensions.add(ext));
             }
-            this.editarea = $('div.ProseMirror', this.elem);
-            this.textarea = $('<textarea />')
-                .addClass('ProseMirror')
-                .appendTo(this.elem);
             this.controls = $('<div />')
                 .addClass('tiptap-controls')
                 .prependTo(this.elem);
@@ -569,6 +578,13 @@ var yafowil_tiptap = (function (exports, $) {
                 extensions: extensions,
                 content: '<p>Hello World!</p>'
             });
+            this.textarea = $('textarea.tiptap-editor');
+            if (!this.textarea.length) {
+                this.textarea = $('<textarea />')
+                    .addClass('tiptap-editor')
+                    .appendTo(this.elem);
+            }
+            this.textarea.text(this.editor.getHTML());
             this.buttons = [];
             let button_groups = [];
             for (let option_name in opts) {
@@ -576,6 +592,9 @@ var yafowil_tiptap = (function (exports, $) {
                     factory = actions[option_name],
                     target = options.target,
                     container = this.controls;
+                if (!options) {
+                    return;
+                }
                 if (target) {
                     let targ = button_groups.filter(group => {
                         return group.name === target ? target : false
@@ -622,6 +641,7 @@ var yafowil_tiptap = (function (exports, $) {
             if (this.editor.isActive('orderedList') && ul) {
                 ul.active = false;
             }
+            this.textarea.text(this.editor.getHTML());
         }
         on_selection_update() {
             let ids = [
