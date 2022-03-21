@@ -165,10 +165,9 @@ class HTMLAction extends Button {
             toggle: true
         });
         this.id = 'html';
-        this.widget_elem = widget.elem;
-        this.parent = this.elem.closest('div.tiptap-editor');
-        this.editarea = $('div.ProseMirror', this.parent);
-        this.textarea = $('textarea.ProseMirror', this.parent);
+        this.widget = widget;
+        this.editarea = $('div.ProseMirror', this.widget.elem);
+        this.textarea = this.widget.textarea;
     }
 
     on_click(e) {
@@ -176,11 +175,19 @@ class HTMLAction extends Button {
         this.active = !this.active;
 
         if (this.active) {
-            $('button', this.parent).not(this.elem).prop('disabled', true);
+            for (let btn of this.widget.buttons) {
+                if (btn !== this) {
+                    btn.elem.prop('disabled', true);
+                }
+            }
             this.editarea.hide();
-            this.textarea.show().text(this.editor.getHTML());
+            this.textarea.show();
         } else {
-            $('button', this.parent).prop('disabled', false);
+            for (let btn of this.widget.buttons) {
+                if (btn !== this) {
+                    btn.elem.prop('disabled', false);
+                }
+            }
             this.textarea.hide();
             this.editarea.show();
             this.editor.chain().focus().setContent(this.textarea.val()).run();

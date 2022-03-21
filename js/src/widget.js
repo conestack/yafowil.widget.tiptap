@@ -39,10 +39,6 @@ export class TiptapWidget {
             exts.forEach(ext => extensions.add(ext));
         }
 
-        this.editarea = $('div.ProseMirror', this.elem);
-        this.textarea = $('<textarea />')
-            .addClass('ProseMirror')
-            .appendTo(this.elem);
         this.controls = $('<div />')
             .addClass('tiptap-controls')
             .prependTo(this.elem);
@@ -52,6 +48,14 @@ export class TiptapWidget {
             extensions: extensions,
             content: '<p>Hello World!</p>'
         });
+
+        this.textarea = $('textarea.tiptap-editor');
+        if (!this.textarea.length) {
+            this.textarea = $('<textarea />')
+                .addClass('tiptap-editor')
+                .appendTo(this.elem);
+        }
+        this.textarea.text(this.editor.getHTML());
 
         this.buttons = [];
         let button_groups = [];
@@ -113,6 +117,8 @@ export class TiptapWidget {
         if (this.editor.isActive('orderedList') && ul) {
             ul.active = false;
         }
+
+        this.textarea.text(this.editor.getHTML());
     }
 
     on_selection_update() {
