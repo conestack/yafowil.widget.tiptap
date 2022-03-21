@@ -7,12 +7,12 @@ export class TiptapWidget {
         $('div.tiptap-editor', context).each(function() {
             let opts = {},
                 elem = $(this);
-            let known_opts = [
+            let available_opts = [
                 'heading', 'colors', 'bold', 'italic', 'underline',
                 'bullet_list', 'ordered_list', 'indent', 'outdent', 'html',
                 'image', 'link', 'code', 'code_block', 'help_link'
             ]
-            known_opts.forEach(name => {
+            available_opts.forEach(name => {
                 let data = elem.data(`tiptap-${name}`);
                 if (data) {
                     opts[name] = data;
@@ -22,7 +22,7 @@ export class TiptapWidget {
         });
     }
 
-    constructor(elem, opts = {}) {
+    constructor(elem, opts={}) {
         this.elem = elem;
 
         this.elem.data('tiptap-widget', this);
