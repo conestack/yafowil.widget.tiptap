@@ -21,6 +21,10 @@ class BoldAction extends Button {
         this.active = !this.active;
         this.editor.chain().focus().toggleBold().run();
     }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('bold');
+    }
 }
 
 class ItalicAction extends Button {
@@ -41,6 +45,10 @@ class ItalicAction extends Button {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleItalic().run();
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('italic');
     }
 }
 
@@ -63,6 +71,10 @@ class UnderlineAction extends Button {
         this.active = !this.active;
         this.editor.chain().focus().toggleUnderline().run();
     }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('underline');
+    }
 }
 
 class BulletListAction extends Button {
@@ -77,12 +89,23 @@ class BulletListAction extends Button {
         });
 
         this.id = 'bulletList';
+        this.widget = widget;
     }
 
     on_click(e) {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleBulletList().run();
+    }
+
+    on_update() {
+        if (this.editor.isActive('orderedList')) {
+            this.active = false;
+        }
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('bulletList');
     }
 }
 
@@ -104,6 +127,16 @@ class OrderedListAction extends Button {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleOrderedList().run();
+    }
+
+    on_update() {
+        if (this.editor.isActive('bulletList')) {
+            this.active = false;
+        }
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('orderedList');
     }
 }
 
@@ -293,6 +326,18 @@ class HeadingsAction extends DropdownButton {
     reset() {
         this.active_item = this.children[0];
     }
+
+    on_selection_update() {
+        if (this.editor.isActive('paragraph')) {
+            this.active_item = this.children[0];
+        } else {
+            for (let i=1; i<=6; i++) {
+                if (this.editor.isActive('heading', {level: i})) {
+                    this.active_item = this.children[i];
+                }
+            }
+        }
+    }
 }
 
 class ColorsAction extends DropdownButton {
@@ -310,7 +355,8 @@ class ColorsAction extends DropdownButton {
             })
         );
 
-        for (let swatch of opts.action_opts) {
+        this.swatches = widget.elem.data('tiptap-colors');
+        for (let swatch of this.swatches) {
             this.children.push(
                 new ColorAction(widget, editor, {
                     container_elem: this.dd_elem,
@@ -319,6 +365,18 @@ class ColorsAction extends DropdownButton {
             )
         }
         this.set_items();
+    }
+
+    on_selection_update() {
+        for (let swatch of this.swatches) {
+            let index = this.swatches.indexOf(swatch);
+            if (this.editor.isActive('textStyle', {color: swatch.color})) {
+                this.active_item = this.children[index + 1];
+            }
+        }
+        if (!this.editor.isActive('textStyle', { color: /.*/ })) {
+                this.active_item = this.children[0];
+        }
     }
 }
 
@@ -407,6 +465,10 @@ class CodeAction extends Button {
         this.active = !this.active;
         this.editor.chain().focus().toggleCode().run();
     }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('code');
+    }
 }
 
 class CodeBlockAction extends Button {
@@ -427,6 +489,10 @@ class CodeBlockAction extends Button {
         this.active = !this.active;
         this.editor.chain().focus().toggleCodeBlock().run();
     }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('codeBlock');
+    }
 }
 
 class HelpAction {
@@ -445,30 +511,20 @@ class HelpAction {
     }
 }
 
-export class ActionGroup {
-
-    constructor(name, target) {
-        this.name = name;
-        this.elem = $('<div />')
-            .addClass(`btn-group ${name}`)
-            .appendTo(target);
-    }
-}
-
 export let actions = {
     bold: BoldAction,
     italic: ItalicAction,
     underline: UnderlineAction,
-    bullet_list: BulletListAction,
-    ordered_list: OrderedListAction,
+    bulletList: BulletListAction,
+    orderedList: OrderedListAction,
     indent: IndentAction,
     outdent: OutdentAction,
     html: HTMLAction,
     heading: HeadingsAction,
-    colors: ColorsAction,
+    color: ColorsAction,
     image: ImageAction,
     link: LinkAction,
     code: CodeAction,
-    code_block: CodeBlockAction,
-    help_link: HelpAction
+    codeBlock: CodeBlockAction,
+    helpLink: HelpAction
 }

@@ -160,6 +160,10 @@ export class DropdownButton extends Button {
         }
     }
 
+    on_update() {
+        this.dd_elem.hide();
+    }
+
     /* istanbul ignore next */
     submit(e) {
         e.preventDefault();

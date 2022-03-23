@@ -41,9 +41,9 @@ Change the order of elements in the 'actions' option to order elements.
         'label': 'Ordered Tiptap Widget',
         'actions': [
             'color',
-            ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+            ['bulletList', 'orderedList', 'indent', 'outdent'],
             'html',
-            'code', 'code_block',
+            'code', 'codeBlock',
             'link',
             'image',
             ['bold', 'italic', 'underline']
@@ -61,9 +61,9 @@ def order_example():
             'label': 'Ordered Tiptap Widget',
             'actions': [
                 'color',
-                ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+                ['bulletList', 'orderedList', 'indent', 'outdent'],
                 'html',
-                'code', 'code_block',
+                'code', 'codeBlock',
                 'link',
                 'image',
                 ['bold', 'italic', 'underline']
@@ -93,10 +93,10 @@ Buttons can be grouped together by putting them in a list.
             'actions': [
                 ['heading', 'color'],
                 ['bold', 'italic', 'underline'],
-                ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+                ['bulletList', 'orderedList', 'indent', 'outdent'],
                 'html',
                 ['image', 'link'],
-                ['code', 'code_block']
+                ['code', 'codeBlock']
             ]
     })
 """
@@ -112,10 +112,10 @@ def groups_example():
             'actions': [
                 ['heading', 'color'],
                 ['bold', 'italic', 'underline'],
-                ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+                ['bulletList', 'orderedList', 'indent', 'outdent'],
                 'html',
                 ['image', 'link'],
-                ['code', 'code_block']
+                ['code', 'codeBlock']
             ]
         })
     return {

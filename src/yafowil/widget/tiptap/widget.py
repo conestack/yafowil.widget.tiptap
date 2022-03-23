@@ -19,7 +19,7 @@ from yafowil.utils import managedprops
 tiptap_options = [
     'actions',
     'colors',
-    'help_link'
+    'helpLink'
 ]
 
 
@@ -73,12 +73,12 @@ factory.defaults['tiptap.actions'] = [
     'heading',
     ['bold', 'italic', 'underline'],
     'color',
-    ['bullet_list', 'ordered_list', 'indent', 'outdent'],
+    ['bulletList', 'orderedList', 'indent', 'outdent'],
     'html',
     'image',
     'link',
     'code',
-    'code_block'
+    'codeBlock'
 ]
 factory.doc['props']['tiptap.actions'] = """\
 Specifies the order of elements and button groups.
@@ -99,8 +99,8 @@ Supply a list of dict like color objects:
 [{'name': 'Red', 'color': 'rgb(208, 6, 10)'}]
 """
 
-factory.defaults['tiptap.help_link'] = True
-factory.doc['props']['tiptap.help_link'] = """\
+factory.defaults['tiptap.helpLink'] = True
+factory.doc['props']['tiptap.helpLink'] = """\
 Add a 'help' button linked to tiptap shortcuts.
 Values: [True|False|None].
 """

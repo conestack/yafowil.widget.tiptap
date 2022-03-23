@@ -1,4 +1,4 @@
-import {actions, ActionGroup} from '../src/actions.js';
+import {actions} from '../src/actions.js';
 import {TiptapWidget} from '../src/widget.js';
 import $ from 'jquery';
 

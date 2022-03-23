@@ -1,23 +1,16 @@
 import $ from 'jquery';
-import {actions, ActionGroup} from './actions';
+import {actions} from './actions';
 
 export class TiptapWidget {
 
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
-            let opts = {},
-                elem = $(this);
-            let available_opts = [
-                'heading', 'colors', 'bold', 'italic', 'underline',
-                'bullet_list', 'ordered_list', 'indent', 'outdent', 'html',
-                'image', 'link', 'code', 'code_block', 'help_link'
-            ]
-            available_opts.forEach(name => {
-                let data = elem.data(`tiptap-${name}`);
-                if (data) {
-                    opts[name] = data;
-                }
-            });
+            let elem = $(this),
+                opts = {
+                    actions: elem.data('tiptap-actions'),
+                    colors: elem.data('tiptap-colors'),
+                    help_link: elem.data('tiptap-help_link')
+                };
             new TiptapWidget($(this), opts);
         });
     }
@@ -34,9 +27,20 @@ export class TiptapWidget {
             tiptap.TextStyle,
             tiptap.Dropcursor
         ]);
-        for (let option_name in opts) {
-            let exts = actions[option_name].extensions;
-            exts.forEach(ext => extensions.add(ext));
+
+        opts.actions = opts.actions.filter(this.filter_actions);
+        for (let action of opts.actions) {
+            if (Array.isArray(action)) {
+                let index = opts.actions.indexOf(action);
+                opts.actions[index] = action.filter(this.filter_actions);
+                opts.actions[index].forEach(name => {
+                    let exts = actions[name].extensions;
+                    exts.forEach(ext => extensions.add(ext));
+                });
+            } else {
+                let exts = actions[action].extensions;
+                exts.forEach(ext => extensions.add(ext));
+            }
         }
 
         this.controls = $('<div />')
@@ -47,7 +51,6 @@ export class TiptapWidget {
         if (!this.textarea.length) {
             this.textarea = $('<textarea />')
                 .addClass('tiptap-editor')
-                .text('<p></p>')
                 .appendTo(elem);
         }
 
@@ -57,33 +60,27 @@ export class TiptapWidget {
             content: this.textarea.text()
         });
 
-        this.buttons = [];
-        let button_groups = [];
+        this.buttons = {};
 
-        for (let option_name in opts) {
-            let options = opts[option_name],
-                factory = actions[option_name],
-                target = options.target,
-                container = this.controls;
-
-            if (target) {
-                let targ = button_groups.filter(group => {
-                    return group.name === target ? target : false
-                });
-                if (targ[0]) {
-                    container = targ[0].elem;
-                } else {
-                    let group = new ActionGroup(target, this.controls);
-                    button_groups.push(group);
-                    container = group.elem;
-                }
+        for (let action_name of opts.actions) {
+            let add_button = (name, container) => {
+                let factory = actions[name],
+                    btn = new factory(this, this.editor, {
+                        container_elem: container
+                    });
+                this.buttons[name] = btn;
             }
-            this.buttons.push(new factory(this, this.editor, {
-                action_opts: options,
-                container_elem: container
-            }));
+
+            if (Array.isArray(action_name)) {
+                let container = $('<div />')
+                    .addClass('btn-group')
+                    .appendTo(this.controls);
+                action_name.forEach(name => add_button(name, container));
+            } else {
+                add_button(action_name, this.controls);
+            }
         }
-        this.swatches = opts.colors ? opts.colors : [];
+
         this.on_update = this.on_update.bind(this);
         this.editor.on('update', this.on_update);
         this.on_selection_update = this.on_selection_update.bind(this);
@@ -98,70 +95,35 @@ export class TiptapWidget {
     }
 
     unload_all() {
-        this.buttons.forEach(btn => {
-            if (btn.unload) {
-                btn.unload();
+        for (let btn in this.buttons) {
+            if (this.buttons[btn].unload) {
+                this.buttons[btn].unload();
             }
-        });
+        }
+    }
+
+    filter_actions(name) {
+        if (actions[name] == undefined && !Array.isArray(name)) {
+            console.log(`ERROR: Defined action does not exist at '${name}'`);
+            return false;
+        } else {
+            return true;
+        }
     }
 
     on_update() {
-        this.buttons.forEach(btn => { if(btn.dd_elem) btn.dd_elem.hide() });
-
-        let ul = this.buttons.find(x => x.id === 'bulletList');
-        let ol = this.buttons.find(x => x.id === 'orderedList');
-
-        if (this.editor.isActive('bulletList') && ol) {
-            ol.active = false;
+        for (let btn in this.buttons) {
+            if (this.buttons[btn].on_update) {
+                this.buttons[btn].on_update();
+            }
         }
-        if (this.editor.isActive('orderedList') && ul) {
-            ul.active = false;
-        }
-
         this.textarea.text(this.editor.getHTML());
     }
 
     on_selection_update() {
-        let ids = [
-            'bold',
-            'italic',
-            'underline',
-            'bulletList',
-            'orderedList',
-            'code',
-            'codeBlock'
-        ];
-        for (let id of ids) {
-            let btn = this.buttons.find(x => x.id === id);
-            if (btn) {
-                if (this.editor.isActive(id)) {
-                    btn.active = true;
-                } else {
-                    btn.active = false;
-                }
-            }
-        }
-        if (this.editor.isActive('paragraph')) {
-            let headings = this.buttons.find(x => x.id === 'headings');
-            if (headings) headings.active_item = headings.children[0];
-        }
-        for (let i = 1; i <=6; i++) {
-            if (this.editor.isActive('heading', {level: i})) {
-                let headings = this.buttons.find(x => x.id === 'headings');
-                if (headings) headings.active_item = headings.children[i];
-            }
-        }
-        for (let swatch of this.swatches) {
-            let index = this.swatches.indexOf(swatch) + 1;
-            let colors = this.buttons.find(x => x.id === 'colors');
-            if (this.editor.isActive('textStyle', {color: swatch.color})) {
-                colors.active_item = colors.children[index];
-            }
-        }
-        if (!this.editor.isActive('textStyle', { color: /.*/ })) {
-            let colors = this.buttons.find(x => x.id === 'colors');
-            if (colors) {
-                colors.active_item = colors.children[0];
+        for (let btn in this.buttons) {
+            if (this.buttons[btn].on_selection_update) {
+                this.buttons[btn].on_selection_update();
             }
         }
     }

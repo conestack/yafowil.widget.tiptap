@@ -22,6 +22,7 @@ QUnit.module('TiptapWidget', hooks => {
         $('#container').append(elem);
     });
     hooks.afterEach(() => {
+        elem.removeAttr('tiptap-actions');
         $('#container').empty();
         widget = null;
     });
@@ -29,10 +30,9 @@ QUnit.module('TiptapWidget', hooks => {
         $('#container').empty().remove();
     });
 
-    QUnit.test('initialize/construct', assert => {
+    QUnit.test.only('initialize/construct', assert => {
         // set data attr
-        elem.data('tiptap-bold', true);
-        elem.data('tiptap-italic', false);
+        elem.data('tiptap-actions', ['bold']);
 
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
@@ -42,16 +42,13 @@ QUnit.module('TiptapWidget', hooks => {
         assert.true(widget.controls.is('div.tiptap-controls', elem));
         assert.true(widget.editor instanceof tiptap.Editor);
 
-        // since italic is set as false, length of buttons must be 1
-        assert.strictEqual(widget.buttons.length, 1);
-        assert.strictEqual(widget.buttons[0].id, 'bold');
-        assert.ok(widget.swatches);
-
-        elem.removeAttr('data-tiptap-bold');
-        elem.removeAttr('data-tiptap-italic');
+        assert.ok(widget.buttons.bold);
     });
 
-    QUnit.test('initialize/construct no textarea', assert => {
+    QUnit.test.only('initialize/construct no textarea', assert => {
+        // set data attr
+        elem.data('tiptap-actions', ['bold']);
+
         elem.empty();
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
@@ -59,7 +56,10 @@ QUnit.module('TiptapWidget', hooks => {
         assert.true(widget.textarea.is('textarea', elem));
     });
 
-    QUnit.test('destroy', assert => {
+    QUnit.test.only('destroy', assert => {
+        // set data attr
+        elem.data('tiptap-actions', ['bold']);
+
         TiptapWidget.initialize();
         widget = elem.data('tiptap-widget');
 
@@ -68,30 +68,37 @@ QUnit.module('TiptapWidget', hooks => {
         assert.notOk(widget.buttons);
     });
 
-    QUnit.test('unload_all', assert => {
-        widget = new TiptapWidget(elem, {heading: true});
+    QUnit.test.only('unload_all', assert => {
+        // set data attr
+        elem.data('tiptap-actions', [
+            'heading'
+        ]);
+        TiptapWidget.initialize();
+        widget = elem.data('tiptap-widget');
 
-        widget.buttons[0].dd_elem.show();
+        widget.buttons.heading.dd_elem.show();
         $('body').trigger('click');
-        assert.strictEqual(widget.buttons[0].dd_elem.css('display'), 'none');
+        assert.strictEqual(widget.buttons.heading.dd_elem.css('display'), 'none');
 
         // unload all buttons
         widget.unload_all();
-        widget.buttons[0].dd_elem.show();
+        widget.buttons.heading.dd_elem.show();
         $('body').trigger('click');
-        assert.strictEqual(widget.buttons[0].dd_elem.css('display'), 'block');
+        assert.strictEqual(widget.buttons.heading.dd_elem.css('display'), 'block');
     });
 
-    QUnit.test('on_update', assert => {
+    QUnit.test.only('on_update', assert => {
         widget = new TiptapWidget(elem, {
-            bullet_list: true,
-            ordered_list: true,
-            heading: true
+            actions: [
+                'bulletList',
+                'orderedList',
+                'heading'
+            ]
         });
 
-        let heading_button = widget.buttons[2];
-        let bl_button = widget.buttons[0];
-        let ol_button = widget.buttons[1];
+        let heading_button = widget.buttons.heading;
+        let bl_button = widget.buttons.bulletList;
+        let ol_button = widget.buttons.orderedList;
 
         // show heading dropdown
         heading_button.dd_elem.show();
@@ -112,17 +119,21 @@ QUnit.module('TiptapWidget', hooks => {
         assert.false(ol_button.active);
     });
 
-    QUnit.test('on_selection_update', assert => {
+    QUnit.test.skip('on_selection_update', assert => {
         let opts = {
-            heading: true,
-            bold: true,
-            italic: true,
-            underline: true,
-            bullet_list: true,
-            ordered_list: true,
+            actions: [
+                'heading',
+                'bold',
+                'italic',
+                'underline',
+                'bulletList',
+                'orderedList',
+                'color'
+            ],
             colors: [
                 { name: 'Default', color: 'rgb(51, 51, 51)'},
-                { name: 'Blue', color: 'rgb(53 39 245)' }
+                { name: 'Blue', color: 'rgb(53 39 245)' },
+                { name: 'Some', color: 'rgb(0 39 245)' }
             ]
         }
         widget = new TiptapWidget(elem, opts);
@@ -134,8 +145,8 @@ QUnit.module('TiptapWidget', hooks => {
             position in ProseMirror
         */
 
-        let headings = widget.buttons[0];
-        let colors = widget.buttons[6];
+        let headings = widget.buttons.heading;
+        let colors = widget.buttons.color;
 
         // set to Heading (h1)
         widget.editor.chain().focus().toggleHeading({level: 1}).run();
