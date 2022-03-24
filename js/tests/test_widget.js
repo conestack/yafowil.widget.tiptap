@@ -30,7 +30,7 @@ QUnit.module('TiptapWidget', hooks => {
         $('#container').empty().remove();
     });
 
-    QUnit.test.only('initialize/construct', assert => {
+    QUnit.test('initialize/construct', assert => {
         // set data attr
         elem.data('tiptap-actions', ['bold']);
 
@@ -45,7 +45,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.ok(widget.buttons.bold);
     });
 
-    QUnit.test.only('initialize/construct no textarea', assert => {
+    QUnit.test('initialize/construct no textarea', assert => {
         // set data attr
         elem.data('tiptap-actions', ['bold']);
 
@@ -56,7 +56,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.true(widget.textarea.is('textarea', elem));
     });
 
-    QUnit.test.only('destroy', assert => {
+    QUnit.test('destroy', assert => {
         // set data attr
         elem.data('tiptap-actions', ['bold']);
 
@@ -68,7 +68,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.notOk(widget.buttons);
     });
 
-    QUnit.test.only('unload_all', assert => {
+    QUnit.test('unload_all', assert => {
         // set data attr
         elem.data('tiptap-actions', [
             'heading'
@@ -87,7 +87,21 @@ QUnit.module('TiptapWidget', hooks => {
         assert.strictEqual(widget.buttons.heading.dd_elem.css('display'), 'block');
     });
 
-    QUnit.test.only('on_update', assert => {
+    QUnit.test('filter_actions', assert => {
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'undefinedAction',
+                ['bold', 'italic', 'anotherUndefinedAction']
+            ]
+        });
+
+        assert.notOk(widget.buttons.undefinedAction);
+        assert.ok(widget.buttons.bold);
+        assert.ok(widget.buttons.italic);
+        assert.notOk(widget.buttons.anotherUndefinedAction);
+    });
+
+    QUnit.test('on_update', assert => {
         widget = new TiptapWidget(elem, {
             actions: [
                 'bulletList',
@@ -119,7 +133,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.false(ol_button.active);
     });
 
-    QUnit.test.skip('on_selection_update', assert => {
+    QUnit.test('on_selection_update', assert => {
         let opts = {
             actions: [
                 'heading',
@@ -132,8 +146,7 @@ QUnit.module('TiptapWidget', hooks => {
             ],
             colors: [
                 { name: 'Default', color: 'rgb(51, 51, 51)'},
-                { name: 'Blue', color: 'rgb(53 39 245)' },
-                { name: 'Some', color: 'rgb(0 39 245)' }
+                { name: 'Blue', color: 'rgb(53 39 245)' }
             ]
         }
         widget = new TiptapWidget(elem, opts);
@@ -159,8 +172,9 @@ QUnit.module('TiptapWidget', hooks => {
         assert.deepEqual(headings.active_item, headings.children[0]);
 
         // set color
-        widget.editor.chain().focus().setColor(opts.colors[1].color).run();
+        widget.editor.chain().focus().setColor(`${opts.colors[1].color}`).run();
         widget.editor.commands.setTextSelection(2);
-        assert.deepEqual(colors.active_item, colors.children[1]);
+        // we have a "none" option added too, so active item is item #3
+        assert.deepEqual(colors.active_item, colors.children[2]);
     });
 });

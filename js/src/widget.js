@@ -5,43 +5,18 @@ export class TiptapWidget {
 
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
-            let elem = $(this),
-                opts = {
-                    actions: elem.data('tiptap-actions'),
-                    colors: elem.data('tiptap-colors'),
-                    help_link: elem.data('tiptap-help_link')
-                };
-            new TiptapWidget($(this), opts);
+            let elem = $(this);
+            new TiptapWidget(elem, {
+                actions: elem.data('tiptap-actions'),
+                colors: elem.data('tiptap-colors'),
+                helpLink: elem.data('tiptap-helpLink')
+            });
         });
     }
 
     constructor(elem, opts={}) {
         this.elem = elem;
-
         elem.data('tiptap-widget', this);
-
-        let extensions = new Set([
-            tiptap.Document,
-            tiptap.Paragraph,
-            tiptap.Text,
-            tiptap.TextStyle,
-            tiptap.Dropcursor
-        ]);
-
-        opts.actions = opts.actions.filter(this.filter_actions);
-        for (let action of opts.actions) {
-            if (Array.isArray(action)) {
-                let index = opts.actions.indexOf(action);
-                opts.actions[index] = action.filter(this.filter_actions);
-                opts.actions[index].forEach(name => {
-                    let exts = actions[name].extensions;
-                    exts.forEach(ext => extensions.add(ext));
-                });
-            } else {
-                let exts = actions[action].extensions;
-                exts.forEach(ext => extensions.add(ext));
-            }
-        }
 
         this.controls = $('<div />')
             .addClass('tiptap-controls')
@@ -54,32 +29,30 @@ export class TiptapWidget {
                 .appendTo(elem);
         }
 
+        opts = this.parse_opts(opts);
+        this.buttons = {};
+        this.swatches = opts.colors;
+        if (opts.helpLink) {
+            let factory = actions.helpLink;
+            this.helpLink = new factory(this);
+        }
+
         this.editor = new tiptap.Editor({
             element: elem[0],
-            extensions: extensions,
+            extensions: opts.extensions,
             content: this.textarea.text()
         });
 
-        this.buttons = {};
-
-        for (let action_name of opts.actions) {
-            let add_button = (name, container) => {
-                let factory = actions[name],
-                    btn = new factory(this, this.editor, {
-                        container_elem: container
-                    });
-                this.buttons[name] = btn;
-            }
-
-            if (Array.isArray(action_name)) {
+        opts.actions.forEach(act => {
+            if (Array.isArray(act)) {
                 let container = $('<div />')
                     .addClass('btn-group')
                     .appendTo(this.controls);
-                action_name.forEach(name => add_button(name, container));
+                    act.forEach(name => this.add_button(name, container));
             } else {
-                add_button(action_name, this.controls);
+                this.add_button(act, this.controls);
             }
-        }
+        });
 
         this.on_update = this.on_update.bind(this);
         this.editor.on('update', this.on_update);
@@ -102,13 +75,42 @@ export class TiptapWidget {
         }
     }
 
-    filter_actions(name) {
-        if (actions[name] == undefined && !Array.isArray(name)) {
-            console.log(`ERROR: Defined action does not exist at '${name}'`);
-            return false;
-        } else {
-            return true;
+    add_button(name, container) {
+        let factory = actions[name],
+            btn = new factory(this, this.editor, {
+                container_elem: container
+            });
+        this.buttons[name] = btn;
+    }
+
+    parse_opts(opts) {
+        opts.extensions = new Set([
+            tiptap.Document,
+            tiptap.Paragraph,
+            tiptap.Text,
+            tiptap.TextStyle,
+            tiptap.Dropcursor
+        ]);
+
+        let filter_actions = (name) => {
+            if (Array.isArray(name)) {
+                return true;
+            } else if (actions[name] !== undefined) {
+                actions[name].extensions.forEach(ext => opts.extensions.add(ext));
+                return true;
+            } else {
+                console.log(`ERROR: Defined action does not exist at '${name}'`);
+                return false;
+            }
         }
+        opts.actions = opts.actions.filter(filter_actions);
+        opts.actions.forEach((ac, i) => {
+            if (Array.isArray(ac)) {
+                opts.actions[i] = ac.filter(filter_actions);
+            }
+        });
+
+        return opts;
     }
 
     on_update() {

@@ -9,7 +9,7 @@ Default Tiptap widget
 .. code-block:: python
 
     tiptap = factory('tiptap', value="<p>Hello World!</p>", props={
-        'label': 'Tiptap Widget'
+        'label': 'Default Widget'
     })
 """
 
@@ -43,7 +43,8 @@ Change the order of elements in the 'actions' option to order elements.
             'color',
             ['bulletList', 'orderedList', 'indent', 'outdent'],
             'html',
-            'code', 'codeBlock',
+            'code',
+            'codeBlock',
             'link',
             'image',
             ['bold', 'italic', 'underline']
@@ -63,7 +64,8 @@ def order_example():
                 'color',
                 ['bulletList', 'orderedList', 'indent', 'outdent'],
                 'html',
-                'code', 'codeBlock',
+                'code',
+                'codeBlock',
                 'link',
                 'image',
                 ['bold', 'italic', 'underline']
@@ -132,6 +134,9 @@ Tiptap Widget with custom colors
 
 You can add your own text colors to the widget by adding a list of dict like
 items to the 'colors' option.
+
+To allow font color change and add a button, provide 'color' in your
+'actions' option.
 
 Color items may only be supplied as rgb() values.
 

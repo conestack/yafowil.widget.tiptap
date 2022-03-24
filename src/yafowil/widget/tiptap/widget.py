@@ -4,11 +4,7 @@ from yafowil.base import fetch_value
 from yafowil.common import generic_extractor
 from yafowil.common import generic_required_extractor
 from yafowil.common import textarea_renderer
-from yafowil.tsf import TSF
-from yafowil.utils import as_data_attrs
-from yafowil.utils import attr_value
 from yafowil.utils import cssclasses
-from yafowil.utils import cssid
 from yafowil.utils import data_attrs_helper
 from yafowil.utils import managedprops
 
@@ -84,6 +80,22 @@ factory.doc['props']['tiptap.actions'] = """\
 Specifies the order of elements and button groups.
 Elements will be displayed in list order.
 Group buttons together by putting them in a list.
+
+Available actions:
+- bold
+- italic
+- underline
+- indent
+- outdent
+- bulletList
+- orderedList
+- code
+- codeBlock
+- heading
+- color
+- html
+- image
+- link
 """
 
 factory.defaults['tiptap.colors'] = [
@@ -99,7 +111,7 @@ Supply a list of dict like color objects:
 [{'name': 'Red', 'color': 'rgb(208, 6, 10)'}]
 """
 
-factory.defaults['tiptap.helpLink'] = True
+factory.defaults['tiptap.helpLink'] = None
 factory.doc['props']['tiptap.helpLink'] = """\
 Add a 'help' button linked to tiptap shortcuts.
 Values: [True|False|None].

@@ -31,9 +31,13 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('Bold', assert => {
-        widget = new TiptapWidget(elem, {bold: true});
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'bold'
+            ]
+        });
 
-        let bold_btn = widget.buttons[0];
+        let bold_btn = widget.buttons.bold;
         assert.true(bold_btn instanceof actions.bold);
         assert.strictEqual($('span', bold_btn.elem).text(), 'B');
         assert.strictEqual($('span', bold_btn.elem).css('font-weight'), '700');
@@ -49,9 +53,13 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('Italic', assert => {
-        widget = new TiptapWidget(elem, {italic: true});
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'italic'
+            ]
+        });
 
-        let italic_btn = widget.buttons[0];
+        let italic_btn = widget.buttons.italic;
         assert.true(italic_btn instanceof actions.italic);
         assert.strictEqual($('span', italic_btn.elem).text(), 'i');
         assert.strictEqual($('span', italic_btn.elem).css('font-style'), 'italic');
@@ -67,9 +75,13 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('Underline', assert => {
-        widget = new TiptapWidget(elem, {underline: true});
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'underline'
+            ]
+        });
 
-        let underline_btn = widget.buttons[0];
+        let underline_btn = widget.buttons.underline;
         assert.true(underline_btn instanceof actions.underline);
         assert.strictEqual($('span', underline_btn.elem).text(), 'U');
         assert.strictEqual(
@@ -88,10 +100,14 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('BulletList', assert => {
-        widget = new TiptapWidget(elem, {bullet_list: true});
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'bulletList'
+            ]
+        });
 
-        let bullet_btn = widget.buttons[0];
-        assert.true(bullet_btn instanceof actions.bullet_list);
+        let bullet_btn = widget.buttons.bulletList;
+        assert.true(bullet_btn instanceof actions.bulletList);
         assert.true($('i', bullet_btn.elem).hasClass('glyphicon-list'));
         assert.true(bullet_btn.opts.toggle);
         assert.strictEqual(bullet_btn.id, 'bulletList');
@@ -105,10 +121,14 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('OrderedList', assert => {
-        widget = new TiptapWidget(elem, {ordered_list: true});
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'orderedList'
+            ]
+        });
 
-        let list_btn = widget.buttons[0];
-        assert.true(list_btn instanceof actions.ordered_list);
+        let list_btn = widget.buttons.orderedList;
+        assert.true(list_btn instanceof actions.orderedList);
         assert.true($('i', list_btn.elem).hasClass('glyphicon-th-list'));
         assert.true(list_btn.opts.toggle);
         assert.strictEqual(list_btn.id, 'orderedList');
@@ -122,9 +142,13 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('Indent', assert => {
-        widget = new TiptapWidget(elem, {indent: true});
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'indent'
+            ]
+        });
 
-        let indent_btn = widget.buttons[0];
+        let indent_btn = widget.buttons.indent;
         assert.true(indent_btn instanceof actions.indent);
         assert.true($('i', indent_btn.elem).hasClass('glyphicon-indent-left'));
         assert.notOk(indent_btn.opts.toggle);
@@ -137,9 +161,13 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('Outdent', assert => {
-        widget = new TiptapWidget(elem, {outdent: true});
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'outdent'
+            ]
+        });
 
-        let outdent_btn = widget.buttons[0];
+        let outdent_btn = widget.buttons.outdent;
         assert.true(outdent_btn instanceof actions.outdent);
         assert.true($('i', outdent_btn.elem).hasClass('glyphicon-indent-right'));
         assert.notOk(outdent_btn.opts.toggle);
@@ -152,9 +180,14 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('HTML', assert => {
-        widget = new TiptapWidget(elem, {html: true, bold: true});
+        widget = new TiptapWidget(elem, {
+            actions: [
+                'html',
+                'bold'
+            ]
+        });
 
-        let html_button = widget.buttons[0];
+        let html_button = widget.buttons.html;
         assert.true(html_button instanceof actions.html);
         assert.true($('i', html_button.elem).hasClass('glyphicon-pencil'));
         assert.true(html_button.opts.toggle);
@@ -165,7 +198,7 @@ QUnit.module('Actions', hooks => {
         assert.notOk(html_button.active);
         html_button.elem.trigger('click');
         assert.true(html_button.active);
-        assert.true(widget.buttons[1].elem.prop('disabled'));
+        assert.true(widget.buttons.bold.elem.prop('disabled'));
         assert.strictEqual(html_button.editarea.css('display'), 'none');
         assert.strictEqual(widget.textarea.css('display'), 'inline-block');
         assert.strictEqual(widget.textarea.text(), widget.editor.getHTML());
@@ -173,15 +206,17 @@ QUnit.module('Actions', hooks => {
         // second click
         html_button.elem.trigger('click');
         assert.false(html_button.active);
-        assert.false(widget.buttons[1].elem.prop('disabled'));
+        assert.false(widget.buttons.bold.elem.prop('disabled'));
         assert.strictEqual(html_button.editarea.css('display'), 'block');
         assert.strictEqual(widget.textarea.css('display'), 'none');
     });
 
     QUnit.test('Headings / Heading', assert => {
-        widget = new TiptapWidget(elem, {heading: true});
+        widget = new TiptapWidget(elem, {
+            actions: ['heading']
+        });
 
-        let headings_button = widget.buttons[0];
+        let headings_button = widget.buttons.heading;
         assert.true(headings_button instanceof actions.heading);
         assert.true($('i', headings_button.elem).hasClass('glyphicon-font'));
         assert.notOk(headings_button.opts.toggle);
@@ -225,6 +260,7 @@ QUnit.module('Actions', hooks => {
 
     QUnit.test('Colors / Color', assert => {
         widget = new TiptapWidget(elem, {
+            actions: ['color'],
             colors: [
                 { name: 'Default', color: 'rgb(51, 51, 51)' },
                 { name: 'Blue', color: 'rgb(53 39 245)' },
@@ -234,26 +270,33 @@ QUnit.module('Actions', hooks => {
             ]
         });
 
-        let colors_button = widget.buttons[0];
-        assert.true(colors_button instanceof actions.colors);
+        let colors_button = widget.buttons.color;
+        assert.true(colors_button instanceof actions.color);
         assert.notOk(colors_button.opts.toggle);
         assert.strictEqual(colors_button.id, 'colors');
 
         for (let button of colors_button.children) {
             assert.ok($('> div.color', button.elem));
-            assert.strictEqual(button.id, 'color');
 
-            colors_button.elem.trigger('click');
-            button.elem.trigger('click');
-            assert.true(widget.editor.isActive('textStyle', {color: button.swatch.color}));
-            assert.deepEqual(colors_button.active_item, button);
+            if (button.id === 'color') {
+                colors_button.elem.trigger('click');
+                button.elem.trigger('click');
+                assert.true(widget.editor.isActive('textStyle', {color: button.swatch.color}));
+                assert.deepEqual(colors_button.active_item, button);
+            } else if (button.id === 'unsetColor') {
+                colors_button.elem.trigger('click');
+                button.elem.trigger('click');
+                assert.deepEqual(colors_button.active_item, button);
+            }
         }
     });
 
     QUnit.test('Image', assert => {
-        widget = new TiptapWidget(elem, {image: true});
+        widget = new TiptapWidget(elem, {
+            actions: ['image']
+        });
 
-        let img_btn = widget.buttons[0];
+        let img_btn = widget.buttons.image;
         assert.true(img_btn instanceof actions.image);
         assert.ok($('i', img_btn.elem).hasClass('glyphicon-picture'));
         assert.true(img_btn.dd_elem.hasClass('grid'));
@@ -280,9 +323,11 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('Link', assert => {
-        widget = new TiptapWidget(elem, {link: true});
+        widget = new TiptapWidget(elem, {
+            actions: ['link']
+        });
 
-        let link_btn = widget.buttons[0];
+        let link_btn = widget.buttons.link;
         assert.true(link_btn instanceof actions.link);
         assert.ok($('i', link_btn.elem).hasClass('glyphicon-link'));
         assert.true(link_btn.dd_elem.hasClass('grid'));
@@ -303,9 +348,11 @@ QUnit.module('Actions', hooks => {
     });
 
     QUnit.test('Code', assert => {
-        widget = new TiptapWidget(elem, {code: true});
+        widget = new TiptapWidget(elem, {
+            actions: ['code']
+        });
 
-        let code_button = widget.buttons[0];
+        let code_button = widget.buttons.code;
         assert.true(code_button instanceof actions.code);
         assert.strictEqual($('span', code_button.elem).text(), '< / >');
         assert.true(code_button.opts.toggle);
@@ -317,13 +364,23 @@ QUnit.module('Actions', hooks => {
         code_button.elem.trigger('click');
         assert.true(code_button.active);
         assert.true(widget.editor.isActive('code'));
+        code_button.elem.trigger('click');
+        assert.false(code_button.active);
+
+        // on_selection_update
+        widget.editor.commands.setTextSelection({from: 0, to: 5});
+        widget.editor.chain().focus().toggleCode().run();
+        widget.editor.commands.setTextSelection(3);
+        assert.true(code_button.active);
     });
 
     QUnit.test('CodeBlock', assert => {
-        widget = new TiptapWidget(elem, {code_block: true});
+        widget = new TiptapWidget(elem, {
+            actions: ['codeBlock']
+        });
 
-        let codeblock_button = widget.buttons[0];
-        assert.true(codeblock_button instanceof actions.code_block);
+        let codeblock_button = widget.buttons.codeBlock;
+        assert.true(codeblock_button instanceof actions.codeBlock);
         assert.strictEqual($('span', codeblock_button.elem).text(), '{ }');
         assert.true(codeblock_button.opts.toggle);
         assert.strictEqual(codeblock_button.id, 'codeBlock');
@@ -334,27 +391,36 @@ QUnit.module('Actions', hooks => {
         codeblock_button.elem.trigger('click');
         assert.true(codeblock_button.active);
         assert.true(widget.editor.isActive('codeBlock'));
+        codeblock_button.elem.trigger('click');
+        assert.false(codeblock_button.active);
+
+        // on_selection_update
+        widget.editor.chain().focus().toggleCodeBlock().run();
+        widget.editor.commands.setTextSelection(2);
+        assert.true(codeblock_button.active);
     });
 
     QUnit.test('Help', assert => {
-        widget = new TiptapWidget(elem, {help_link: true});
+        widget = new TiptapWidget(elem, {
+            actions: ['bold'],
+            helpLink: true
+        });
 
-        let help_button = widget.buttons[0];
-        assert.true(help_button instanceof actions.help_link);
+        let help_button = widget.helpLink;
+        assert.true(help_button instanceof actions.helpLink);
         assert.true(help_button.elem.is('a.help-btn'));
     });
 
     QUnit.test('ActionGroup', assert => {
         widget = new TiptapWidget(elem, {
-            bold: {target: 'group'},
-            italic: {target: 'group'},
-            underline: {target: 'group_2'},
-            link: {target: 'group_2'}
+            actions: [
+                ['bold', 'italic'],
+                ['underline', 'link']
+            ]
         });
 
-        let group = $('div.btn-group.group');
-        let group_2 = $('div.btn-group.group_2');
-        assert.strictEqual(group.children('button').length, 2);
-        assert.strictEqual(group_2.children('button').length, 2);
+        let groups = $('div.btn-group');
+        assert.strictEqual($('button', groups[0]).length, 2);
+        assert.strictEqual($('button', groups[1]).length, 2);
     });
 });

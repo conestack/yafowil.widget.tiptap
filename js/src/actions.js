@@ -201,17 +201,17 @@ class HTMLAction extends Button {
         this.active = !this.active;
 
         if (this.active) {
-            for (let btn of this.widget.buttons) {
-                if (btn !== this) {
-                    btn.elem.prop('disabled', true);
+            for (let btn in this.widget.buttons) {
+                if (this.widget.buttons[btn] !== this) {
+                    this.widget.buttons[btn].elem.prop('disabled', true);
                 }
             }
             this.editarea.hide();
             this.textarea.show();
         } else {
-            for (let btn of this.widget.buttons) {
-                if (btn !== this) {
-                    btn.elem.prop('disabled', false);
+            for (let btn in this.widget.buttons) {
+                if (this.widget.buttons[btn] !== this) {
+                    this.widget.buttons[btn].elem.prop('disabled', false);
                 }
             }
             this.textarea.hide();
@@ -283,7 +283,7 @@ class UnsetColorAction extends Button {
             container_elem: opts.container_elem, 
             text: 'None'
         });
-        this.id = 'color';
+        this.id = 'unsetColor';
 
         $('<div />')
             .addClass('color')
@@ -355,7 +355,7 @@ class ColorsAction extends DropdownButton {
             })
         );
 
-        this.swatches = widget.elem.data('tiptap-colors');
+        this.swatches = widget.swatches;
         for (let swatch of this.swatches) {
             this.children.push(
                 new ColorAction(widget, editor, {
@@ -372,6 +372,7 @@ class ColorsAction extends DropdownButton {
             let index = this.swatches.indexOf(swatch);
             if (this.editor.isActive('textStyle', {color: swatch.color})) {
                 this.active_item = this.children[index + 1];
+                return;
             }
         }
         if (!this.editor.isActive('textStyle', { color: /.*/ })) {
