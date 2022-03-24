@@ -90,10 +90,17 @@ QUnit.module('TiptapWidget', hooks => {
     QUnit.test('filter_actions', assert => {
         widget = new TiptapWidget(elem, {
             actions: [
-                'undefinedAction',
-                ['bold', 'italic', 'anotherUndefinedAction']
+                'foo',
+                ['underline', 'italic', 'anotherUndefinedAction']
             ]
         });
+
+        // why does this work?
+        // 'actions': [
+        //     'foo',
+        //     'bold',
+        //     ['green', 'italic', 'underline'],
+        // ]
 
         assert.notOk(widget.buttons.undefinedAction);
         assert.ok(widget.buttons.bold);

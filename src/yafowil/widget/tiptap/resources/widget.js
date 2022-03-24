@@ -618,19 +618,20 @@ var yafowil_tiptap = (function (exports, $) {
                     .addClass('tiptap-editor')
                     .appendTo(elem);
             }
-            opts = this.parse_opts(opts);
             this.buttons = {};
             this.swatches = opts.colors;
             if (opts.helpLink) {
                 let factory = actions.helpLink;
                 this.helpLink = new factory(this);
             }
+            let tiptap_actions = this.parse_actions(opts.actions);
+            let tiptap_extensions = this.parse_extensions(tiptap_actions);
             this.editor = new tiptap.Editor({
                 element: elem[0],
-                extensions: opts.extensions,
+                extensions: tiptap_extensions,
                 content: this.textarea.text()
             });
-            opts.actions.forEach(act => {
+            tiptap_actions.forEach(act => {
                 if (Array.isArray(act)) {
                     let container = $('<div />')
                         .addClass('btn-group')
@@ -665,32 +666,33 @@ var yafowil_tiptap = (function (exports, $) {
                 });
             this.buttons[name] = btn;
         }
-        parse_opts(opts) {
-            opts.extensions = new Set([
+        parse_actions(acs) {
+            function parse(acts) {
+                acts.forEach((action, i) => {
+                    if (Array.isArray(action)) {
+                        parse(action);
+                    } else if (actions[action] == undefined) {
+                        console.log(`ERROR: Defined action does not exist at '${action}'`);
+                        acts.splice(i, 1);
+                    }
+                });
+            }
+            parse(acs);
+            return acs;
+        }
+        parse_extensions(acs) {
+            let extensions = new Set([
                 tiptap.Document,
                 tiptap.Paragraph,
                 tiptap.Text,
                 tiptap.TextStyle,
                 tiptap.Dropcursor
             ]);
-            let filter_actions = (name) => {
-                if (Array.isArray(name)) {
-                    return true;
-                } else if (actions[name] !== undefined) {
-                    actions[name].extensions.forEach(ext => opts.extensions.add(ext));
-                    return true;
-                } else {
-                    console.log(`ERROR: Defined action does not exist at '${name}'`);
-                    return false;
-                }
-            };
-            opts.actions = opts.actions.filter(filter_actions);
-            opts.actions.forEach((ac, i) => {
-                if (Array.isArray(ac)) {
-                    opts.actions[i] = ac.filter(filter_actions);
-                }
+            let flattened = acs.flat(2);
+            flattened.forEach(ac => {
+                actions[ac].extensions.forEach(ext => extensions.add(ext));
             });
-            return opts;
+            return extensions;
         }
         on_update() {
             for (let btn in this.buttons) {

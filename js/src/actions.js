@@ -355,8 +355,8 @@ class ColorsAction extends DropdownButton {
             })
         );
 
-        this.swatches = widget.swatches;
-        for (let swatch of this.swatches) {
+        this.colors = widget.colors;
+        for (let swatch of this.colors) {
             this.children.push(
                 new ColorAction(widget, editor, {
                     container_elem: this.dd_elem,
@@ -368,9 +368,9 @@ class ColorsAction extends DropdownButton {
     }
 
     on_selection_update() {
-        for (let swatch of this.swatches) {
-            let index = this.swatches.indexOf(swatch);
-            if (this.editor.isActive('textStyle', {color: swatch.color})) {
+        for (let color of this.colors) {
+            let index = this.colors.indexOf(color);
+            if (this.editor.isActive('textStyle', {color: color.color})) {
                 this.active_item = this.children[index + 1];
                 return;
             }
