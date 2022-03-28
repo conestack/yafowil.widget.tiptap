@@ -198,7 +198,7 @@ def colors_example():
 def get_example():
     return [
         default_example(),
-        # order_example(),
-        # groups_example(),
-        # colors_example()
+        order_example(),
+        groups_example(),
+        colors_example()
     ]

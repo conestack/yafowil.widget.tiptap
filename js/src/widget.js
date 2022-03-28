@@ -86,18 +86,21 @@ export class TiptapWidget {
     }
 
     parse_actions(acs) {
-        function parse(acts) {
+        let ret = [];
+        function parse(ret_arr, acts) {
             acts.forEach((action, i) => {
                 if (Array.isArray(action)) {
-                    parse(action);
+                    ret.push([]);
+                    parse(ret[ret.length - 1], action);
                 } else if (actions[action] == undefined) {
                     console.log(`ERROR: Defined action does not exist at '${action}'`);
-                    acts.splice(i, 1);
+                } else {
+                    ret_arr.push(action);
                 }
             })
         }
-        parse(acs);
-        return acs;
+        parse(ret, acs);
+        return ret;
     }
 
     parse_extensions(acs) {

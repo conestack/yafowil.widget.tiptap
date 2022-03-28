@@ -440,8 +440,8 @@ var yafowil_tiptap = (function (exports, $) {
                     container_elem: this.dd_elem
                 })
             );
-            this.swatches = widget.swatches;
-            for (let swatch of this.swatches) {
+            this.colors = widget.colors;
+            for (let swatch of this.colors) {
                 this.children.push(
                     new ColorAction(widget, editor, {
                         container_elem: this.dd_elem,
@@ -452,9 +452,9 @@ var yafowil_tiptap = (function (exports, $) {
             this.set_items();
         }
         on_selection_update() {
-            for (let swatch of this.swatches) {
-                let index = this.swatches.indexOf(swatch);
-                if (this.editor.isActive('textStyle', {color: swatch.color})) {
+            for (let color of this.colors) {
+                let index = this.colors.indexOf(color);
+                if (this.editor.isActive('textStyle', {color: color.color})) {
                     this.active_item = this.children[index + 1];
                     return;
                 }
@@ -619,7 +619,7 @@ var yafowil_tiptap = (function (exports, $) {
                     .appendTo(elem);
             }
             this.buttons = {};
-            this.swatches = opts.colors;
+            this.colors = opts.colors;
             if (opts.helpLink) {
                 let factory = actions.helpLink;
                 this.helpLink = new factory(this);
@@ -667,18 +667,21 @@ var yafowil_tiptap = (function (exports, $) {
             this.buttons[name] = btn;
         }
         parse_actions(acs) {
-            function parse(acts) {
+            let ret = [];
+            function parse(ret_arr, acts) {
                 acts.forEach((action, i) => {
                     if (Array.isArray(action)) {
-                        parse(action);
+                        ret.push([]);
+                        parse(ret[ret.length - 1], action);
                     } else if (actions[action] == undefined) {
                         console.log(`ERROR: Defined action does not exist at '${action}'`);
-                        acts.splice(i, 1);
+                    } else {
+                        ret_arr.push(action);
                     }
                 });
             }
-            parse(acs);
-            return acs;
+            parse(ret, acs);
+            return ret;
         }
         parse_extensions(acs) {
             let extensions = new Set([

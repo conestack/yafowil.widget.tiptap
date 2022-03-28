@@ -23,6 +23,7 @@ QUnit.module('Actions', hooks => {
         $('#container').append(elem);
     });
     hooks.afterEach(() => {
+        elem.removeAttr('tiptap-actions');
         $('#container').empty();
         widget = null;
     });
