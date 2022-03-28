@@ -629,7 +629,7 @@ var yafowil_tiptap = (function (exports, $) {
             this.editor = new tiptap.Editor({
                 element: elem[0],
                 extensions: tiptap_extensions,
-                content: this.textarea.text()
+                content: this.textarea.val()
             });
             tiptap_actions.forEach(act => {
                 if (Array.isArray(act)) {
@@ -703,7 +703,7 @@ var yafowil_tiptap = (function (exports, $) {
                     this.buttons[btn].on_update();
                 }
             }
-            this.textarea.text(this.editor.getHTML());
+            this.textarea.val(this.editor.getHTML());
         }
         on_selection_update() {
             for (let btn in this.buttons) {
