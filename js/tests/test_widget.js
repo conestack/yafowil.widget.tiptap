@@ -4,7 +4,7 @@ import $ from 'jquery';
 function create_elem() {
     let elem = $('<div/>').addClass('tiptap-editor');
     let textarea = $('<textarea />')
-        .text('<p>Hello World!</p>')
+        .val('<p>Hello World!</p>')
         .appendTo(elem);
 
     return elem;
@@ -38,7 +38,7 @@ QUnit.module('TiptapWidget', hooks => {
         widget = elem.data('tiptap-widget');
         assert.deepEqual(widget.elem, elem);
         assert.true(widget.textarea.is('textarea', elem));
-        assert.strictEqual(widget.textarea.text(), widget.editor.getHTML());
+        assert.strictEqual(widget.textarea.val(), widget.editor.getHTML());
         assert.true(widget.controls.is('div.tiptap-controls', elem));
         assert.true(widget.editor instanceof tiptap.Editor);
 
