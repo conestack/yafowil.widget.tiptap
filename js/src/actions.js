@@ -14,13 +14,16 @@ class BoldAction extends Button {
             toggle: true
         });
         this.id = 'bold';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleBold().run();
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('bold');
     }
 }
 
@@ -36,13 +39,16 @@ class ItalicAction extends Button {
             toggle: true
         });
         this.id = 'italic';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleItalic().run();
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('italic');
     }
 }
 
@@ -58,13 +64,16 @@ class UnderlineAction extends Button {
             toggle: true
         });
         this.id = 'underline';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleUnderline().run();
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('underline');
     }
 }
 
@@ -80,13 +89,23 @@ class BulletListAction extends Button {
         });
 
         this.id = 'bulletList';
-        this.widget_elem = widget.elem;
+        this.widget = widget;
     }
 
     on_click(e) {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleBulletList().run();
+    }
+
+    on_update() {
+        if (this.editor.isActive('orderedList')) {
+            this.active = false;
+        }
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('bulletList');
     }
 }
 
@@ -102,13 +121,22 @@ class OrderedListAction extends Button {
         });
 
         this.id = 'orderedList';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleOrderedList().run();
+    }
+
+    on_update() {
+        if (this.editor.isActive('bulletList')) {
+            this.active = false;
+        }
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('orderedList');
     }
 }
 
@@ -122,7 +150,6 @@ class IndentAction extends Button {
             tooltip: 'Indent'
         });
         this.id = 'indent';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -143,7 +170,6 @@ class OutdentAction extends Button {
             tooltip: 'Outdent'
         });
         this.id = 'outdent';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -165,10 +191,9 @@ class HTMLAction extends Button {
             toggle: true
         });
         this.id = 'html';
-        this.widget_elem = widget.elem;
-        this.parent = this.elem.closest('div.tiptap-editor');
-        this.editarea = $('div.ProseMirror', this.parent);
-        this.textarea = $('textarea.ProseMirror', this.parent);
+        this.widget = widget;
+        this.editarea = $('div.ProseMirror', this.widget.elem);
+        this.textarea = this.widget.textarea;
     }
 
     on_click(e) {
@@ -176,11 +201,19 @@ class HTMLAction extends Button {
         this.active = !this.active;
 
         if (this.active) {
-            $('button', this.parent).not(this.elem).prop('disabled', true);
+            for (let btn in this.widget.buttons) {
+                if (this.widget.buttons[btn] !== this) {
+                    this.widget.buttons[btn].elem.prop('disabled', true);
+                }
+            }
             this.editarea.hide();
-            this.textarea.show().text(this.editor.getHTML());
+            this.textarea.show();
         } else {
-            $('button', this.parent).prop('disabled', false);
+            for (let btn in this.widget.buttons) {
+                if (this.widget.buttons[btn] !== this) {
+                    this.widget.buttons[btn].elem.prop('disabled', false);
+                }
+            }
             this.textarea.hide();
             this.editarea.show();
             this.editor.chain().focus().setContent(this.textarea.val()).run();
@@ -198,7 +231,6 @@ class HeadingAction extends Button {
         });
         this.id = 'heading';
         this.level = opts.level;
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -215,7 +247,6 @@ class ParagraphAction extends Button {
             text: 'Text'
         });
         this.id = 'paragraph';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
@@ -233,7 +264,6 @@ class ColorAction extends Button {
         });
         this.id = 'color';
         this.swatch = opts.swatch;
-        this.widget_elem = widget.elem;
         $('<div />')
             .addClass('color')
             .css('background-color', this.swatch.color)
@@ -243,6 +273,27 @@ class ColorAction extends Button {
     on_click(e) {
         e.preventDefault();
         this.editor.chain().focus().setColor(this.swatch.color).run();
+    }
+}
+
+class UnsetColorAction extends Button {
+
+    constructor(widget, editor, opts) {
+        super(editor, {
+            container_elem: opts.container_elem, 
+            text: 'None'
+        });
+        this.id = 'unsetColor';
+
+        $('<div />')
+            .addClass('color')
+            .css('background-color', 'rgb(51, 51, 51)')
+            .appendTo(this.elem);
+    }
+
+    on_click(e) {
+        e.preventDefault();
+        this.editor.chain().focus().unsetColor().run();
     }
 }
 
@@ -275,6 +326,18 @@ class HeadingsAction extends DropdownButton {
     reset() {
         this.active_item = this.children[0];
     }
+
+    on_selection_update() {
+        if (this.editor.isActive('paragraph')) {
+            this.active_item = this.children[0];
+        } else {
+            for (let i=1; i<=6; i++) {
+                if (this.editor.isActive('heading', {level: i})) {
+                    this.active_item = this.children[i];
+                }
+            }
+        }
+    }
 }
 
 class ColorsAction extends DropdownButton {
@@ -286,7 +349,14 @@ class ColorsAction extends DropdownButton {
         });
         this.id = 'colors';
 
-        for (let swatch of opts.action_opts) {
+        this.children.push(
+            new UnsetColorAction(widget, editor, {
+                container_elem: this.dd_elem
+            })
+        );
+
+        this.colors = widget.colors;
+        for (let swatch of this.colors) {
             this.children.push(
                 new ColorAction(widget, editor, {
                     container_elem: this.dd_elem,
@@ -295,6 +365,19 @@ class ColorsAction extends DropdownButton {
             )
         }
         this.set_items();
+    }
+
+    on_selection_update() {
+        for (let color of this.colors) {
+            let index = this.colors.indexOf(color);
+            if (this.editor.isActive('textStyle', {color: color.color})) {
+                this.active_item = this.children[index + 1];
+                return;
+            }
+        }
+        if (!this.editor.isActive('textStyle', { color: /.*/ })) {
+                this.active_item = this.children[0];
+        }
     }
 }
 
@@ -309,7 +392,6 @@ class ImageAction extends DropdownButton {
             submit: true
         });
         this.id = 'image';
-        this.widget_elem = widget.elem;
 
         this.src_elem = $('<span />')
             .addClass('dropdown-item')
@@ -350,7 +432,6 @@ class LinkAction extends DropdownButton {
             submit: true
         });
         this.id = 'link';
-        this.widget_elem = widget.elem;
 
         this.href_elem = $('<span />')
             .addClass('dropdown-item')
@@ -378,13 +459,16 @@ class CodeAction extends Button {
             toggle: true
         });
         this.id = 'code';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleCode().run();
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('code');
     }
 }
 
@@ -399,13 +483,16 @@ class CodeBlockAction extends Button {
             toggle: true
         });
         this.id = 'codeBlock';
-        this.widget_elem = widget.elem;
     }
 
     on_click(e) {
         e.preventDefault();
         this.active = !this.active;
         this.editor.chain().focus().toggleCodeBlock().run();
+    }
+
+    on_selection_update() {
+        this.active = this.editor.isActive('codeBlock');
     }
 }
 
@@ -425,30 +512,20 @@ class HelpAction {
     }
 }
 
-export class ActionGroup {
-
-    constructor(name, target) {
-        this.name = name;
-        this.elem = $('<div />')
-            .addClass(`btn-group ${name}`)
-            .appendTo(target);
-    }
-}
-
 export let actions = {
     bold: BoldAction,
     italic: ItalicAction,
     underline: UnderlineAction,
-    bullet_list: BulletListAction,
-    ordered_list: OrderedListAction,
+    bulletList: BulletListAction,
+    orderedList: OrderedListAction,
     indent: IndentAction,
     outdent: OutdentAction,
     html: HTMLAction,
     heading: HeadingsAction,
-    colors: ColorsAction,
+    color: ColorsAction,
     image: ImageAction,
     link: LinkAction,
     code: CodeAction,
-    code_block: CodeBlockAction,
-    help: HelpAction
+    codeBlock: CodeBlockAction,
+    helpLink: HelpAction
 }

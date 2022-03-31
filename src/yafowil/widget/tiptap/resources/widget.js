@@ -30,7 +30,6 @@ var yafowil_tiptap = (function (exports, $) {
                 .appendTo(opts.container_elem);
             this.opts = opts;
             if (opts.tooltip) { new Tooltip(opts.tooltip, this.elem); }
-            if (opts.order) { this.elem.css('order', opts.order); }
             if (opts.icon) {
                 this.icon = $('<i />')
                     .addClass(`glyphicon glyphicon-${opts.icon}`)
@@ -135,6 +134,9 @@ var yafowil_tiptap = (function (exports, $) {
                 this.active = false;
             }
         }
+        on_update() {
+            this.dd_elem.hide();
+        }
         submit(e) {
             e.preventDefault();
         }
@@ -151,12 +153,14 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'bold';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleBold().run();
+        }
+        on_selection_update() {
+            this.active = this.editor.isActive('bold');
         }
     }
     class ItalicAction extends Button {
@@ -170,12 +174,14 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'italic';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleItalic().run();
+        }
+        on_selection_update() {
+            this.active = this.editor.isActive('italic');
         }
     }
     class UnderlineAction extends Button {
@@ -189,12 +195,14 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'underline';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleUnderline().run();
+        }
+        on_selection_update() {
+            this.active = this.editor.isActive('underline');
         }
     }
     class BulletListAction extends Button {
@@ -207,12 +215,20 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'bulletList';
-            this.widget_elem = widget.elem;
+            this.widget = widget;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleBulletList().run();
+        }
+        on_update() {
+            if (this.editor.isActive('orderedList')) {
+                this.active = false;
+            }
+        }
+        on_selection_update() {
+            this.active = this.editor.isActive('bulletList');
         }
     }
     class OrderedListAction extends Button {
@@ -225,12 +241,19 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'orderedList';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleOrderedList().run();
+        }
+        on_update() {
+            if (this.editor.isActive('bulletList')) {
+                this.active = false;
+            }
+        }
+        on_selection_update() {
+            this.active = this.editor.isActive('orderedList');
         }
     }
     class IndentAction extends Button {
@@ -242,7 +265,6 @@ var yafowil_tiptap = (function (exports, $) {
                 tooltip: 'Indent'
             });
             this.id = 'indent';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -260,7 +282,6 @@ var yafowil_tiptap = (function (exports, $) {
                 tooltip: 'Outdent'
             });
             this.id = 'outdent';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -279,20 +300,27 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'html';
-            this.widget_elem = widget.elem;
-            this.parent = this.elem.closest('div.tiptap-editor');
-            this.editarea = $('div.ProseMirror', this.parent);
-            this.textarea = $('textarea.ProseMirror', this.parent);
+            this.widget = widget;
+            this.editarea = $('div.ProseMirror', this.widget.elem);
+            this.textarea = this.widget.textarea;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             if (this.active) {
-                $('button', this.parent).not(this.elem).prop('disabled', true);
+                for (let btn in this.widget.buttons) {
+                    if (this.widget.buttons[btn] !== this) {
+                        this.widget.buttons[btn].elem.prop('disabled', true);
+                    }
+                }
                 this.editarea.hide();
-                this.textarea.show().text(this.editor.getHTML());
+                this.textarea.show();
             } else {
-                $('button', this.parent).prop('disabled', false);
+                for (let btn in this.widget.buttons) {
+                    if (this.widget.buttons[btn] !== this) {
+                        this.widget.buttons[btn].elem.prop('disabled', false);
+                    }
+                }
                 this.textarea.hide();
                 this.editarea.show();
                 this.editor.chain().focus().setContent(this.textarea.val()).run();
@@ -308,7 +336,6 @@ var yafowil_tiptap = (function (exports, $) {
             });
             this.id = 'heading';
             this.level = opts.level;
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -322,7 +349,6 @@ var yafowil_tiptap = (function (exports, $) {
                 text: 'Text'
             });
             this.id = 'paragraph';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
@@ -337,7 +363,6 @@ var yafowil_tiptap = (function (exports, $) {
             });
             this.id = 'color';
             this.swatch = opts.swatch;
-            this.widget_elem = widget.elem;
             $('<div />')
                 .addClass('color')
                 .css('background-color', this.swatch.color)
@@ -346,6 +371,23 @@ var yafowil_tiptap = (function (exports, $) {
         on_click(e) {
             e.preventDefault();
             this.editor.chain().focus().setColor(this.swatch.color).run();
+        }
+    }
+    class UnsetColorAction extends Button {
+        constructor(widget, editor, opts) {
+            super(editor, {
+                container_elem: opts.container_elem,
+                text: 'None'
+            });
+            this.id = 'unsetColor';
+            $('<div />')
+                .addClass('color')
+                .css('background-color', 'rgb(51, 51, 51)')
+                .appendTo(this.elem);
+        }
+        on_click(e) {
+            e.preventDefault();
+            this.editor.chain().focus().unsetColor().run();
         }
     }
     class HeadingsAction extends DropdownButton {
@@ -374,6 +416,17 @@ var yafowil_tiptap = (function (exports, $) {
         reset() {
             this.active_item = this.children[0];
         }
+        on_selection_update() {
+            if (this.editor.isActive('paragraph')) {
+                this.active_item = this.children[0];
+            } else {
+                for (let i=1; i<=6; i++) {
+                    if (this.editor.isActive('heading', {level: i})) {
+                        this.active_item = this.children[i];
+                    }
+                }
+            }
+        }
     }
     class ColorsAction extends DropdownButton {
         static extensions = [tiptap.Color];
@@ -382,7 +435,13 @@ var yafowil_tiptap = (function (exports, $) {
                 container_elem: opts.container_elem
             });
             this.id = 'colors';
-            for (let swatch of opts.action_opts) {
+            this.children.push(
+                new UnsetColorAction(widget, editor, {
+                    container_elem: this.dd_elem
+                })
+            );
+            this.colors = widget.colors;
+            for (let swatch of this.colors) {
                 this.children.push(
                     new ColorAction(widget, editor, {
                         container_elem: this.dd_elem,
@@ -391,6 +450,18 @@ var yafowil_tiptap = (function (exports, $) {
                 );
             }
             this.set_items();
+        }
+        on_selection_update() {
+            for (let color of this.colors) {
+                let index = this.colors.indexOf(color);
+                if (this.editor.isActive('textStyle', {color: color.color})) {
+                    this.active_item = this.children[index + 1];
+                    return;
+                }
+            }
+            if (!this.editor.isActive('textStyle', { color: /.*/ })) {
+                    this.active_item = this.children[0];
+            }
         }
     }
     class ImageAction extends DropdownButton {
@@ -403,7 +474,6 @@ var yafowil_tiptap = (function (exports, $) {
                 submit: true
             });
             this.id = 'image';
-            this.widget_elem = widget.elem;
             this.src_elem = $('<span />')
                 .addClass('dropdown-item')
                 .append($('<span />').addClass('name').text(`src:`))
@@ -440,7 +510,6 @@ var yafowil_tiptap = (function (exports, $) {
                 submit: true
             });
             this.id = 'link';
-            this.widget_elem = widget.elem;
             this.href_elem = $('<span />')
                 .addClass('dropdown-item')
                 .append($('<span />').addClass('name').text(`href:`))
@@ -464,12 +533,14 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'code';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleCode().run();
+        }
+        on_selection_update() {
+            this.active = this.editor.isActive('code');
         }
     }
     class CodeBlockAction extends Button {
@@ -482,12 +553,14 @@ var yafowil_tiptap = (function (exports, $) {
                 toggle: true
             });
             this.id = 'codeBlock';
-            this.widget_elem = widget.elem;
         }
         on_click(e) {
             e.preventDefault();
             this.active = !this.active;
             this.editor.chain().focus().toggleCodeBlock().run();
+        }
+        on_selection_update() {
+            this.active = this.editor.isActive('codeBlock');
         }
     }
     class HelpAction {
@@ -504,112 +577,70 @@ var yafowil_tiptap = (function (exports, $) {
             this.tooltip = new Tooltip('Help', this.elem);
         }
     }
-    class ActionGroup {
-        constructor(name, target) {
-            this.name = name;
-            this.elem = $('<div />')
-                .addClass(`btn-group ${name}`)
-                .appendTo(target);
-        }
-    }
     let actions = {
         bold: BoldAction,
         italic: ItalicAction,
         underline: UnderlineAction,
-        bullet_list: BulletListAction,
-        ordered_list: OrderedListAction,
+        bulletList: BulletListAction,
+        orderedList: OrderedListAction,
         indent: IndentAction,
         outdent: OutdentAction,
         html: HTMLAction,
         heading: HeadingsAction,
-        colors: ColorsAction,
+        color: ColorsAction,
         image: ImageAction,
         link: LinkAction,
         code: CodeAction,
-        code_block: CodeBlockAction,
-        help: HelpAction
+        codeBlock: CodeBlockAction,
+        helpLink: HelpAction
     };
 
     class TiptapWidget {
         static initialize(context) {
             $('div.tiptap-editor', context).each(function() {
-                let options = {
-                    heading: true,
-                    colors: [
-                        { name: 'Default', color: 'rgb(51, 51, 51)'},
-                        { name: 'Blue', color: 'rgb(53 39 245)' },
-                        { name: 'Lime', color: 'rgb(204, 255, 0)' },
-                        { name: 'Teal', color: 'rgb(42, 202, 234)' },
-                        { name: 'Red', color: 'rgb(208, 6, 10)' }
-                    ],
-                    bold: { target: 'text_controls' },
-                    italic: { target: 'text_controls' },
-                    underline: { target: 'text_controls' },
-                    bullet_list: { target: 'format_controls' },
-                    ordered_list: { target: 'format_controls' },
-                    indent: { target: 'format_controls' },
-                    outdent: { target: 'format_controls' },
-                    html: true,
-                    image: true,
-                    link: true,
-                    code: true,
-                    code_block: true,
-                    help: true
-                };
-                new TiptapWidget($(this), options);
+                let elem = $(this);
+                new TiptapWidget(elem, {
+                    actions: elem.data('tiptap-actions'),
+                    colors: elem.data('tiptap-colors'),
+                    helpLink: elem.data('tiptap-helpLink')
+                });
             });
         }
-        constructor(elem, opts = {}) {
+        constructor(elem, opts={}) {
             this.elem = elem;
-            this.elem.data('tiptap-widget', this);
-            let extensions = new Set([
-                tiptap.Document,
-                tiptap.Paragraph,
-                tiptap.Text,
-                tiptap.TextStyle,
-                tiptap.Dropcursor
-            ]);
-            for (let option_name in opts) {
-                let exts = actions[option_name].extensions;
-                exts.forEach(ext => extensions.add(ext));
-            }
-            this.editarea = $('div.ProseMirror', this.elem);
-            this.textarea = $('<textarea />')
-                .addClass('ProseMirror')
-                .appendTo(this.elem);
+            elem.data('tiptap-widget', this);
             this.controls = $('<div />')
                 .addClass('tiptap-controls')
-                .prependTo(this.elem);
-            this.editor = new tiptap.Editor({
-                element: this.elem[0],
-                extensions: extensions,
-                content: '<p>Hello World!</p>'
-            });
-            this.buttons = [];
-            let button_groups = [];
-            for (let option_name in opts) {
-                let options = opts[option_name],
-                    factory = actions[option_name],
-                    target = options.target,
-                    container = this.controls;
-                if (target) {
-                    let targ = button_groups.filter(group => {
-                        return group.name === target ? target : false
-                    });
-                    if (targ[0]) {
-                        container = targ[0].elem;
-                    } else {
-                        let group = new ActionGroup(target, this.controls);
-                        button_groups.push(group);
-                        container = group.elem;
-                    }
-                }
-                this.buttons.push(new factory(this, this.editor, {
-                    action_opts: options,
-                    container_elem: container
-                }));
+                .prependTo(elem);
+            this.textarea = $('textarea', elem);
+            if (!this.textarea.length) {
+                this.textarea = $('<textarea />')
+                    .addClass('tiptap-editor')
+                    .appendTo(elem);
             }
-            this.swatches = opts.colors ? opts.colors : [];
+            this.buttons = {};
+            this.colors = opts.colors;
+            if (opts.helpLink) {
+                let factory = actions.helpLink;
+                this.helpLink = new factory(this);
+            }
+            let tiptap_actions = this.parse_actions(opts.actions);
+            let tiptap_extensions = this.parse_extensions(tiptap_actions);
+            this.editor = new tiptap.Editor({
+                element: elem[0],
+                extensions: tiptap_extensions,
+                content: this.textarea.val()
+            });
+            tiptap_actions.forEach(act => {
+                if (Array.isArray(act)) {
+                    let container = $('<div />')
+                        .addClass('btn-group')
+                        .appendTo(this.controls);
+                        act.forEach(name => this.add_button(name, container));
+                } else {
+                    this.add_button(act, this.controls);
+                }
+            });
             this.on_update = this.on_update.bind(this);
             this.editor.on('update', this.on_update);
             this.on_selection_update = this.on_selection_update.bind(this);
@@ -622,64 +653,62 @@ var yafowil_tiptap = (function (exports, $) {
             this.buttons = null;
         }
         unload_all() {
-            this.buttons.forEach(btn => {
-                if (btn.unload) {
-                    btn.unload();
+            for (let btn in this.buttons) {
+                if (this.buttons[btn].unload) {
+                    this.buttons[btn].unload();
                 }
+            }
+        }
+        add_button(name, container) {
+            let factory = actions[name],
+                btn = new factory(this, this.editor, {
+                    container_elem: container
+                });
+            this.buttons[name] = btn;
+        }
+        parse_actions(acs) {
+            let ret = [];
+            function parse(ret_arr, acts) {
+                acts.forEach((action, i) => {
+                    if (Array.isArray(action)) {
+                        ret.push([]);
+                        parse(ret[ret.length - 1], action);
+                    } else if (actions[action] == undefined) {
+                        console.log(`ERROR: Defined action does not exist at '${action}'`);
+                    } else {
+                        ret_arr.push(action);
+                    }
+                });
+            }
+            parse(ret, acs);
+            return ret;
+        }
+        parse_extensions(acs) {
+            let extensions = new Set([
+                tiptap.Document,
+                tiptap.Paragraph,
+                tiptap.Text,
+                tiptap.TextStyle,
+                tiptap.Dropcursor
+            ]);
+            let flattened = acs.flat(2);
+            flattened.forEach(ac => {
+                actions[ac].extensions.forEach(ext => extensions.add(ext));
             });
+            return extensions;
         }
         on_update() {
-            this.buttons.forEach(btn => { if(btn.dd_elem) btn.dd_elem.hide(); });
-            let ul = this.buttons.find(x => x.id === 'bulletList');
-            let ol = this.buttons.find(x => x.id === 'orderedList');
-            if (this.editor.isActive('bulletList') && ol) {
-                ol.active = false;
+            for (let btn in this.buttons) {
+                if (this.buttons[btn].on_update) {
+                    this.buttons[btn].on_update();
+                }
             }
-            if (this.editor.isActive('orderedList') && ul) {
-                ul.active = false;
-            }
+            this.textarea.val(this.editor.getHTML());
         }
         on_selection_update() {
-            let ids = [
-                'bold',
-                'italic',
-                'underline',
-                'bulletList',
-                'orderedList',
-                'code',
-                'codeBlock'
-            ];
-            for (let id of ids) {
-                let btn = this.buttons.find(x => x.id === id);
-                if (btn) {
-                    if (this.editor.isActive(id)) {
-                        btn.active = true;
-                    } else {
-                        btn.active = false;
-                    }
-                }
-            }
-            if (this.editor.isActive('paragraph')) {
-                let headings = this.buttons.find(x => x.id === 'headings');
-                if (headings) headings.active_item = headings.children[0];
-            }
-            for (let i = 1; i <=6; i++) {
-                if (this.editor.isActive('heading', {level: i})) {
-                    let headings = this.buttons.find(x => x.id === 'headings');
-                    if (headings) headings.active_item = headings.children[i];
-                }
-            }
-            for (let swatch of this.swatches) {
-                let index = this.swatches.indexOf(swatch);
-                let colors = this.buttons.find(x => x.id === 'colors');
-                if (this.editor.isActive('textStyle', {color: swatch.color})) {
-                    colors.active_item = colors.children[index];
-                }
-            }
-            if (!this.editor.isActive('textStyle', { color: /.*/ })) {
-                let colors = this.buttons.find(x => x.id === 'colors');
-                if (colors) {
-                    colors.active_item = colors.children[0];
+            for (let btn in this.buttons) {
+                if (this.buttons[btn].on_selection_update) {
+                    this.buttons[btn].on_selection_update();
                 }
             }
         }

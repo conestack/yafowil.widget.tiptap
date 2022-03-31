@@ -36,7 +36,6 @@ export class Button {
         this.opts = opts;
 
         if (opts.tooltip) { new Tooltip(opts.tooltip, this.elem); }
-        if (opts.order) { this.elem.css('order', opts.order); }
         if (opts.icon) {
             this.icon = $('<i />')
                 .addClass(`glyphicon glyphicon-${opts.icon}`)
@@ -158,6 +157,10 @@ export class DropdownButton extends Button {
             this.dd_elem.hide();
             this.active = false;
         }
+    }
+
+    on_update() {
+        this.dd_elem.hide();
     }
 
     /* istanbul ignore next */

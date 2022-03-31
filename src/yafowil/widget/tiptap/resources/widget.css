@@ -17,10 +17,12 @@ div.ProseMirror {
     overflow: auto;
     resize: both;
 }
-textarea.ProseMirror {
+textarea.tiptap-editor {
     display: none;
     width: 100%;
     max-width: 100%;
+    margin: 10px 0;
+    padding: 5px 10px;
 }
 
 div.tiptap-editor .glyphicon {

@@ -69,7 +69,6 @@ QUnit.module('buttons.js', hooks => {
         let opts = {
             container_elem: $('#container'),
             tooltip: 'test_tt',
-            order: 1,
             icon: 'font',
             text: 'baz',
             css: {'color': 'red'},
@@ -79,7 +78,6 @@ QUnit.module('buttons.js', hooks => {
         assert.deepEqual(btn.opts, opts);
         assert.strictEqual(btn.content.length, 2);
         assert.deepEqual(btn.container_elem, $('#container'));
-        assert.strictEqual(btn.elem.css('order'), '1');
         assert.true(btn.icon.is('i.glyphicon.glyphicon-font'));
         assert.strictEqual($('span', btn.elem).text(), 'baz');
         assert.strictEqual($('> *', btn.elem).css('color'), 'rgb(255, 0, 0)');

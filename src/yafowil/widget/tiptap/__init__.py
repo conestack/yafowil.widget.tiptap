@@ -23,5 +23,11 @@ default_css = [{
 @entry_point(order=10)
 def register():
     from yafowil.widget.tiptap import widget  # noqa
-    factory.register_theme('default', 'yafowil.widget.tiptap',
-                           resourcedir, js=js, css=default_css)
+
+    factory.register_theme(
+        'default',
+        'yafowil.widget.tiptap',
+        resourcedir,
+        js=js,
+        css=default_css
+    )
