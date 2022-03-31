@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 from yafowil.base import factory
 from yafowil.base import fetch_value
+from yafowil.common import generic_emptyvalue_extractor
 from yafowil.common import generic_extractor
 from yafowil.common import generic_required_extractor
 from yafowil.common import textarea_renderer
 from yafowil.utils import cssclasses
 from yafowil.utils import data_attrs_helper
 from yafowil.utils import managedprops
-
-
-# _ = TSF('yafowil.widget.tiptap')
 
 
 tiptap_options = [
@@ -43,7 +41,8 @@ factory.register(
     'tiptap',
     extractors=[
         generic_extractor,
-        generic_required_extractor
+        generic_required_extractor,
+        generic_emptyvalue_extractor
     ],
     edit_renderers=[
         tiptap_edit_renderer
@@ -63,8 +62,6 @@ factory.doc['props']['tiptap.class'] = """\
 CSS classes for tiptap widget wrapper DOM element.
 """
 
-# Additional Options
-
 factory.defaults['tiptap.actions'] = [
     'heading',
     ['bold', 'italic', 'underline'],
@@ -82,6 +79,7 @@ Elements will be displayed in list order.
 Group buttons together by putting them in a list.
 
 Available actions:
+
 - bold
 - italic
 - underline
@@ -99,20 +97,25 @@ Available actions:
 """
 
 factory.defaults['tiptap.colors'] = [
-    {'name': 'Blue', 'color': 'rgb(53 39 245)'},
-    {'name': 'Lime', 'color': 'rgb(204, 255, 0)'},
-    {'name': 'Teal', 'color': 'rgb(42, 202, 234)'},
-    {'name': 'Red', 'color': 'rgb(208, 6, 10)'}
+    {'name': 'Blue', 'color': 'rgb(53,39,245)'},
+    {'name': 'Lime', 'color': 'rgb(204,255,0)'},
+    {'name': 'Teal', 'color': 'rgb(42,202,234)'},
+    {'name': 'Red', 'color': 'rgb(208,6,10)'}
 ]
 factory.doc['props']['tiptap.colors'] = """\
-Specify custom font colors.
-Values: [array|None].
-Supply a list of dict like color objects:
-[{'name': 'Red', 'color': 'rgb(208, 6, 10)'}]
+Specify custom font colors for ``color`` action.
+
+Colors are defined as list of dict in the following form::
+
+    [{
+        'name': 'Red',
+        'color': 'rgb(208,6,10)'
+    }]
 """
 
 factory.defaults['tiptap.helpLink'] = None
 factory.doc['props']['tiptap.helpLink'] = """\
-Add a 'help' button linked to tiptap shortcuts.
+Add a ``help`` button linked to tiptap shortcuts.
+
 Values: [True|False|None].
 """
