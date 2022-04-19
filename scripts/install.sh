@@ -21,7 +21,8 @@ npm --save-dev install \
     rollup \
     @rollup/plugin-node-resolve \
     rollup-plugin-cleanup \
-    rollup-plugin-terser
+    rollup-plugin-terser \
+    sass
 
 
 npm --save install \
