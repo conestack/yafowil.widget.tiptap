@@ -15,7 +15,7 @@ Default Tiptap widget
 
 
 def default_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part = factory(u'fieldset', name='yafowil.widget.tiptap.default')
     part['tiptap'] = factory(
         '#field:tiptap',
         value="<p>Hello World!</p>",
@@ -54,7 +54,7 @@ Change the order of elements in the 'actions' option to order elements.
 
 
 def order_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part = factory(u'fieldset', name='yafowil.widget.tiptap.order')
     part['tiptap'] = factory(
         '#field:tiptap',
         value="<p>The buttons are ordered differently!</p>",
@@ -105,7 +105,7 @@ Buttons can be grouped together by putting them in a list.
 
 
 def groups_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part = factory(u'fieldset', name='yafowil.widget.tiptap.groups')
     part['tiptap'] = factory(
         '#field:tiptap',
         value="<p>This widget has multiple button groups.</p>",
@@ -166,7 +166,7 @@ Color items may only be supplied as rgb() values.
 
 
 def colors_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part = factory(u'fieldset', name='yafowil.widget.tiptap.colors')
     part['tiptap'] = factory(
         '#field:tiptap',
         value='<p><span style="color: rgb(66, 209, 245)">This widget</span> has <span style="color: rgb(161, 66, 245)">custom colors</span>.</p>',
