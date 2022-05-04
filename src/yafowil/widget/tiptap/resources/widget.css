@@ -4,8 +4,6 @@
   --button-hover-color: #f5f5f5;
   --button-border-radius: 6px;
   --button-border: 1px solid #ccc;
-  --submit-button-color: #337ab7;
-  --submit-button-hover-color: #5096d2;
 }
 
 .ProseMirror {
@@ -183,11 +181,12 @@ div.tiptap-dropdown button.submit {
   border: 0;
   border-top: var(--button-border);
   border-radius: 5px;
-  background-color: var(--submit-button-color);
-  color: white;
+  background-color: var(--yafowil-accent-color, #0d6efd);
+  color: var(--yafowil-accent-font-color, #fff);
 }
 div.tiptap-dropdown button.submit:hover {
-  background-color: var(--submit-button-hover-color);
+  background-color: var(--yafowil-accent-color, #0d6efd);
+  opacity: 0.8;
 }
 div.tiptap-dropdown input {
   line-height: unset;
