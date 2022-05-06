@@ -1,0 +1,242 @@
+:root {
+  --button-height: 30px;
+  --button-hover-color: #f5f5f5;
+  --button-border-radius: 6px;
+  --button-border: 1px solid #ccc;
+}
+
+.ProseMirror {
+  min-height: 40px;
+  min-width: 200px;
+  border: var(--button-border);
+  border-radius: var(--button-border-radius);
+  margin: 10px 0;
+  padding: 5px 10px;
+}
+div.ProseMirror {
+  overflow: auto;
+  resize: both;
+}
+textarea.tiptap-editor {
+  display: none;
+  width: 100%;
+  max-width: 100%;
+  margin: 10px 0;
+  padding: 5px 10px;
+}
+
+
+div.tiptap-editor {
+
+  .glyphicon {
+    top: 0;
+  }
+  h1, .h1 {
+    margin-top: 15px;
+    font-size: 30px;
+  }
+  h2, .h2 {
+    margin-top: 15px;
+    font-size: 26px;
+  }
+  h3, .h3 {
+    margin-top: 10px;
+    font-size: 22px;
+  }
+  blockquote {
+    margin: 0;
+    padding: 0 0 0 40px;
+    border: none;
+    font-size: unset;
+  }
+  img {
+    max-width: 100%;
+  }
+  button {
+    span.name {
+      margin-right: 5px;
+    }
+  }
+
+  .tiptap-controls {
+    display: flex;
+    flex-wrap: wrap;
+    .btn-group {
+      margin-right: 5px;
+      border: var(--button-border);
+      border-radius: var(--button-border-radius);
+    }
+    > button {
+      margin-right: 5px;
+      border: var(--button-border);
+      border-radius: var(--button-border-radius);
+      box-shadow: -1px 1px 3px rgb(0 0 0 / 10%);
+    }
+    button {
+      display: inline-flex;
+      align-items: center;
+      height: var(--button-height);
+      min-width: var(--button-height);
+      padding: 2px 7px;
+      justify-content: center;
+      background-color: #fff;
+      cursor: pointer;
+      &.active {
+        background-color: #ddd!important;
+      }
+      &:hover {
+        background-color: var(--button-hover-color);
+      }
+      &:disabled {
+        color: #bbb;
+        .color {
+          opacity: 20%;
+        }
+      }
+      > .color {
+        width: 14px;
+        height: 14px;
+        margin: 0;
+        margin-left: 6px;
+        border: 1px solid rgba(0,0,0,0.3);
+        border-radius: 3px;
+      }
+    }
+  }
+
+  .btn-group {
+    height: var(--button-height);
+    overflow: hidden;
+    box-shadow: -1px 1px 3px rgb(0 0 0 / 10%);
+    button {
+      float: left;
+      height: 100%;
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      &:not(:last-child) {
+        border-right: var(--button-border);
+      }
+    }
+  }
+
+  button.drop_btn {
+    > * {
+      display: inline-block;
+      margin-right: 3px;
+    }
+    &::after {
+      content: "↓";
+      display: inline-block;
+      margin-left: auto;
+    }
+  }
+
+  @media (max-width:450px) {
+    button, .btn-group {
+        margin-bottom: 5px!important;
+    }
+  }
+}
+
+div.tiptap-dropdown {
+  display: none;
+  position: absolute;
+  width: min-content;
+  min-width: 100px;
+  min-height: 20px;
+  padding: 5px 0;
+  overflow: hidden;
+  background-color: #fff;
+  border: var(--button-border);
+  border-radius: var(--button-border-radius);
+  z-index: 1000;
+
+  &.grid .dropdown-item {
+    display: grid;
+    grid-template-columns: 1fr 5fr;
+  }
+
+  .dropdown-item {
+    width: 100%;
+    min-height: 25px;
+    line-height: 1;
+    padding: 6px 13px;
+    background: none;
+    border: none;
+    text-align: left;
+    * {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    span.name {
+      margin-right: 10px;
+      padding: 4px 0;
+    }
+  }
+
+  button {
+    &:hover {
+      background-color: var(--button-hover-color);
+    }
+    &.dropdown-item .color {
+      float: right;
+      width: 14px;
+      height: 14px;
+      border: 1px solid rgba(0,0,0,0.3);
+      border-radius: 3px;
+    }
+    &.submit {
+      width: 90%;
+      height: 25px;
+      margin: 2% 5%;
+      border: 0;
+      border-top: var(--button-border);
+      border-radius: 5px;
+      background-color: var(--yafowil-accent-color, #0d6efd);
+      color: var(--yafowil-accent-font-color, #fff);
+      &:hover {
+        background-color: var(--yafowil-accent-color, #0d6efd);
+        opacity: 0.8;
+      }
+    }
+  }
+
+  input {
+    line-height: unset;
+    &::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+    }
+  }
+}
+
+.tiptap-tooltip {
+  display: none;
+  position: absolute;
+  padding: 1px 5px;
+  background: #000;
+  font-size: 13px;
+  border: 1px solid #fff;
+  color: #fff;
+}
+
+a.help-btn {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ccc;
+  background: white;
+  text-decoration: none;
+
+  * {
+    font-size: 10px;
+    font-weight: bold;
+    color: #bbb;
+    text-decoration: none;
+  }
+}
