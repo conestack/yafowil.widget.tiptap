@@ -1,7 +1,9 @@
-name: Test tiptap
+name: PY Test tiptap
 
 on:
   push:
+    paths:
+    - '**.py'
 
 jobs:
   test:
