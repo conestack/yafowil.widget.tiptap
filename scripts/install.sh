@@ -10,7 +10,7 @@ if ! which npm &> /dev/null; then
     sudo apt-get install npm
 fi
 
-npm --save-dev install \
+npm --prefix . --save-dev install \
     qunit \
     karma \
     karma-qunit \
@@ -25,7 +25,7 @@ npm --save-dev install \
     sass
 
 
-npm --save install \
+npm --prefix . --save install \
     @tiptap/core \
     @tiptap/extension-document \
     @tiptap/extension-paragraph \
@@ -47,7 +47,7 @@ npm --save install \
     @tiptap/extension-link
 
 
-npm --no-save install https://github.com/jquery/jquery#main
+npm --prefix . --no-save install https://github.com/jquery/jquery#main
 
 
 python3 -m venv .
