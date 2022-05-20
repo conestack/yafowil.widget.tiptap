@@ -49,7 +49,7 @@ export default args => {
     conf.push(conf_tiptap);
 
     let conf_widget = {
-        input: 'js/src/bundles/yafowil.bundle.js',
+        input: 'js/src/bundles/widget.js',
         plugins: [
             nodeResolve(),
             cleanup()
