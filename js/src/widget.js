@@ -15,8 +15,8 @@ export class TiptapWidget {
     }
 
     constructor(elem, opts={}) {
+        elem.data('yafowil-tiptap', this);
         this.elem = elem;
-        elem.data('tiptap-widget', this);
 
         this.controls = $('<div />')
             .addClass('tiptap-controls')

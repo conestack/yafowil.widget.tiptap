@@ -35,7 +35,7 @@ QUnit.module('TiptapWidget', hooks => {
         elem.data('tiptap-actions', ['bold']);
 
         TiptapWidget.initialize();
-        widget = elem.data('tiptap-widget');
+        widget = elem.data('yafowil-tiptap');
         assert.deepEqual(widget.elem, elem);
         assert.true(widget.textarea.is('textarea', elem));
         assert.strictEqual(widget.textarea.val(), widget.editor.getHTML());
@@ -51,7 +51,7 @@ QUnit.module('TiptapWidget', hooks => {
 
         elem.empty();
         TiptapWidget.initialize();
-        widget = elem.data('tiptap-widget');
+        widget = elem.data('yafowil-tiptap');
         assert.deepEqual(widget.elem, elem);
         assert.true(widget.textarea.is('textarea', elem));
     });
@@ -61,7 +61,7 @@ QUnit.module('TiptapWidget', hooks => {
         elem.data('tiptap-actions', ['bold']);
 
         TiptapWidget.initialize();
-        widget = elem.data('tiptap-widget');
+        widget = elem.data('yafowil-tiptap');
 
         widget.destroy();
         assert.strictEqual($('> *', widget.elem).length, 0);
@@ -74,7 +74,7 @@ QUnit.module('TiptapWidget', hooks => {
             'heading'
         ]);
         TiptapWidget.initialize();
-        widget = elem.data('tiptap-widget');
+        widget = elem.data('yafowil-tiptap');
 
         widget.buttons.heading.dd_elem.show();
         $('body').trigger('click');
