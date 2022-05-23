@@ -607,8 +607,8 @@ var yafowil_tiptap = (function (exports, $) {
             });
         }
         constructor(elem, opts={}) {
+            elem.data('yafowil-tiptap', this);
             this.elem = elem;
-            elem.data('tiptap-widget', this);
             this.controls = $('<div />')
                 .addClass('tiptap-controls')
                 .prependTo(elem);
@@ -717,6 +717,8 @@ var yafowil_tiptap = (function (exports, $) {
     $(function() {
         if (window.ts !== undefined) {
             ts.ajax.register(TiptapWidget.initialize, true);
+        } else if (window.bdajax !== undefined) {
+            bdajax.register(TiptapWidget.initialize, true);
         } else {
             TiptapWidget.initialize();
         }
@@ -727,9 +729,7 @@ var yafowil_tiptap = (function (exports, $) {
     Object.defineProperty(exports, '__esModule', { value: true });
 
 
-    if (window.yafowil === undefined) {
-        window.yafowil = {};
-    }
+    window.yafowil = window.yafowil || {};
     window.yafowil.tiptap = exports;
 
 

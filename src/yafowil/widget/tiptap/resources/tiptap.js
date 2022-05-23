@@ -78,7 +78,6 @@ var tiptap = (function (exports) {
     if (value) for (var prop in value) content.push(prop, value[prop]);
     return new OrderedMap(content)
   };
-  var orderedmap = OrderedMap;
 
   function findDiffStart(a, b, pos) {
     for (var i = 0;; i++) {
@@ -1395,8 +1394,8 @@ var tiptap = (function (exports) {
   var Schema = function Schema(spec) {
     this.spec = {};
     for (var prop in spec) { this.spec[prop] = spec[prop]; }
-    this.spec.nodes = orderedmap.from(spec.nodes);
-    this.spec.marks = orderedmap.from(spec.marks);
+    this.spec.nodes = OrderedMap.from(spec.nodes);
+    this.spec.marks = OrderedMap.from(spec.marks);
     this.nodes = NodeType$1.compile(this.spec.nodes, this);
     this.marks = MarkType.compile(this.spec.marks, this);
     var contentExprCache = Object.create(null);
@@ -3053,7 +3052,7 @@ var tiptap = (function (exports) {
                   sliceDepth - 1, openEndCount < 0 ? slice.openEnd : sliceDepth - 1);
   };
   Fitter.prototype.mustMoveInline = function mustMoveInline () {
-    if (!this.$to.parent.isTextblock || this.$to.end() == this.$to.pos) { return -1 }
+    if (!this.$to.parent.isTextblock) { return -1 }
     var top = this.frontier[this.depth], level;
     if (!top.type.isTextblock || !contentAfterFits(this.$to, this.$to.depth, top.type, top.match, false) ||
         (this.$to.depth == this.depth && (level = this.findCloseLevel(this.$to)) && level.depth == this.depth)) { return -1 }
@@ -3140,6 +3139,9 @@ var tiptap = (function (exports) {
       { if (!type.allowsMarks(fragment.child(i).marks)) { return true } }
     return false
   }
+  function definesContent(type) {
+    return type.spec.defining || type.spec.definingForContent
+  }
   Transform.prototype.replaceRange = function(from, to, slice) {
     if (!slice.size) { return this.deleteRange(from, to) }
     var $from = this.doc.resolve(from), $to = this.doc.resolve(to);
@@ -3151,7 +3153,7 @@ var tiptap = (function (exports) {
     targetDepths.unshift(preferredTarget);
     for (var d = $from.depth, pos = $from.pos - 1; d > 0; d--, pos--) {
       var spec = $from.node(d).type.spec;
-      if (spec.defining || spec.isolating) { break }
+      if (spec.defining || spec.definingAsContext || spec.isolating) { break }
       if (targetDepths.indexOf(d) > -1) { preferredTarget = d; }
       else if ($from.before(d) == pos) { targetDepths.splice(1, 0, -d); }
     }
@@ -3163,12 +3165,11 @@ var tiptap = (function (exports) {
       if (i == slice.openStart) { break }
       content = node.content;
     }
-    if (preferredDepth > 0 && leftNodes[preferredDepth - 1].type.spec.defining &&
-        $from.node(preferredTargetIndex).type != leftNodes[preferredDepth - 1].type)
-      { preferredDepth -= 1; }
-    else if (preferredDepth >= 2 && leftNodes[preferredDepth - 1].isTextblock && leftNodes[preferredDepth - 2].type.spec.defining &&
-             $from.node(preferredTargetIndex).type != leftNodes[preferredDepth - 2].type)
-      { preferredDepth -= 2; }
+    for (var d$1 = preferredDepth - 1; d$1 >= 0; d$1--) {
+      var type = leftNodes[d$1].type, def = definesContent(type);
+      if (def && $from.node(preferredTargetIndex).type != type) { preferredDepth = d$1; }
+      else if (def || !type.isTextblock) { break }
+    }
     for (var j = slice.openStart; j >= 0; j--) {
       var openDepth = (j + preferredDepth + 1) % (slice.openStart + 1);
       var insert = leftNodes[openDepth];
@@ -4031,39 +4032,6 @@ var tiptap = (function (exports) {
     if (dispatch) { dispatch(state.tr.lift(range, target).scrollIntoView()); }
     return true
   }
-  function splitBlock$2(state, dispatch) {
-    var ref = state.selection;
-    var $from = ref.$from;
-    var $to = ref.$to;
-    if (state.selection instanceof NodeSelection && state.selection.node.isBlock) {
-      if (!$from.parentOffset || !canSplit(state.doc, $from.pos)) { return false }
-      if (dispatch) { dispatch(state.tr.split($from.pos).scrollIntoView()); }
-      return true
-    }
-    if (!$from.parent.isBlock) { return false }
-    if (dispatch) {
-      var atEnd = $to.parentOffset == $to.parent.content.size;
-      var tr = state.tr;
-      if (state.selection instanceof TextSelection || state.selection instanceof AllSelection) { tr.deleteSelection(); }
-      var deflt = $from.depth == 0 ? null : defaultBlockAt$2($from.node(-1).contentMatchAt($from.indexAfter(-1)));
-      var types = atEnd && deflt ? [{type: deflt}] : null;
-      var can = canSplit(tr.doc, tr.mapping.map($from.pos), 1, types);
-      if (!types && !can && canSplit(tr.doc, tr.mapping.map($from.pos), 1, deflt && [{type: deflt}])) {
-        types = [{type: deflt}];
-        can = true;
-      }
-      if (can) {
-        tr.split(tr.mapping.map($from.pos), 1, types);
-        if (!atEnd && !$from.parentOffset && $from.parent.type != deflt) {
-          var first = tr.mapping.map($from.before()), $first = tr.doc.resolve(first);
-          if ($from.node(-1).canReplaceWith($first.index(), $first.index() + 1, deflt))
-            { tr.setNodeMarkup(tr.mapping.map($from.before()), deflt); }
-        }
-      }
-      dispatch(tr.scrollIntoView());
-    }
-    return true
-  }
   function selectParentNode$2(state, dispatch) {
     var ref = state.selection;
     var $from = ref.$from;
@@ -4073,10 +4041,6 @@ var tiptap = (function (exports) {
     if (same == 0) { return false }
     pos = $from.before(same);
     if (dispatch) { dispatch(state.tr.setSelection(NodeSelection.create(state.doc, pos))); }
-    return true
-  }
-  function selectAll$2(state, dispatch) {
-    if (dispatch) { dispatch(state.tr.setSelection(new AllSelection(state.doc))); }
     return true
   }
   function joinMaybeClear(state, $pos, dispatch) {
@@ -4193,40 +4157,6 @@ var tiptap = (function (exports) {
       return true
     }
   }
-  function chainCommands() {
-    var commands = [], len = arguments.length;
-    while ( len-- ) commands[ len ] = arguments[ len ];
-    return function(state, dispatch, view) {
-      for (var i = 0; i < commands.length; i++)
-        { if (commands[i](state, dispatch, view)) { return true } }
-      return false
-    }
-  }
-  var backspace = chainCommands(deleteSelection$2, joinBackward$2, selectNodeBackward$2);
-  var del = chainCommands(deleteSelection$2, joinForward$2, selectNodeForward$2);
-  var pcBaseKeymap = {
-    "Enter": chainCommands(newlineInCode$2, createParagraphNear$2, liftEmptyBlock$2, splitBlock$2),
-    "Mod-Enter": exitCode$2,
-    "Backspace": backspace,
-    "Mod-Backspace": backspace,
-    "Shift-Backspace": backspace,
-    "Delete": del,
-    "Mod-Delete": del,
-    "Mod-a": selectAll$2
-  };
-  var macBaseKeymap = {
-    "Ctrl-h": pcBaseKeymap["Backspace"],
-    "Alt-Backspace": pcBaseKeymap["Mod-Backspace"],
-    "Ctrl-d": pcBaseKeymap["Delete"],
-    "Ctrl-Alt-Backspace": pcBaseKeymap["Mod-Delete"],
-    "Alt-Delete": pcBaseKeymap["Mod-Delete"],
-    "Alt-d": pcBaseKeymap["Mod-Delete"],
-    "Ctrl-a": selectTextblockStart$2,
-    "Ctrl-e": selectTextblockEnd$2
-  };
-  for (var key in pcBaseKeymap) { macBaseKeymap[key] = pcBaseKeymap[key]; }
-  pcBaseKeymap.Home = selectTextblockStart$2;
-  pcBaseKeymap.End = selectTextblockEnd$2;
   typeof navigator != "undefined" ? /Mac|iP(hone|[oa]d)/.test(navigator.platform)
             : typeof os != "undefined" ? os.platform() == "darwin" : false;
 
@@ -5268,8 +5198,20 @@ var tiptap = (function (exports) {
       if (this.node.type.spec.reparseInView) { return null }
       var rule = {node: this.node.type.name, attrs: this.node.attrs};
       if (this.node.type.whitespace == "pre") { rule.preserveWhitespace = "full"; }
-      if (this.contentDOM && !this.contentLost) { rule.contentElement = this.contentDOM; }
-      else { rule.getContent = function () { return this$1$1.contentDOM ? Fragment.empty : this$1$1.node.content; }; }
+      if (!this.contentDOM) {
+        rule.getContent = function () { return this$1$1.node.content; };
+      } else if (!this.contentLost) {
+        rule.contentElement = this.contentDOM;
+      } else {
+        for (var i = this.children.length - 1; i >= 0; i--) {
+          var child = this.children[i];
+          if (this.dom.contains(child.dom.parentNode)) {
+            rule.contentElement = child.dom.parentNode;
+            break
+          }
+        }
+        if (!rule.contentElement) { rule.getContent = function () { return Fragment.empty; }; }
+      }
       return rule
     };
     NodeViewDesc.prototype.matchesNode = function matchesNode (node, outerDeco, innerDeco) {
@@ -5731,18 +5673,21 @@ var tiptap = (function (exports) {
     }
   };
   ViewTreeUpdater.prototype.addTextblockHacks = function addTextblockHacks () {
-    var lastChild = this.top.children[this.index - 1];
-    while (lastChild instanceof MarkViewDesc) { lastChild = lastChild.children[lastChild.children.length - 1]; }
+    var lastChild = this.top.children[this.index - 1], parent = this.top;
+    while (lastChild instanceof MarkViewDesc) {
+      parent = lastChild;
+      lastChild = parent.children[parent.children.length - 1];
+    }
     if (!lastChild ||
         !(lastChild instanceof TextViewDesc) ||
         /\n$/.test(lastChild.node.text)) {
       if ((result.safari || result.chrome) && lastChild && lastChild.dom.contentEditable == "false")
-        { this.addHackNode("IMG"); }
-      this.addHackNode("BR");
+        { this.addHackNode("IMG", parent); }
+      this.addHackNode("BR", this.top);
     }
   };
-  ViewTreeUpdater.prototype.addHackNode = function addHackNode (nodeName) {
-    if (this.index < this.top.children.length && this.top.children[this.index].matchesHack(nodeName)) {
+  ViewTreeUpdater.prototype.addHackNode = function addHackNode (nodeName, parent) {
+    if (parent == this.top && this.index < parent.children.length && parent.children[this.index].matchesHack(nodeName)) {
       this.index++;
     } else {
       var dom = document.createElement(nodeName);
@@ -5751,7 +5696,9 @@ var tiptap = (function (exports) {
         dom.alt = "";
       }
       if (nodeName == "BR") { dom.className = "ProseMirror-trailingBreak"; }
-      this.top.children.splice(this.index++, 0, new TrailingHackViewDesc(this.top, nothing, dom, null));
+      var hack = new TrailingHackViewDesc(this.top, nothing, dom, null);
+      if (parent != this.top) { parent.children.push(hack); }
+      else { parent.children.splice(this.index++, 0, hack); }
       this.changed = true;
     }
   };
@@ -6395,15 +6342,17 @@ var tiptap = (function (exports) {
     }
     view.lastKeyCode = null;
     var change = findDiff(compare.content, parse.doc.content, parse.from, preferredPos, preferredSide);
+    if ((result.ios && view.lastIOSEnter > Date.now() - 225 || result.android) &&
+        addedNodes.some(function (n) { return n.nodeName == "DIV" || n.nodeName == "P"; }) &&
+        (!change || change.endA >= change.endB) &&
+        view.someProp("handleKeyDown", function (f) { return f(view, keyEvent(13, "Enter")); })) {
+      view.lastIOSEnter = 0;
+      return
+    }
     if (!change) {
       if (typeOver && sel instanceof TextSelection && !sel.empty && sel.$head.sameParent(sel.$anchor) &&
           !view.composing && !(parse.sel && parse.sel.anchor != parse.sel.head)) {
         change = {start: sel.from, endA: sel.to, endB: sel.to};
-      } else if ((result.ios && view.lastIOSEnter > Date.now() - 225 || result.android) &&
-                 addedNodes.some(function (n) { return n.nodeName == "DIV" || n.nodeName == "P"; }) &&
-                 view.someProp("handleKeyDown", function (f) { return f(view, keyEvent(13, "Enter")); })) {
-        view.lastIOSEnter = 0;
-        return
       } else {
         if (parse.sel) {
           var sel$1 = resolveSelection(view, view.state.doc, parse.sel);
@@ -6898,7 +6847,7 @@ var tiptap = (function (exports) {
       this.queue.length = 0;
     }
     var sel = this.view.root.getSelection();
-    var newSel = !this.suppressingSelectionUpdates && !this.currentSelection.eq(sel) && hasSelection(this.view) && !this.ignoreSelectionChange(sel);
+    var newSel = !this.suppressingSelectionUpdates && !this.currentSelection.eq(sel) && hasFocusAndSelection(this.view) && !this.ignoreSelectionChange(sel);
     var from = -1, to = -1, typeOver = false, added = [];
     if (this.view.editable) {
       for (var i = 0; i < mutations.length; i++) {
@@ -7857,9 +7806,10 @@ var tiptap = (function (exports) {
     var shift = function (oldStart, oldEnd, newStart, newEnd) {
       for (var i = 0; i < children.length; i += 3) {
         var end = children[i + 1], dSize = (void 0);
-        if (end == -1 || oldStart > end + oldOffset) { continue }
-        if (oldEnd >= children[i] + oldOffset) {
-          children[i + 1] = -1;
+        if (end < 0 || oldStart > end + oldOffset) { continue }
+        var start = children[i] + oldOffset;
+        if (oldEnd >= start) {
+          children[i + 1] = oldStart <= start ? -2 : -1;
         } else if (newStart >= offset && (dSize = (newEnd - newStart) - (oldEnd - oldStart))) {
           children[i] += dSize;
           children[i + 1] += dSize;
@@ -7868,7 +7818,12 @@ var tiptap = (function (exports) {
     };
     for (var i = 0; i < mapping.maps.length; i++) { mapping.maps[i].forEach(shift); }
     var mustRebuild = false;
-    for (var i$1 = 0; i$1 < children.length; i$1 += 3) { if (children[i$1 + 1] == -1) {
+    for (var i$1 = 0; i$1 < children.length; i$1 += 3) { if (children[i$1 + 1] < 0) {
+      if (children[i$1 + 1] == -2) {
+        mustRebuild = true;
+        children[i$1 + 1] = -1;
+        continue
+      }
       var from = mapping.map(oldChildren[i$1] + oldOffset), fromLocal = from - offset;
       if (fromLocal < 0 || fromLocal >= node.content.size) {
         mustRebuild = true;
@@ -8588,6 +8543,7 @@ var tiptap = (function (exports) {
                   pos,
                   parent,
                   index,
+                  range,
               });
           }
           else if (node.isText) {
@@ -8601,7 +8557,7 @@ var tiptap = (function (exports) {
       });
       return text;
   }
-  function getTextSeralizersFromSchema(schema) {
+  function getTextSerializersFromSchema(schema) {
       return Object.fromEntries(Object
           .entries(schema.nodes)
           .filter(([, node]) => node.spec.toText)
@@ -8621,7 +8577,7 @@ var tiptap = (function (exports) {
                           const { ranges } = selection;
                           const from = Math.min(...ranges.map(range => range.$from.pos));
                           const to = Math.max(...ranges.map(range => range.$to.pos));
-                          const textSerializers = getTextSeralizersFromSchema(schema);
+                          const textSerializers = getTextSerializersFromSchema(schema);
                           const range = { from, to };
                           return getTextBetween(doc, range, {
                               textSerializers,
@@ -8801,7 +8757,10 @@ var tiptap = (function (exports) {
       if (!$pos || !type) {
           return;
       }
-      const start = $pos.parent.childAfter($pos.parentOffset);
+      let start = $pos.parent.childAfter($pos.parentOffset);
+      if ($pos.parentOffset === start.offset && start.offset !== 0) {
+          start = $pos.parent.childBefore($pos.parentOffset);
+      }
       if (!start.node) {
           return;
       }
@@ -8809,7 +8768,7 @@ var tiptap = (function (exports) {
       if (!mark) {
           return;
       }
-      let startIndex = $pos.index();
+      let startIndex = start.index;
       let startPos = $pos.start() + start.offset;
       let endIndex = startIndex + 1;
       let endPos = startPos + start.node.nodeSize;
@@ -10335,8 +10294,6 @@ var tiptap = (function (exports) {
           };
           const pcKeymap = {
               ...baseKeymap,
-              Home: () => this.editor.commands.selectTextblockStart(),
-              End: () => this.editor.commands.selectTextblockEnd(),
           };
           const macKeymap = {
               ...baseKeymap,
@@ -10481,12 +10438,15 @@ var tiptap = (function (exports) {
       const content = node.toJSON();
       return JSON.stringify(defaultContent) === JSON.stringify(content);
   }
-  function createStyleTag(style) {
+  function createStyleTag(style, nonce) {
       const tipTapStyleTag = document.querySelector('style[data-tiptap-style]');
       if (tipTapStyleTag !== null) {
           return tipTapStyleTag;
       }
       const styleNode = document.createElement('style');
+      if (nonce) {
+          styleNode.setAttribute('nonce', nonce);
+      }
       styleNode.setAttribute('data-tiptap-style', '');
       styleNode.innerHTML = style;
       document.getElementsByTagName('head')[0].appendChild(styleNode);
@@ -11383,6 +11343,7 @@ img.ProseMirror-separator {
               element: document.createElement('div'),
               content: '',
               injectCSS: true,
+              injectNonce: undefined,
               extensions: [],
               autofocus: false,
               editable: true,
@@ -11439,7 +11400,7 @@ img.ProseMirror-separator {
       }
       injectCSS() {
           if (this.options.injectCSS && document) {
-              this.css = createStyleTag(style);
+              this.css = createStyleTag(style, this.options.injectNonce);
           }
       }
       setOptions(options = {}) {
@@ -11604,7 +11565,7 @@ img.ProseMirror-separator {
               blockSeparator,
               textSerializers: {
                   ...textSerializers,
-                  ...getTextSeralizersFromSchema(this.schema),
+                  ...getTextSerializersFromSchema(this.schema),
               },
           });
       }
@@ -11775,7 +11736,7 @@ img.ProseMirror-separator {
           return null;
       }
       onDragStart(event) {
-          var _a, _b, _c;
+          var _a, _b, _c, _d, _e, _f, _g;
           const { view } = this.editor;
           const target = event.target;
           const dragHandle = target.nodeType === 3
@@ -11791,10 +11752,12 @@ img.ProseMirror-separator {
           if (this.dom !== dragHandle) {
               const domBox = this.dom.getBoundingClientRect();
               const handleBox = dragHandle.getBoundingClientRect();
-              x = handleBox.x - domBox.x + event.offsetX;
-              y = handleBox.y - domBox.y + event.offsetY;
+              const offsetX = (_c = event.offsetX) !== null && _c !== void 0 ? _c : (_d = event.nativeEvent) === null || _d === void 0 ? void 0 : _d.offsetX;
+              const offsetY = (_e = event.offsetY) !== null && _e !== void 0 ? _e : (_f = event.nativeEvent) === null || _f === void 0 ? void 0 : _f.offsetY;
+              x = handleBox.x - domBox.x + offsetX;
+              y = handleBox.y - domBox.y + offsetY;
           }
-          (_c = event.dataTransfer) === null || _c === void 0 ? void 0 : _c.setDragImage(this.dom, x, y);
+          (_g = event.dataTransfer) === null || _g === void 0 ? void 0 : _g.setDragImage(this.dom, x, y);
           const selection = NodeSelection.create(view.state.doc, this.getPos());
           const transaction = view.state.tr.setSelection(selection);
           view.dispatch(transaction);
@@ -12212,7 +12175,7 @@ img.ProseMirror-separator {
           blockSeparator,
           textSerializers: {
               ...textSerializers,
-              ...getTextSeralizersFromSchema(schema),
+              ...getTextSerializersFromSchema(schema),
           },
       });
   }
@@ -15522,6 +15485,12 @@ vermögensberatung-pwb \
                       const text = newState.doc.textBetween(textBlock.pos, textBlock.pos + textBlock.node.nodeSize, undefined, ' ');
                       find(text)
                           .filter(link => link.isLink)
+                          .filter(link => {
+                          if (options.validate) {
+                              return options.validate(link.value);
+                          }
+                          return true;
+                      })
                           .map(link => ({
                           ...link,
                           from: textBlock.pos + link.start + 1,
@@ -15605,7 +15574,9 @@ vermögensberatung-pwb \
               HTMLAttributes: {
                   target: '_blank',
                   rel: 'noopener noreferrer nofollow',
+                  class: null,
               },
+              validate: undefined,
           };
       },
       addAttributes() {
@@ -15616,11 +15587,14 @@ vermögensberatung-pwb \
               target: {
                   default: this.options.HTMLAttributes.target,
               },
+              class: {
+                  default: this.options.HTMLAttributes.class,
+              },
           };
       },
       parseHTML() {
           return [
-              { tag: 'a[href]' },
+              { tag: 'a[href]:not([href *= "javascript:" i])' },
           ];
       },
       renderHTML({ HTMLAttributes }) {
@@ -15656,6 +15630,12 @@ vermögensberatung-pwb \
           return [
               markPasteRule({
                   find: text => find(text)
+                      .filter(link => {
+                      if (this.options.validate) {
+                          return this.options.validate(link.value);
+                      }
+                      return true;
+                  })
                       .filter(link => link.isLink)
                       .map(link => ({
                       text: link.value,
@@ -15677,6 +15657,7 @@ vermögensberatung-pwb \
           if (this.options.autolink) {
               plugins.push(autolink({
                   type: this.type,
+                  validate: this.options.validate,
               }));
           }
           if (this.options.openOnClick) {
@@ -15877,6 +15858,7 @@ vermögensberatung-pwb \
   exports.getSchema = getSchema;
   exports.getText = getText;
   exports.getTextBetween = getTextBetween;
+  exports.getTextSerializersFromSchema = getTextSerializersFromSchema;
   exports.inputRulesPlugin = inputRulesPlugin;
   exports.isActive = isActive;
   exports.isList = isList;
