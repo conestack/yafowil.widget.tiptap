@@ -13,7 +13,10 @@ resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
 
 # webresource ################################################################
 
-scripts = wr.ResourceGroup(name='yafowil-tiptap-scripts')
+scripts = wr.ResourceGroup(
+    name='yafowil-tiptap-scripts',
+    path='yafowil.widget.tiptap'
+)
 scripts.add(wr.ScriptResource(
     name='tiptap-js',
     directory=resources_dir,
@@ -28,7 +31,10 @@ scripts.add(wr.ScriptResource(
     compressed='widget.min.js'
 ))
 
-styles = wr.ResourceGroup(name='yafowil-tiptap-styles')
+styles = wr.ResourceGroup(
+    name='yafowil-tiptap-styles',
+    path='yafowil.widget.tiptap'
+)
 styles.add(wr.StyleResource(
     name='yafowil-tiptap-css',
     directory=resources_dir,
