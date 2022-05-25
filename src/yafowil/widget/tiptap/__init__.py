@@ -13,34 +13,27 @@ resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
 
 # webresource ################################################################
 
-scripts = wr.ResourceGroup(name='scripts')
+scripts = wr.ResourceGroup(name='yafowil-tiptap-scripts')
 scripts.add(wr.ScriptResource(
     name='tiptap-js',
-    # actually it not depends on jquery, but yafowil-tiptap-js does
-    # think about multiple depends values in webresource
-    depends='jquery-js',
     directory=resources_dir,
     resource='tiptap.js',
     compressed='tiptap.min.js'
 ))
 scripts.add(wr.ScriptResource(
     name='yafowil-tiptap-js',
-    depends='tiptap-js',
+    depends=['jquery-js', 'tiptap-js'],
     directory=resources_dir,
     resource='widget.js',
     compressed='widget.min.js'
 ))
 
-styles = wr.ResourceGroup(name='styles')
+styles = wr.ResourceGroup(name='yafowil-tiptap-styles')
 styles.add(wr.StyleResource(
     name='yafowil-tiptap-css',
     directory=resources_dir,
     resource='widget.css'
 ))
-
-resources = wr.ResourceGroup(name='tiptap-resources')
-resources.add(scripts)
-resources.add(styles)
 
 # B/C resources ##############################################################
 
@@ -71,5 +64,7 @@ def register():
     # Default
     factory.register_theme(
         'default', 'yafowil.widget.tiptap', resources_dir,
-        js=js, css=css, resources=resources
+        js=js, css=css
     )
+    factory.register_scripts('default', 'yafowil.widget.tiptap', scripts)
+    factory.register_styles('default', 'yafowil.widget.tiptap', styles)
