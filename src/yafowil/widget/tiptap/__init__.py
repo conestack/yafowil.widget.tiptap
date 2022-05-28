@@ -13,31 +13,24 @@ resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
 
 # webresource ################################################################
 
-scripts = wr.ResourceGroup(
-    name='yafowil-tiptap-scripts',
-    path='yafowil.widget.tiptap'
-)
-scripts.add(wr.ScriptResource(
-    name='tiptap-js',
+resources = wr.ResourceGroup(
+    name='yafowil-tiptap-resources',
     directory=resources_dir,
+    path='yafowil-tiptap'
+)
+resources.add(wr.ScriptResource(
+    name='tiptap-js',
     resource='tiptap.js',
     compressed='tiptap.min.js'
 ))
-scripts.add(wr.ScriptResource(
+resources.add(wr.ScriptResource(
     name='yafowil-tiptap-js',
     depends=['jquery-js', 'tiptap-js'],
-    directory=resources_dir,
     resource='widget.js',
     compressed='widget.min.js'
 ))
-
-styles = wr.ResourceGroup(
-    name='yafowil-tiptap-styles',
-    path='yafowil.widget.tiptap'
-)
-styles.add(wr.StyleResource(
+resources.add(wr.StyleResource(
     name='yafowil-tiptap-css',
-    directory=resources_dir,
     resource='widget.css'
 ))
 
@@ -67,10 +60,14 @@ css = [{
 def register():
     from yafowil.widget.tiptap import widget  # noqa
 
+    widget_name = 'yafowil.widget.tiptap'
+
     # Default
     factory.register_theme(
-        'default', 'yafowil.widget.tiptap', resources_dir,
-        js=js, css=css
+        'default',
+        widget_name,
+        resources_dir,
+        js=js,
+        css=css
     )
-    factory.register_scripts('default', 'yafowil.widget.tiptap', scripts)
-    factory.register_styles('default', 'yafowil.widget.tiptap', styles)
+    factory.register_resources('default', widget_name, resources)
