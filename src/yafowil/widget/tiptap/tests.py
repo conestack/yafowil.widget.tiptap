@@ -19,7 +19,7 @@ class TestTiptapWidget(YafowilTestCase):
 
     def test_edit_renderer(self):
         widget = factory('tiptap', value='<p>Hello Tiptap</p>', name='tiptap')
-        self.check_output((
+        self.checkOutput((
             '<div class="tiptap-editor" '
                 'data-tiptap-actions=\'['
                     '"heading", '
@@ -52,7 +52,7 @@ class TestTiptapWidget(YafowilTestCase):
                 'colors': None,
                 'helpLink': None
             })
-        self.check_output((
+        self.checkOutput((
             '<div class="tiptap-editor">'
               '<textarea class="tiptap-editor" id="input-tiptap" name="tiptap">'
               '</textarea>'
@@ -65,7 +65,7 @@ class TestTiptapWidget(YafowilTestCase):
             value='<p>Hello Tiptap</p>',
             mode='display'
         )
-        self.check_output((
+        self.checkOutput((
             '<div class="display-tiptap">'
               '<p>Hello Tiptap</p>'
             '</div>'
