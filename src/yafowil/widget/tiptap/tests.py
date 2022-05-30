@@ -143,6 +143,7 @@ class TestTiptapWidget(YafowilTestCase):
         factory.theme = 'default'
         resources = factory.get_resources('yafowil.widget.tiptap')
         self.assertTrue(resources.directory.endswith(np('/tiptap/resources')))
+        self.assertEqual(resources.name, 'yafowil.widget.tiptap')
         self.assertEqual(resources.path, 'yafowil-tiptap')
 
         scripts = resources.scripts
