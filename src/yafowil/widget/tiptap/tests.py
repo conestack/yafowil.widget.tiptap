@@ -19,7 +19,8 @@ class TestTiptapWidget(YafowilTestCase):
     def setUp(self):
         super(TestTiptapWidget, self).setUp()
         from yafowil.widget import tiptap
-        reload(tiptap.widget)
+        from yafowil.widget.tiptap import widget
+        reload(widget)
         tiptap.register()
 
     def test_edit_renderer(self):
