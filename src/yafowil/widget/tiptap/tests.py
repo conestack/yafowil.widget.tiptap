@@ -3,19 +3,24 @@ from yafowil.base import factory
 from yafowil.compat import IS_PY2
 from yafowil.tests import YafowilTestCase
 import unittest
-import yafowil.loader  # noqa
+import os
 
 
 if not IS_PY2:
     from importlib import reload
 
 
+def np(path):
+    return path.replace('/', os.path.sep)
+
+
 class TestTiptapWidget(YafowilTestCase):
 
     def setUp(self):
         super(TestTiptapWidget, self).setUp()
-        from yafowil.widget.tiptap import widget
-        reload(widget)
+        from yafowil.widget import tiptap
+        reload(tiptap.widget)
+        tiptap.register()
 
     def test_edit_renderer(self):
         widget = factory('tiptap', value='<p>Hello Tiptap</p>', name='tiptap')
@@ -133,13 +138,33 @@ class TestTiptapWidget(YafowilTestCase):
         self.assertEqual(data.value, UNSET)
         self.assertEqual(data.extracted, '<p>Updated Text</p>')
 
+    def test_resources(self):
+        factory.theme = 'default'
+        resources = factory.get_resources('yafowil.widget.tiptap')
+        self.assertTrue(resources.directory.endswith(np('/tiptap/resources')))
+        self.assertEqual(resources.path, 'yafowil-tiptap')
+
+        scripts = resources.scripts
+        self.assertEqual(len(scripts), 2)
+
+        self.assertTrue(scripts[0].directory.endswith(np('/tiptap/resources')))
+        self.assertEqual(scripts[0].path, 'yafowil-tiptap')
+        self.assertEqual(scripts[0].file_name, 'tiptap.min.js')
+        self.assertTrue(os.path.exists(scripts[0].file_path))
+
+        self.assertTrue(scripts[1].directory.endswith(np('/tiptap/resources')))
+        self.assertEqual(scripts[1].path, 'yafowil-tiptap')
+        self.assertEqual(scripts[1].file_name, 'widget.min.js')
+        self.assertTrue(os.path.exists(scripts[1].file_path))
+
+        styles = resources.styles
+        self.assertEqual(len(styles), 1)
+
+        self.assertTrue(styles[0].directory.endswith(np('/tiptap/resources')))
+        self.assertEqual(styles[0].path, 'yafowil-tiptap')
+        self.assertEqual(styles[0].file_name, 'widget.css')
+        self.assertTrue(os.path.exists(styles[0].file_path))
+
 
 if __name__ == '__main__':
-    from yafowil.widget.tiptap import tests
-    import sys
-
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.findTestCases(tests))
-    runner = unittest.TextTestRunner(failfast=True)
-    result = runner.run(suite)
-    sys.exit(not result.wasSuccessful())
+    unittest.main()
