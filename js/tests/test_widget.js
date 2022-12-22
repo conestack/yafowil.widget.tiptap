@@ -1,4 +1,5 @@
 import {TiptapWidget} from '../src/widget.js';
+import {register_array_subscribers} from '../src/widget.js';
 import $ from 'jquery';
 
 function create_elem() {
@@ -54,6 +55,53 @@ QUnit.module('TiptapWidget', hooks => {
         widget = elem.data('yafowil-tiptap');
         assert.deepEqual(widget.elem, elem);
         assert.true(widget.textarea.is('textarea', elem));
+    });
+
+    QUnit.test('register_array_subscribers', assert => {
+        $('#container').empty();
+
+        let _array_subscribers = {
+            on_add: []
+        };
+    
+        // window.yafowil_array is undefined - return
+        register_array_subscribers();
+        assert.deepEqual(_array_subscribers['on_add'], []);
+    
+        // patch yafowil_array
+        window.yafowil_array = {
+            on_array_event: function(evt_name, evt_function) {
+                _array_subscribers[evt_name] = evt_function;
+            }
+        };
+        register_array_subscribers();
+    
+        // create table DOM
+        let table = $('<table />')
+            .append($('<tr />'))
+            .append($('<td />'))
+            .appendTo('body');
+    
+        elem = create_elem();
+        $('td', table).addClass('arraytemplate');
+        elem.appendTo($('td', table));
+        // set data attr
+        elem.data('tiptap-actions', ['bold']);
+
+        // invoke array on_add - returns
+        _array_subscribers['on_add'].apply(null, $('tr', table));
+        let widget = elem.data('yafowil-tiptap');
+        assert.notOk(widget);
+        $('td', table).removeClass('arraytemplate');
+    
+        // invoke array on_add
+        elem.attr('id', '');
+        _array_subscribers['on_add'].apply(null, $('tr', table));
+        widget = elem.data('yafowil-tiptap');
+        assert.ok(widget);
+        table.remove();
+        window.yafowil_array = undefined;
+        _array_subscribers = undefined;
     });
 
     QUnit.test('destroy', assert => {

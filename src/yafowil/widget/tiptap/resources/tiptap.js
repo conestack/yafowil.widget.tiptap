@@ -11632,8 +11632,8 @@ var tiptap = (function (exports) {
       return getText(contentNode, {
           blockSeparator,
           textSerializers: {
-              ...textSerializers,
               ...getTextSerializersFromSchema(schema),
+              ...textSerializers,
           },
       });
   }
