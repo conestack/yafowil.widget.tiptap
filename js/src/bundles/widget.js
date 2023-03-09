@@ -1,6 +1,7 @@
 import $ from 'jquery';
 
 import {TiptapWidget} from '../widget.js';
+import {register_array_subscribers} from '../widget.js';
 export * from '../widget.js';
 
 $(function() {
@@ -11,4 +12,5 @@ $(function() {
     } else {
         TiptapWidget.initialize();
     }
+    register_array_subscribers();
 });

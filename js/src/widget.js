@@ -6,6 +6,10 @@ export class TiptapWidget {
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
             let elem = $(this);
+            if (window.yafowil_array !== undefined &&
+                window.yafowil_array.inside_template(elem)) {
+                return;
+            }
             new TiptapWidget(elem, {
                 actions: elem.data('tiptap-actions'),
                 colors: elem.data('tiptap-colors'),
@@ -135,4 +139,20 @@ export class TiptapWidget {
             }
         }
     }
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// yafowil.widget.array integration
+//////////////////////////////////////////////////////////////////////////////
+
+function tiptap_on_array_add(inst, context) {
+    TiptapWidget.initialize(context);
+}
+
+export function register_array_subscribers() {
+    if (window.yafowil_array === undefined) {
+        return;
+    }
+    window.yafowil_array.on_array_event('on_add', tiptap_on_array_add);
 }
