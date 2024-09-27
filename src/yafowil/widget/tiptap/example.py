@@ -47,7 +47,7 @@ together by putting them in a list.
                 ['heading', 'color'],
                 ['bold', 'italic', 'underline'],
                 ['bulletList', 'orderedList', 'indent', 'outdent'],
-                'html',
+                ['html'],
                 ['image', 'link'],
                 ['code', 'codeBlock']
             ]
@@ -66,7 +66,7 @@ def actions_example():
                 ['heading', 'color'],
                 ['bold', 'italic', 'underline'],
                 ['bulletList', 'orderedList', 'indent', 'outdent'],
-                'html',
+                ['html'],
                 ['image', 'link'],
                 ['code', 'codeBlock']
             ]

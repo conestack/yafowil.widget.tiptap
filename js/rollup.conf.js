@@ -3,6 +3,7 @@ import {nodeResolve} from '@rollup/plugin-node-resolve';
 import {terser} from 'rollup-plugin-terser';
 
 const out_dir = 'src/yafowil/widget/tiptap/resources';
+const out_dir_bs5 = 'src/yafowil/widget/tiptap/resources/bootstrap5';
 
 const outro = `
 window.yafowil = window.yafowil || {};
@@ -85,6 +86,46 @@ export default args => {
         });
     }
     conf.push(conf_widget);
+
+    // Bootstrap 5
+    let conf_widget_2 = {
+        input: 'js/src/bundles/bootstrap5.js',
+        plugins: [
+            cleanup()
+        ],
+        output: [{
+            name: 'yafowil_tiptap',
+            file: `${out_dir_bs5}/widget.js`,
+            format: 'iife',
+            outro: outro,
+            globals: {
+                jquery: 'jQuery',
+                bootstrap: 'bootstrap'
+            },
+            interop: 'default'
+        }],
+        external: [
+            'jquery',
+            'bootstrap'
+        ]
+    };
+    if (args.configDebug !== true) {
+        conf_widget_2.output.push({
+            name: 'yafowil_tiptap',
+            file: `${out_dir_bs5}/widget.min.js`,
+            format: 'iife',
+            plugins: [
+                terser()
+            ],
+            outro: outro,
+            globals: {
+                jquery: 'jQuery',
+                bootstrap: 'bootstrap'
+            },
+            interop: 'default'
+        });
+    }
+    conf.push(conf_widget_2);
 
     return conf;
 };

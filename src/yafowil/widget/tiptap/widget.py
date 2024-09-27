@@ -63,15 +63,15 @@ CSS classes for tiptap widget wrapper DOM element.
 """
 
 factory.defaults['tiptap.actions'] = [
-    'heading',
+    ['heading'],
     ['bold', 'italic', 'underline'],
-    'color',
+    ['color'],
     ['bulletList', 'orderedList', 'indent', 'outdent'],
-    'html',
-    'image',
-    'link',
-    'code',
-    'codeBlock'
+    ['html'],
+    ['image'],
+    ['link'],
+    ['code'],
+    ['codeBlock']
 ]
 factory.doc['props']['tiptap.actions'] = """\
 Specifies the order of elements and button groups.

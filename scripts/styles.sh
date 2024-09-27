@@ -5,3 +5,4 @@ SASS_DIR="./scss"
 TARGET_DIR="./src/yafowil/widget/tiptap/resources"
 
 $SASS_BIN $SASS_DIR/widget.scss --no-source-map $TARGET_DIR/widget.css
+$SASS_BIN $SASS_DIR/bootstrap5.scss --no-source-map $TARGET_DIR/bootstrap5/widget.css
