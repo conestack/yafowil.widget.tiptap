@@ -61,7 +61,7 @@ export class Button extends Action {
         super.compile(opts);
         this.container.addClass('btn-group');
         this.elem.attr('role', 'button')
-            .addClass('btn btn-outline-primary');
+            .addClass('btn btn-outline-secondary d-flex align-items-center');
     }
 }
 
@@ -77,18 +77,15 @@ export class DropdownButton extends Button {
         this.children = [];
 
         if (opts.submit) {
-            this.dd_elem.addClass('px-3');
+            this.dd_elem.addClass('p-3');
             this.submit_elem = $('<button />')
-                .addClass('btn btn-primary mt-2 submit')
+                .addClass('btn btn-secondary submit')
                 .text('submit')
                 .appendTo(this.dd_elem);
 
             this.submit = this.submit.bind(this);
             this.submit_elem.on('click', this.submit);
         }
-
-        this.hide_dropdown = this.hide_dropdown.bind(this);
-        // $(document).on('click', this.hide_dropdown);
         this.on_resize = this.on_resize.bind(this);
         $(window).on('resize', this.on_resize);
     }
@@ -103,17 +100,14 @@ export class DropdownButton extends Button {
         if (this.content) {
             this.elem.prepend(this.content);
         }
-        // this.dd_elem.hide();
         this._active_item = item;
     }
 
     unload() {
-        // $(document).off('click', this.hide_dropdown);
         $(window).off('resize', this.on_resize);
     }
 
     on_resize(e) {
-        // this.dd_elem.hide();
         this.active = false;
     }
 
@@ -128,12 +122,8 @@ export class DropdownButton extends Button {
         this.active_item = this.children[0];
     }
 
-    hide_dropdown(e) {
-        if (!this.dd_elem.is(':visible')) { return; }
-    }
-
     on_update() {
-        // this.dd_elem.hide();
+        // ...
     }
 
     /* istanbul ignore next */

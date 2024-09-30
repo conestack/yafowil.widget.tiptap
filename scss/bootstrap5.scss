@@ -11,6 +11,15 @@ textarea.tiptap-editor {
 }
 
 div.tiptap-editor {
+    blockquote {
+        margin: 0;
+        padding: 0 0 0 40px;
+        border: none;
+        font-size: unset;
+    }
+    img {
+        max-width: 100%;
+    }
     .action {
         cursor: pointer;
 
@@ -19,7 +28,6 @@ div.tiptap-editor {
             height: 14px;
             margin: 0;
             margin-left: 6px;
-            border: 1px solid rgba(0, 0, 0, 0.3);
             border-radius: 3px;
             display: inline-block;
             margin-right: 3px;

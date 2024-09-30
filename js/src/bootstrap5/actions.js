@@ -9,8 +9,7 @@ class BoldAction extends Button {
     constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
-            text: 'B',
-            css: {'font-weight': 'bold'},
+            icon: 'type-bold',
             tooltip: 'Toggle Bold',
             toggle: true
         });
@@ -34,8 +33,7 @@ class ItalicAction extends Button {
     constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
-            text: 'i',
-            css: {'font-style': 'italic'},
+            icon: 'type-italic',
             tooltip: 'Toggle Italic',
             toggle: true
         });
@@ -59,8 +57,7 @@ class UnderlineAction extends Button {
     constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
-            text: 'U',
-            css: {'text-decoration': 'underline'},
+            icon: 'type-underline',
             tooltip: 'Toggle Underline',
             toggle: true
         });
@@ -193,8 +190,6 @@ class HTMLAction extends Button {
         });
         this.id = 'html';
         this.widget = widget;
-        this.editarea = $('div.ProseMirror', this.widget.elem)
-            .addClass('form-control');
         this.textarea = this.widget.textarea;
     }
 
@@ -215,11 +210,11 @@ class HTMLAction extends Button {
         }
 
         if (this.active) {
-            this.editarea.hide();
+            this.widget.editarea.hide();
             this.textarea.show();
         } else {
             this.textarea.hide();
-            this.editarea.show();
+            this.widget.editarea.show();
             this.editor.chain().focus().setContent(this.textarea.val()).run();
         }
     }
@@ -269,7 +264,7 @@ class ColorAction extends Action {
         this.id = 'color';
         this.swatch = opts.swatch;
         $('<div />')
-            .addClass('color')
+            .addClass('color border')
             .css('background-color', this.swatch.color)
             .appendTo(this.elem);
     }
@@ -290,7 +285,7 @@ class UnsetColorAction extends Action {
         this.id = 'unsetColor';
 
         $('<div />')
-            .addClass('color')
+            .addClass('color border')
             .css('background-color', 'rgb(51, 51, 51)')
             .appendTo(this.elem);
     }
@@ -438,7 +433,7 @@ class LinkAction extends DropdownButton {
         this.id = 'link';
 
         this.href_elem = $('<div />')
-            .addClass('input-group input-group-sm')
+            .addClass('input-group input-group-sm mb-2')
             .append($('<span />').addClass('input-group-text name').text(`href:`))
             .append($('<input type="text" />').addClass('form-control'))
             .prependTo(this.dd_elem);
@@ -458,7 +453,7 @@ class CodeAction extends Button {
     constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
-            text: '< / >',
+            icon: 'code-slash',
             tooltip: 'Toggle Code',
             toggle: true
         });
@@ -483,7 +478,7 @@ class CodeBlockAction extends Button {
     constructor(widget, editor, opts) {
         super(editor, {
             container_elem: opts.container_elem,
-            text: '{ }',
+            icon: 'braces',
             tooltip: 'Toggle Code Block',
             toggle: true
         });

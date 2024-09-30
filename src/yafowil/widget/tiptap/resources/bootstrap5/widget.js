@@ -53,7 +53,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             super.compile(opts);
             this.container.addClass('btn-group');
             this.elem.attr('role', 'button')
-                .addClass('btn btn-outline-primary');
+                .addClass('btn btn-outline-secondary d-flex align-items-center');
         }
     }
     class DropdownButton extends Button {
@@ -66,15 +66,14 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
                 .appendTo(this.container);
             this.children = [];
             if (opts.submit) {
-                this.dd_elem.addClass('px-3');
+                this.dd_elem.addClass('p-3');
                 this.submit_elem = $('<button />')
-                    .addClass('btn btn-primary mt-2 submit')
+                    .addClass('btn btn-secondary submit')
                     .text('submit')
                     .appendTo(this.dd_elem);
                 this.submit = this.submit.bind(this);
                 this.submit_elem.on('click', this.submit);
             }
-            this.hide_dropdown = this.hide_dropdown.bind(this);
             this.on_resize = this.on_resize.bind(this);
             $(window).on('resize', this.on_resize);
         }
@@ -104,9 +103,6 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             }
             this.active_item = this.children[0];
         }
-        hide_dropdown(e) {
-            if (!this.dd_elem.is(':visible')) { return; }
-        }
         on_update() {
         }
         submit(e) {
@@ -119,8 +115,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: 'B',
-                css: {'font-weight': 'bold'},
+                icon: 'type-bold',
                 tooltip: 'Toggle Bold',
                 toggle: true
             });
@@ -140,8 +135,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: 'i',
-                css: {'font-style': 'italic'},
+                icon: 'type-italic',
                 tooltip: 'Toggle Italic',
                 toggle: true
             });
@@ -161,8 +155,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: 'U',
-                css: {'text-decoration': 'underline'},
+                icon: 'type-underline',
                 tooltip: 'Toggle Underline',
                 toggle: true
             });
@@ -273,8 +266,6 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             });
             this.id = 'html';
             this.widget = widget;
-            this.editarea = $('div.ProseMirror', this.widget.elem)
-                .addClass('form-control');
             this.textarea = this.widget.textarea;
         }
         on_click(e) {
@@ -292,11 +283,11 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
                 }
             }
             if (this.active) {
-                this.editarea.hide();
+                this.widget.editarea.hide();
                 this.textarea.show();
             } else {
                 this.textarea.hide();
-                this.editarea.show();
+                this.widget.editarea.show();
                 this.editor.chain().focus().setContent(this.textarea.val()).run();
             }
         }
@@ -338,7 +329,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             this.id = 'color';
             this.swatch = opts.swatch;
             $('<div />')
-                .addClass('color')
+                .addClass('color border')
                 .css('background-color', this.swatch.color)
                 .appendTo(this.elem);
         }
@@ -355,7 +346,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             });
             this.id = 'unsetColor';
             $('<div />')
-                .addClass('color')
+                .addClass('color border')
                 .css('background-color', 'rgb(51, 51, 51)')
                 .appendTo(this.elem);
         }
@@ -485,7 +476,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             });
             this.id = 'link';
             this.href_elem = $('<div />')
-                .addClass('input-group input-group-sm')
+                .addClass('input-group input-group-sm mb-2')
                 .append($('<span />').addClass('input-group-text name').text(`href:`))
                 .append($('<input type="text" />').addClass('form-control'))
                 .prependTo(this.dd_elem);
@@ -502,7 +493,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: '< / >',
+                icon: 'code-slash',
                 tooltip: 'Toggle Code',
                 toggle: true
             });
@@ -523,7 +514,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: '{ }',
+                icon: 'braces',
                 tooltip: 'Toggle Code Block',
                 toggle: true
             });
@@ -600,6 +591,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
                     .addClass('tiptap-editor')
                     .appendTo(elem);
             }
+            this.textarea.addClass('m-0 form-control');
             this.buttons = {};
             this.colors = opts.colors;
             if (opts.helpLink) {
@@ -613,6 +605,8 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
                 extensions: tiptap_extensions,
                 content: this.textarea.val()
             });
+            this.editarea = $('div.ProseMirror', this.elem)
+                .addClass('form-control');
             tiptap_actions.forEach(act => {
                 if (Array.isArray(act)) {
                     let container = $('<div />')

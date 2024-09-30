@@ -33,6 +33,7 @@ export class TiptapWidget {
                 .addClass('tiptap-editor')
                 .appendTo(elem);
         }
+        this.textarea.addClass('m-0 form-control');
 
         this.buttons = {};
         this.colors = opts.colors;
@@ -49,6 +50,9 @@ export class TiptapWidget {
             extensions: tiptap_extensions,
             content: this.textarea.val()
         });
+
+        this.editarea = $('div.ProseMirror', this.elem)
+            .addClass('form-control');
 
         tiptap_actions.forEach(act => {
             if (Array.isArray(act)) {
