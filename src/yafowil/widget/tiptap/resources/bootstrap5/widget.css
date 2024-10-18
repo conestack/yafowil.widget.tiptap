@@ -27,8 +27,7 @@ div.tiptap-editor .action .color {
   width: 14px;
   height: 14px;
   margin: 0;
-  margin-left: 6px;
   border-radius: 3px;
   display: inline-block;
-  margin-right: 3px;
+  margin-right: 6px;
 }

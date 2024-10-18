@@ -266,7 +266,7 @@ class ColorAction extends Action {
         $('<div />')
             .addClass('color border')
             .css('background-color', this.swatch.color)
-            .appendTo(this.elem);
+            .prependTo(this.elem);
     }
 
     on_click(e) {
@@ -287,7 +287,7 @@ class UnsetColorAction extends Action {
         $('<div />')
             .addClass('color border')
             .css('background-color', 'rgb(51, 51, 51)')
-            .appendTo(this.elem);
+            .prependTo(this.elem);
     }
 
     on_click(e) {

@@ -331,7 +331,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             $('<div />')
                 .addClass('color border')
                 .css('background-color', this.swatch.color)
-                .appendTo(this.elem);
+                .prependTo(this.elem);
         }
         on_click(e) {
             e.preventDefault();
@@ -348,7 +348,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             $('<div />')
                 .addClass('color border')
                 .css('background-color', 'rgb(51, 51, 51)')
-                .appendTo(this.elem);
+                .prependTo(this.elem);
         }
         on_click(e) {
             e.preventDefault();
