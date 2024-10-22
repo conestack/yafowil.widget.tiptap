@@ -20,6 +20,7 @@ export class TiptapWidget {
 
     constructor(elem, opts={}) {
         elem.data('yafowil-tiptap', this);
+        elem.attr('spellcheck', false);
         this.elem = elem;
 
         this.controls = $('<div />')

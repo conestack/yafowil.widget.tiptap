@@ -580,6 +580,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
         }
         constructor(elem, opts={}) {
             elem.data('yafowil-tiptap', this);
+            elem.attr('spellcheck', false);
             this.elem = elem;
             this.controls = $('<div />')
                 .addClass('tiptap-controls btn-toolbar mb-2')
