@@ -16,6 +16,7 @@ resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
 tiptap_js = wr.ScriptResource(
     name='tiptap-js',
     directory=os.path.join(resources_dir, 'tiptap'),
+    path='yafowil-tiptap/tiptap',
     resource='tiptap.js',
     compressed='tiptap.min.js'
 )
@@ -35,6 +36,7 @@ resources.add(tiptap_js)
 resources.add(wr.ScriptResource(
     name='yafowil-tiptap-js',
     directory=os.path.join(resources_dir, 'default'),
+    path='yafowil-tiptap/default',
     depends=['jquery-js', 'tiptap-js'],
     resource='widget.js',
     compressed='widget.min.js'
@@ -42,6 +44,7 @@ resources.add(wr.ScriptResource(
 resources.add(wr.StyleResource(
     name='yafowil-tiptap-css',
     directory=os.path.join(resources_dir, 'default'),
+    path='yafowil-tiptap/default',
     resource='widget.min.css'
 ))
 
@@ -77,6 +80,7 @@ bootstrap5_resources.add(tiptap_js)
 bootstrap5_resources.add(wr.ScriptResource(
     name='yafowil-tiptap-js',
     directory=os.path.join(resources_dir, 'bootstrap5'),
+    path='yafowil-tiptap/bootstrap5',
     depends=['jquery-js', 'tiptap-js'],
     resource='widget.js',
     compressed='widget.min.js'
@@ -84,6 +88,7 @@ bootstrap5_resources.add(wr.ScriptResource(
 bootstrap5_resources.add(wr.StyleResource(
     name='yafowil-tiptap-css',
     directory=os.path.join(resources_dir, 'bootstrap5'),
+    path='yafowil-tiptap/bootstrap5',
     resource='widget.min.css'
 ))
 # B/C resources ##############################################################

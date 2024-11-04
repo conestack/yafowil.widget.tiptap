@@ -150,12 +150,12 @@ class TestTiptapWidget(YafowilTestCase):
         self.assertEqual(len(scripts), 2)
 
         self.assertTrue(scripts[0].directory.endswith(np('/tiptap/resources/tiptap')))
-        self.assertEqual(scripts[0].path, 'yafowil-tiptap')
+        self.assertEqual(scripts[0].path, 'yafowil-tiptap/tiptap')
         self.assertEqual(scripts[0].file_name, 'tiptap.min.js')
         self.assertTrue(os.path.exists(scripts[0].file_path))
 
         self.assertTrue(scripts[1].directory.endswith(np('/tiptap/resources/default')))
-        self.assertEqual(scripts[1].path, 'yafowil-tiptap')
+        self.assertEqual(scripts[1].path, 'yafowil-tiptap/default')
         self.assertEqual(scripts[1].file_name, 'widget.min.js')
         self.assertTrue(os.path.exists(scripts[1].file_path))
 
@@ -163,7 +163,7 @@ class TestTiptapWidget(YafowilTestCase):
         self.assertEqual(len(styles), 1)
 
         self.assertTrue(styles[0].directory.endswith(np('/tiptap/resources/default')))
-        self.assertEqual(styles[0].path, 'yafowil-tiptap')
+        self.assertEqual(styles[0].path, 'yafowil-tiptap/default')
         self.assertEqual(styles[0].file_name, 'widget.min.css')
         self.assertTrue(os.path.exists(styles[0].file_path))
 
