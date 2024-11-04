@@ -1,6 +1,8 @@
-import cleanup from 'rollup-plugin-cleanup';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
-import {terser} from 'rollup-plugin-terser';
+import cleanup from 'rollup-plugin-cleanup';
+import postcss from 'rollup-plugin-postcss';
+import terser from '@rollup/plugin-terser';
+import commonjs from '@rollup/plugin-commonjs';
 
 const out_dir = 'src/yafowil/widget/tiptap/resources';
 
@@ -46,6 +48,22 @@ export default args => {
     }
     conf.push(conf_tiptap);
 
+    let conf_tiptap_dist = {
+        input: 'js/src/bundles/tiptap.js',
+        plugins: [
+            nodeResolve(),
+            commonjs()
+        ],
+        output: [{
+            file: `${out_dir}/tiptap.dist.bundle.js`,
+            name: 'tiptap',
+            format: 'es',
+            interop: 'default',
+            sourcemap: false
+        }]
+    };
+    conf.push(conf_tiptap_dist);
+
     let conf_widget = {
         input: 'js/src/bundles/widget.js',
         plugins: [
@@ -85,6 +103,24 @@ export default args => {
         });
     }
     conf.push(conf_widget);
+    let scss = {
+        input: ['scss/widget.scss'],
+        output: [{
+            file: `${out_dir}/widget.css`,
+            format: 'es',
+            plugins: [terser()],
+        }],
+        plugins: [
+            postcss({
+                extract: true,
+                minimize: true,
+                use: [
+                    ['sass', { outputStyle: 'compressed' }],
+                ],
+            }),
+        ],
+    };
+    conf.push(scss);
 
     return conf;
 };

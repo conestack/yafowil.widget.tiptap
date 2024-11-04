@@ -1,6 +1,5 @@
-import {TiptapWidget} from '../src/widget.js';
-import {register_array_subscribers} from '../src/widget.js';
 import $ from 'jquery';
+
 
 function create_elem() {
     let elem = $('<div/>').addClass('tiptap-editor');
@@ -14,9 +13,18 @@ let widget;
 
 QUnit.module('TiptapWidget', hooks => {
     let elem;
+    let TiptapWidget, register_array_subscribers;
 
-    hooks.before(() => {
+    hooks.before(async () => {
         $('body').append('<div id="container" />');
+
+        // dynamic imports
+        const tiptap = await import('tiptap');
+        window.tiptap = tiptap;
+
+        const modules = await import('../src/widget.js');
+        TiptapWidget = modules.TiptapWidget;
+        register_array_subscribers = modules.register_array_subscribers;
     });
     hooks.beforeEach(() => {
         elem = create_elem();
