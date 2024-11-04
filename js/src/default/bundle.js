@@ -1,8 +1,8 @@
 import $ from 'jquery';
 
-import {TiptapWidget} from '../bootstrap5/widget.js';
-import {register_array_subscribers} from '../bootstrap5/widget.js';
-export * from '../bootstrap5/widget.js';
+import {TiptapWidget} from './widget.js';
+import {register_array_subscribers} from './widget.js';
+export * from './widget.js';
 
 $(function() {
     if (window.ts !== undefined) {

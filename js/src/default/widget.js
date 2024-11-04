@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import {actions} from './actions';
+import {actions} from './actions.js';
 
 export class TiptapWidget {
 

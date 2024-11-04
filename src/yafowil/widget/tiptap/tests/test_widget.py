@@ -28,15 +28,15 @@ class TestTiptapWidget(YafowilTestCase):
         self.checkOutput((
             '<div class="tiptap-editor" '
                 'data-tiptap-actions=\'['
-                    '"heading", '
+                    '["heading"], '
                     '["bold", "italic", "underline"], '
-                    '"color", '
+                    '["color"], '
                     '["bulletList", "orderedList", "indent", "outdent"], '
-                    '"html", '
-                    '"image", '
-                    '"link", '
-                    '"code", '
-                    '"codeBlock"'
+                    '["html"], '
+                    '["image"], '
+                    '["link"], '
+                    '["code"], '
+                    '["codeBlock"]'
                 ']\' '
                 'data-tiptap-colors=\'['
                     '{"name": "Blue", "color": "rgb(53,39,245)"}, '
@@ -149,12 +149,12 @@ class TestTiptapWidget(YafowilTestCase):
         scripts = resources.scripts
         self.assertEqual(len(scripts), 2)
 
-        self.assertTrue(scripts[0].directory.endswith(np('/tiptap/resources')))
+        self.assertTrue(scripts[0].directory.endswith(np('/tiptap/resources/tiptap')))
         self.assertEqual(scripts[0].path, 'yafowil-tiptap')
         self.assertEqual(scripts[0].file_name, 'tiptap.min.js')
         self.assertTrue(os.path.exists(scripts[0].file_path))
 
-        self.assertTrue(scripts[1].directory.endswith(np('/tiptap/resources')))
+        self.assertTrue(scripts[1].directory.endswith(np('/tiptap/resources/default')))
         self.assertEqual(scripts[1].path, 'yafowil-tiptap')
         self.assertEqual(scripts[1].file_name, 'widget.min.js')
         self.assertTrue(os.path.exists(scripts[1].file_path))
@@ -162,9 +162,9 @@ class TestTiptapWidget(YafowilTestCase):
         styles = resources.styles
         self.assertEqual(len(styles), 1)
 
-        self.assertTrue(styles[0].directory.endswith(np('/tiptap/resources')))
+        self.assertTrue(styles[0].directory.endswith(np('/tiptap/resources/default')))
         self.assertEqual(styles[0].path, 'yafowil-tiptap')
-        self.assertEqual(styles[0].file_name, 'widget.css')
+        self.assertEqual(styles[0].file_name, 'widget.min.css')
         self.assertTrue(os.path.exists(styles[0].file_path))
 
 

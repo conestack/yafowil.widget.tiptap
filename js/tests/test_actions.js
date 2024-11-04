@@ -1,5 +1,3 @@
-import {actions} from '../src/actions.js';
-import {TiptapWidget} from '../src/widget.js';
 import $ from 'jquery';
 
 function create_elem() {
@@ -14,9 +12,19 @@ let widget;
 
 QUnit.module('Actions', hooks => {
     let elem;
+    let TiptapWidget, actions;
 
-    hooks.before(() => {
+    hooks.before(async () => {
         $('body').append('<div id="container" />');
+
+        // dynamic imports
+        const tiptap = await import('tiptap');
+        window.tiptap = tiptap;
+
+        const widget_modules = await import('../src/default/widget.js');
+        TiptapWidget = widget_modules.TiptapWidget;
+        const actions_modules = await import('../src/default/actions.js');
+        actions = actions_modules.actions;
     });
     hooks.beforeEach(() => {
         elem = create_elem();
