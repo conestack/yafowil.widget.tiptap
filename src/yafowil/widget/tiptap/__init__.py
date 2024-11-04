@@ -8,6 +8,19 @@ resources_dir = os.path.join(os.path.dirname(__file__), 'resources')
 
 
 ##############################################################################
+# Tiptap
+##############################################################################
+
+# webresource ################################################################
+
+tiptap_js = wr.ScriptResource(
+    name='tiptap-js',
+    directory=os.path.join(resources_dir, 'tiptap'),
+    resource='tiptap.js',
+    compressed='tiptap.min.js'
+)
+
+##############################################################################
 # Default
 ##############################################################################
 
@@ -18,12 +31,7 @@ resources = wr.ResourceGroup(
     directory=resources_dir,
     path='yafowil-tiptap'
 )
-resources.add(wr.ScriptResource(
-    name='tiptap-js',
-    directory=os.path.join(resources_dir, 'tiptap'),
-    resource='tiptap.js',
-    compressed='tiptap.min.js'
-))
+resources.add(tiptap_js)
 resources.add(wr.ScriptResource(
     name='yafowil-tiptap-js',
     directory=os.path.join(resources_dir, 'default'),
@@ -65,12 +73,7 @@ bootstrap5_resources = wr.ResourceGroup(
     directory=resources_dir,
     path='yafowil-tiptap'
 )
-bootstrap5_resources.add(wr.ScriptResource(
-    name='tiptap-js',
-    directory=os.path.join(resources_dir, 'tiptap'),
-    resource='tiptap.js',
-    compressed='tiptap.min.js'
-))
+bootstrap5_resources.add(tiptap_js)
 bootstrap5_resources.add(wr.ScriptResource(
     name='yafowil-tiptap-js',
     directory=os.path.join(resources_dir, 'bootstrap5'),
