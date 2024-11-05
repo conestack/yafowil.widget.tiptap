@@ -3,6 +3,9 @@ import {actions} from './actions';
 
 export class TiptapWidget {
 
+    /**
+     * @param {HTMLElement} context - DOM context for initialization.
+     */
     static initialize(context) {
         $('div.tiptap-editor', context).each(function() {
             let elem = $(this);
@@ -18,6 +21,13 @@ export class TiptapWidget {
         });
     }
 
+    /**
+     * @param {jQuery} elem - The jQuery element representing the Tiptap widget.
+     * @param {Object} [opts={}] - Configuration options for the Tiptap widget.
+     * @param {Array} opts.actions - An array of actions to be used in the editor.
+     * @param {Array} opts.colors - An array of colors to be used in the editor.
+     * @param {string} opts.helpLink - A link to help resources related to the editor.
+     */
     constructor(elem, opts={}) {
         elem.data('yafowil-tiptap', this);
         elem.attr('spellcheck', false);
@@ -60,7 +70,7 @@ export class TiptapWidget {
                 let container = $('<div />')
                     .addClass('btn-group me-2')
                     .appendTo(this.controls);
-                    act.forEach(name => this.add_button(name, container));
+                act.forEach(name => this.add_button(name, container));
             } else {
                 this.add_button(act, this.controls);
             }
@@ -72,6 +82,9 @@ export class TiptapWidget {
         this.editor.on('selectionUpdate', this.on_selection_update);
     }
 
+    /**
+     * Cleans up the widget and removes event listeners.
+     */
     destroy() {
         this.unload_all();
         this.editor.destroy();
@@ -79,6 +92,9 @@ export class TiptapWidget {
         this.buttons = null;
     }
 
+    /**
+     * Unloads all action buttons in the widget.
+     */
     unload_all() {
         for (let btn in this.buttons) {
             if (this.buttons[btn].unload) {
@@ -87,14 +103,26 @@ export class TiptapWidget {
         }
     }
 
+    /**
+     * Adds a button to the control panel.
+     *
+     * @param {string} name - The name of the action to create a button for.
+     * @param {jQuery} container - The jQuery container to append the button to.
+     */
     add_button(name, container) {
-        let factory = actions[name],
-            btn = new factory(this, this.editor, {
-                container_elem: container
-            });
+        let factory = actions[name];
+        let btn = new factory(this, this.editor, {
+            container_elem: container
+        });
         this.buttons[name] = btn;
     }
 
+    /**
+     * Parses the provided actions and returns a structured array.
+     *
+     * @param {Array} acs - An array of action names.
+     * @returns {Array} A structured array of parsed actions.
+     */
     parse_actions(acs) {
         let ret = [];
         function parse(ret_arr, acts) {
@@ -107,12 +135,18 @@ export class TiptapWidget {
                 } else {
                     ret_arr.push(action);
                 }
-            })
+            });
         }
         parse(ret, acs);
         return ret;
     }
 
+    /**
+     * Parses the provided actions and returns a set of corresponding extensions.
+     *
+     * @param {Array} acs - An array of action names.
+     * @returns {Set} A set of extensions associated with the actions.
+     */
     parse_extensions(acs) {
         let extensions = new Set([
             tiptap.Document,
@@ -129,6 +163,9 @@ export class TiptapWidget {
         return extensions;
     }
 
+    /**
+     * Updates the state of all buttons and the textarea value.
+     */
     on_update() {
         for (let btn in this.buttons) {
             if (this.buttons[btn].on_update) {
@@ -138,6 +175,9 @@ export class TiptapWidget {
         this.textarea.val(this.editor.getHTML());
     }
 
+    /**
+     * Updates the state of all buttons based on the current selection.
+     */
     on_selection_update() {
         for (let btn in this.buttons) {
             if (this.buttons[btn].on_selection_update) {
@@ -147,15 +187,20 @@ export class TiptapWidget {
     }
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
 // yafowil.widget.array integration
 //////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Re-initializes widget on array add event.
+ */
 function tiptap_on_array_add(inst, context) {
     TiptapWidget.initialize(context);
 }
 
+/**
+ * Registers subscribers to yafowil array events.
+ */
 export function register_array_subscribers() {
     if (window.yafowil_array === undefined) {
         return;
