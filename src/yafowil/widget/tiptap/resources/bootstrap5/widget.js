@@ -613,7 +613,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
                     let container = $('<div />')
                         .addClass('btn-group me-2')
                         .appendTo(this.controls);
-                        act.forEach(name => this.add_button(name, container));
+                    act.forEach(name => this.add_button(name, container));
                 } else {
                     this.add_button(act, this.controls);
                 }
@@ -637,10 +637,10 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             }
         }
         add_button(name, container) {
-            let factory = actions[name],
-                btn = new factory(this, this.editor, {
-                    container_elem: container
-                });
+            let factory = actions[name];
+            let btn = new factory(this, this.editor, {
+                container_elem: container
+            });
             this.buttons[name] = btn;
         }
         parse_actions(acs) {

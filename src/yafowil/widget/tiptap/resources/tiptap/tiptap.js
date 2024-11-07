@@ -5671,16 +5671,17 @@ var tiptap = (function (exports) {
       }
   }
   class MarkViewDesc extends ViewDesc {
-      constructor(parent, mark, dom, contentDOM) {
+      constructor(parent, mark, dom, contentDOM, spec) {
           super(parent, [], dom, contentDOM);
           this.mark = mark;
+          this.spec = spec;
       }
       static create(parent, mark, inline, view) {
           let custom = view.nodeViews[mark.type.name];
           let spec = custom && custom(mark, view, inline);
           if (!spec || !spec.dom)
               spec = DOMSerializer.renderSpec(document, mark.type.spec.toDOM(mark, inline), null, mark.attrs);
-          return new MarkViewDesc(parent, mark, spec.dom, spec.contentDOM || spec.dom);
+          return new MarkViewDesc(parent, mark, spec.dom, spec.contentDOM || spec.dom, spec);
       }
       parseRule() {
           if ((this.dirty & NODE_DIRTY) || this.mark.type.spec.reparseInView)
@@ -5710,6 +5711,11 @@ var tiptap = (function (exports) {
               nodes[i].parent = copy;
           copy.children = nodes;
           return copy;
+      }
+      destroy() {
+          if (this.spec.destroy)
+              this.spec.destroy();
+          super.destroy();
       }
   }
   class NodeViewDesc extends ViewDesc {
@@ -7269,11 +7275,14 @@ var tiptap = (function (exports) {
   function detachedDoc() {
       return _detachedDoc || (_detachedDoc = document.implementation.createHTMLDocument("title"));
   }
+  let _policy = null;
   function maybeWrapTrusted(html) {
       let trustedTypes = window.trustedTypes;
       if (!trustedTypes)
           return html;
-      return trustedTypes.createPolicy("detachedDocument", { createHTML: (s) => s }).createHTML(html);
+      if (!_policy)
+          _policy = trustedTypes.createPolicy("ProseMirrorClipboard", { createHTML: (s) => s });
+      return _policy.createHTML(html);
   }
   function readHTML(html) {
       let metas = /^(\s*<meta [^>]*>)*/.exec(html);

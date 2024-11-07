@@ -4,6 +4,8 @@ import {actions} from './actions';
 export class TiptapWidget {
 
     /**
+     * Initializes each widget in the given DOM context.
+     * 
      * @param {HTMLElement} context - DOM context for initialization.
      */
     static initialize(context) {
@@ -25,7 +27,7 @@ export class TiptapWidget {
      * @param {jQuery} elem - The jQuery element representing the Tiptap widget.
      * @param {Object} [opts={}] - Configuration options for the Tiptap widget.
      * @param {Array} opts.actions - An array of actions to be used in the editor.
-     * @param {Array} opts.colors - An array of colors to be used in the editor.
+     * @param {Array} opts.colors - An array of font colors to be used in the editor.
      * @param {string} opts.helpLink - A link to help resources related to the editor.
      */
     constructor(elem, opts={}) {
