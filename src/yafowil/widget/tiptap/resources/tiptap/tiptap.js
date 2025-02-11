@@ -825,6 +825,7 @@ var tiptap = (function (exports) {
           this.marks = marks;
           this.content = content || Fragment.empty;
       }
+      get children() { return this.content.content; }
       get nodeSize() { return this.isLeaf ? 1 : 2 + this.content.size; }
       get childCount() { return this.content.childCount; }
       child(index) { return this.content.child(index); }
@@ -1907,6 +1908,7 @@ var tiptap = (function (exports) {
           this.options = options;
           this.isOpen = isOpen;
           this.open = 0;
+          this.localPreserveWS = false;
           let topNode = options.topNode, topContext;
           let topOptions = wsOptionsFor(null, options.preserveWhitespace, 0) | (isOpen ? OPT_OPEN_LEFT : 0);
           if (topNode)
@@ -1930,11 +1932,12 @@ var tiptap = (function (exports) {
       }
       addTextNode(dom, marks) {
           let value = dom.nodeValue;
-          let top = this.top;
-          if (top.options & OPT_PRESERVE_WS_FULL ||
+          let top = this.top, preserveWS = (top.options & OPT_PRESERVE_WS_FULL) ? "full"
+              : this.localPreserveWS || (top.options & OPT_PRESERVE_WS) > 0;
+          if (preserveWS === "full" ||
               top.inlineContext(dom) ||
               /[^ \t\r\n\u000c]/.test(value)) {
-              if (!(top.options & OPT_PRESERVE_WS)) {
+              if (!preserveWS) {
                   value = value.replace(/[ \t\r\n\u000c]+/g, " ");
                   if (/^[ \t\r\n\u000c]/.test(value) && this.open == this.nodes.length - 1) {
                       let nodeBefore = top.content[top.content.length - 1];
@@ -1945,7 +1948,7 @@ var tiptap = (function (exports) {
                           value = value.slice(1);
                   }
               }
-              else if (!(top.options & OPT_PRESERVE_WS_FULL)) {
+              else if (preserveWS !== "full") {
                   value = value.replace(/\r?\n|\r/g, " ");
               }
               else {
@@ -1960,12 +1963,15 @@ var tiptap = (function (exports) {
           }
       }
       addElement(dom, marks, matchAfter) {
+          let outerWS = this.localPreserveWS, top = this.top;
+          if (dom.tagName == "PRE" || /pre/.test(dom.style && dom.style.whiteSpace))
+              this.localPreserveWS = true;
           let name = dom.nodeName.toLowerCase(), ruleID;
           if (listTags.hasOwnProperty(name) && this.parser.normalizeLists)
               normalizeList(dom);
           let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) ||
               (ruleID = this.parser.matchTag(dom, this, matchAfter));
-          if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
+          out: if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
               this.findInside(dom);
               this.ignoreFallback(dom, marks);
           }
@@ -1974,7 +1980,7 @@ var tiptap = (function (exports) {
                   this.open = Math.max(0, this.open - 1);
               else if (rule && rule.skip.nodeType)
                   dom = rule.skip;
-              let sync, top = this.top, oldNeedsBlock = this.needsBlock;
+              let sync, oldNeedsBlock = this.needsBlock;
               if (blockTags.hasOwnProperty(name)) {
                   if (top.content.length && top.content[0].isInline && this.open) {
                       this.open--;
@@ -1986,7 +1992,7 @@ var tiptap = (function (exports) {
               }
               else if (!dom.firstChild) {
                   this.leafFallback(dom, marks);
-                  return;
+                  break out;
               }
               let innerMarks = rule && rule.skip ? marks : this.readStyles(dom, marks);
               if (innerMarks)
@@ -2000,6 +2006,7 @@ var tiptap = (function (exports) {
               if (innerMarks)
                   this.addElementByRule(dom, rule, innerMarks, rule.consuming === false ? ruleID : undefined);
           }
+          this.localPreserveWS = outerWS;
       }
       leafFallback(dom, marks) {
           if (dom.nodeName == "BR" && this.top.type && this.top.type.inlineContent)
@@ -2164,14 +2171,18 @@ var tiptap = (function (exports) {
       finish() {
           this.open = 0;
           this.closeExtra(this.isOpen);
-          return this.nodes[0].finish(this.isOpen || this.options.topOpen);
+          return this.nodes[0].finish(!!(this.isOpen || this.options.topOpen));
       }
       sync(to) {
-          for (let i = this.open; i >= 0; i--)
+          for (let i = this.open; i >= 0; i--) {
               if (this.nodes[i] == to) {
                   this.open = i;
                   return true;
               }
+              else if (this.localPreserveWS) {
+                  this.nodes[i].options |= OPT_PRESERVE_WS;
+              }
+          }
           return false;
       }
       get currentPos() {
@@ -4986,11 +4997,11 @@ var tiptap = (function (exports) {
       for (let cur = node, sawBlock = false;;) {
           if (cur == view.dom)
               break;
-          let desc = view.docView.nearestDesc(cur, true);
+          let desc = view.docView.nearestDesc(cur, true), rect;
           if (!desc)
               return null;
-          if (desc.dom.nodeType == 1 && (desc.node.isBlock && desc.parent || !desc.contentDOM)) {
-              let rect = desc.dom.getBoundingClientRect();
+          if (desc.dom.nodeType == 1 && (desc.node.isBlock && desc.parent || !desc.contentDOM) &&
+              ((rect = desc.dom.getBoundingClientRect()).width || rect.height)) {
               if (desc.node.isBlock && desc.parent) {
                   if (!sawBlock && rect.left > coords.left || rect.top > coords.top)
                       outsideBlock = desc.posBefore;
@@ -5401,8 +5412,15 @@ var tiptap = (function (exports) {
           for (let i = 0, offset = 0; i < this.children.length; i++) {
               let child = this.children[i], end = offset + child.size;
               if (offset == pos && end != offset) {
-                  while (!child.border && child.children.length)
-                      child = child.children[0];
+                  while (!child.border && child.children.length) {
+                      for (let i = 0; i < child.children.length; i++) {
+                          let inner = child.children[i];
+                          if (inner.size) {
+                              child = inner;
+                              break;
+                          }
+                      }
+                  }
                   return child;
               }
               if (pos < end)
@@ -5501,17 +5519,18 @@ var tiptap = (function (exports) {
               throw new RangeError("No node after pos " + pos);
           return node.childNodes[offset];
       }
-      setSelection(anchor, head, root, force = false) {
+      setSelection(anchor, head, view, force = false) {
           let from = Math.min(anchor, head), to = Math.max(anchor, head);
           for (let i = 0, offset = 0; i < this.children.length; i++) {
               let child = this.children[i], end = offset + child.size;
               if (from > offset && to < end)
-                  return child.setSelection(anchor - offset - child.border, head - offset - child.border, root, force);
+                  return child.setSelection(anchor - offset - child.border, head - offset - child.border, view, force);
               offset = end;
           }
           let anchorDOM = this.domFromPos(anchor, anchor ? -1 : 1);
           let headDOM = head == anchor ? anchorDOM : this.domFromPos(head, head ? -1 : 1);
-          let domSel = root.getSelection();
+          let domSel = view.root.getSelection();
+          let selRange = view.domSelectionRange();
           let brKludge = false;
           if ((gecko || safari) && anchor == head) {
               let { node, offset } = anchorDOM;
@@ -5535,14 +5554,14 @@ var tiptap = (function (exports) {
                   brKludge = prev && (prev.nodeName == "BR" || prev.contentEditable == "false");
               }
           }
-          if (gecko && domSel.focusNode && domSel.focusNode != headDOM.node && domSel.focusNode.nodeType == 1) {
-              let after = domSel.focusNode.childNodes[domSel.focusOffset];
+          if (gecko && selRange.focusNode && selRange.focusNode != headDOM.node && selRange.focusNode.nodeType == 1) {
+              let after = selRange.focusNode.childNodes[selRange.focusOffset];
               if (after && after.contentEditable == "false")
                   force = true;
           }
           if (!(force || brKludge && safari) &&
-              isEquivalentPosition(anchorDOM.node, anchorDOM.offset, domSel.anchorNode, domSel.anchorOffset) &&
-              isEquivalentPosition(headDOM.node, headDOM.offset, domSel.focusNode, domSel.focusOffset))
+              isEquivalentPosition(anchorDOM.node, anchorDOM.offset, selRange.anchorNode, selRange.anchorOffset) &&
+              isEquivalentPosition(headDOM.node, headDOM.offset, selRange.focusNode, selRange.focusOffset))
               return;
           let domSelExtended = false;
           if ((domSel.extend || anchor == head) && !brKludge) {
@@ -5711,6 +5730,9 @@ var tiptap = (function (exports) {
               nodes[i].parent = copy;
           copy.children = nodes;
           return copy;
+      }
+      ignoreMutation(mutation) {
+          return this.spec.ignoreMutation ? this.spec.ignoreMutation(mutation) : super.ignoreMutation(mutation);
       }
       destroy() {
           if (this.spec.destroy)
@@ -5999,9 +6021,9 @@ var tiptap = (function (exports) {
       deselectNode() {
           this.spec.deselectNode ? this.spec.deselectNode() : super.deselectNode();
       }
-      setSelection(anchor, head, root, force) {
-          this.spec.setSelection ? this.spec.setSelection(anchor, head, root)
-              : super.setSelection(anchor, head, root, force);
+      setSelection(anchor, head, view, force) {
+          this.spec.setSelection ? this.spec.setSelection(anchor, head, view.root)
+              : super.setSelection(anchor, head, view, force);
       }
       destroy() {
           if (this.spec.destroy)
@@ -6608,7 +6630,7 @@ var tiptap = (function (exports) {
               if (!sel.empty && !sel.$from.parent.inlineContent)
                   resetEditableTo = temporarilyEditableNear(view, sel.to);
           }
-          view.docView.setSelection(anchor, head, view.root, force);
+          view.docView.setSelection(anchor, head, view, force);
           if (brokenSelectBetweenUneditable) {
               if (resetEditableFrom)
                   resetEditable(resetEditableFrom);
@@ -7343,7 +7365,7 @@ var tiptap = (function (exports) {
           this.lastIOSEnterFallbackTimeout = -1;
           this.lastFocus = 0;
           this.lastTouch = 0;
-          this.lastAndroidDelete = 0;
+          this.lastChromeDelete = 0;
           this.composing = false;
           this.compositionNode = null;
           this.composingTimeout = -1;
@@ -9073,8 +9095,8 @@ var tiptap = (function (exports) {
               view.domObserver.suppressSelectionUpdates();
           return;
       }
-      if (chrome && android && change.endB == change.start)
-          view.input.lastAndroidDelete = Date.now();
+      if (chrome && change.endB == change.start)
+          view.input.lastChromeDelete = Date.now();
       if (android && !inlineChange && $from.start() != $to.start() && $to.parentOffset == 0 && $from.depth == $to.depth &&
           parse.sel && parse.sel.anchor == parse.sel.head && parse.sel.head == change.endA) {
           change.endB -= 2;
@@ -9114,8 +9136,8 @@ var tiptap = (function (exports) {
           tr = view.state.tr.replace(chFrom, chTo, parse.doc.slice(change.start - parse.from, change.endB - parse.from));
       if (parse.sel) {
           let sel = resolveSelection(view, tr.doc, parse.sel);
-          if (sel && !(chrome && android && view.composing && sel.empty &&
-              (change.start != change.endB || view.input.lastAndroidDelete < Date.now() - 100) &&
+          if (sel && !(chrome && view.composing && sel.empty &&
+              (change.start != change.endB || view.input.lastChromeDelete < Date.now() - 100) &&
               (sel.head == chFrom || sel.head == tr.mapping.map(chTo) - 1) ||
               ie$1 && sel.empty && sel.head == chFrom))
               tr.setSelection(sel);
@@ -9365,7 +9387,8 @@ var tiptap = (function (exports) {
       }
       scrollToSelection() {
           let startDOM = this.domSelectionRange().focusNode;
-          if (this.someProp("handleScrollToSelection", f => f(this))) ;
+          if (!startDOM || !this.dom.contains(startDOM.nodeType == 1 ? startDOM : startDOM.parentNode)) ;
+          else if (this.someProp("handleScrollToSelection", f => f(this))) ;
           else if (this.state.selection instanceof NodeSelection) {
               let target = this.docView.domAfterPos(this.state.selection.from);
               if (target.nodeType == 1)
@@ -10243,25 +10266,34 @@ var tiptap = (function (exports) {
   function wrapInList$1(listType, attrs = null) {
       return function (state, dispatch) {
           let { $from, $to } = state.selection;
-          let range = $from.blockRange($to), doJoin = false, outerRange = range;
+          let range = $from.blockRange($to);
           if (!range)
               return false;
-          if (range.depth >= 2 && $from.node(range.depth - 1).type.compatibleContent(listType) && range.startIndex == 0) {
-              if ($from.index(range.depth - 1) == 0)
-                  return false;
-              let $insert = state.doc.resolve(range.start - 2);
-              outerRange = new NodeRange($insert, $insert, range.depth);
-              if (range.endIndex < range.parent.childCount)
-                  range = new NodeRange($from, state.doc.resolve($to.end(range.depth)), range.depth);
-              doJoin = true;
-          }
-          let wrap = findWrapping(outerRange, listType, attrs, range);
-          if (!wrap)
+          let tr = dispatch ? state.tr : null;
+          if (!wrapRangeInList(tr, range, listType, attrs))
               return false;
           if (dispatch)
-              dispatch(doWrapInList(state.tr, range, wrap, doJoin, listType).scrollIntoView());
+              dispatch(tr.scrollIntoView());
           return true;
       };
+  }
+  function wrapRangeInList(tr, range, listType, attrs = null) {
+      let doJoin = false, outerRange = range, doc = range.$from.doc;
+      if (range.depth >= 2 && range.$from.node(range.depth - 1).type.compatibleContent(listType) && range.startIndex == 0) {
+          if (range.$from.index(range.depth - 1) == 0)
+              return false;
+          let $insert = doc.resolve(range.start - 2);
+          outerRange = new NodeRange($insert, $insert, range.depth);
+          if (range.endIndex < range.parent.childCount)
+              range = new NodeRange(range.$from, doc.resolve(range.$to.end(range.depth)), range.depth);
+          doJoin = true;
+      }
+      let wrap = findWrapping(outerRange, listType, attrs, range);
+      if (!wrap)
+          return false;
+      if (tr)
+          doWrapInList(tr, range, wrap, doJoin, listType);
+      return true;
   }
   function doWrapInList(tr, range, wrappers, joinBefore, listType) {
       let content = Fragment.empty;
@@ -10515,6 +10547,13 @@ var tiptap = (function (exports) {
           }
           return this;
       }
+      once(event, fn) {
+          const onceFn = (...args) => {
+              this.off(event, onceFn);
+              fn.apply(this, args);
+          };
+          return this.on(event, onceFn);
+      }
       removeAllListeners() {
           this.callbacks = {};
       }
@@ -10639,7 +10678,7 @@ var tiptap = (function (exports) {
                   return;
               }
               if (key === 'class') {
-                  const valueClasses = value ? value.split(' ') : [];
+                  const valueClasses = value ? String(value).split(' ') : [];
                   const existingClasses = mergedAttributes[key] ? mergedAttributes[key].split(' ') : [];
                   const insertClasses = valueClasses.filter(valueClass => !existingClasses.includes(valueClass));
                   mergedAttributes[key] = [...existingClasses, ...insertClasses].join(' ');
@@ -10776,6 +10815,7 @@ var tiptap = (function (exports) {
               draggable: callOrReturn(getExtensionField(extension, 'draggable', context)),
               code: callOrReturn(getExtensionField(extension, 'code', context)),
               whitespace: callOrReturn(getExtensionField(extension, 'whitespace', context)),
+              linebreakReplacement: callOrReturn(getExtensionField(extension, 'linebreakReplacement', context)),
               defining: callOrReturn(getExtensionField(extension, 'defining', context)),
               isolating: callOrReturn(getExtensionField(extension, 'isolating', context)),
               attrs: Object.fromEntries(extensionAttributes.map(extensionAttribute => {
@@ -10859,6 +10899,13 @@ var tiptap = (function (exports) {
           });
       }
       return enabled;
+  }
+  function getHTMLFromFragment(fragment, schema) {
+      const documentFragment = DOMSerializer.fromSchema(schema).serializeFragment(fragment);
+      const temporaryDocument = document.implementation.createHTMLDocument();
+      const container = temporaryDocument.createElement('div');
+      container.appendChild(documentFragment);
+      return container.innerHTML;
   }
   const getTextContentFromNodes = ($from, maxMatch = 500) => {
       let textBefore = '';
@@ -10971,7 +11018,7 @@ var tiptap = (function (exports) {
               init() {
                   return null;
               },
-              apply(tr, prev) {
+              apply(tr, prev, state) {
                   const stored = tr.getMeta(plugin);
                   if (stored) {
                       return stored;
@@ -10980,7 +11027,14 @@ var tiptap = (function (exports) {
                   const isSimulatedInput = !!simulatedInputMeta;
                   if (isSimulatedInput) {
                       setTimeout(() => {
-                          const { from, text } = simulatedInputMeta;
+                          let { text } = simulatedInputMeta;
+                          if (typeof text === 'string') {
+                              text = text;
+                          }
+                          else {
+                              text = getHTMLFromFragment(Fragment.from(text), state.schema);
+                          }
+                          const { from } = simulatedInputMeta;
                           const to = from + text.length;
                           run$1$1({
                               editor,
@@ -11222,6 +11276,7 @@ var tiptap = (function (exports) {
       const success = handlers.every(handler => handler !== null);
       return success;
   }
+  let tiptapDragFromOtherEditor = null;
   const createClipboardPasteEvent = (text) => {
       var _a;
       const event = new ClipboardEvent('paste', {
@@ -11236,7 +11291,13 @@ var tiptap = (function (exports) {
       let isPastedFromProseMirror = false;
       let isDroppedFromProseMirror = false;
       let pasteEvent = typeof ClipboardEvent !== 'undefined' ? new ClipboardEvent('paste') : null;
-      let dropEvent = typeof DragEvent !== 'undefined' ? new DragEvent('drop') : null;
+      let dropEvent;
+      try {
+          dropEvent = typeof DragEvent !== 'undefined' ? new DragEvent('drop') : null;
+      }
+      catch {
+          dropEvent = null;
+      }
       const processEvent = ({ state, from, to, rule, pasteEvt, }) => {
           const tr = state.tr;
           const chainableState = createChainableState({
@@ -11255,7 +11316,12 @@ var tiptap = (function (exports) {
           if (!handler || !tr.steps.length) {
               return;
           }
-          dropEvent = typeof DragEvent !== 'undefined' ? new DragEvent('drop') : null;
+          try {
+              dropEvent = typeof DragEvent !== 'undefined' ? new DragEvent('drop') : null;
+          }
+          catch {
+              dropEvent = null;
+          }
           pasteEvent = typeof ClipboardEvent !== 'undefined' ? new ClipboardEvent('paste') : null;
           return tr;
       };
@@ -11267,11 +11333,21 @@ var tiptap = (function (exports) {
                       dragSourceElement = ((_a = view.dom.parentElement) === null || _a === void 0 ? void 0 : _a.contains(event.target))
                           ? view.dom.parentElement
                           : null;
+                      if (dragSourceElement) {
+                          tiptapDragFromOtherEditor = editor;
+                      }
+                  };
+                  const handleDragend = () => {
+                      if (tiptapDragFromOtherEditor) {
+                          tiptapDragFromOtherEditor = null;
+                      }
                   };
                   window.addEventListener('dragstart', handleDragstart);
+                  window.addEventListener('dragend', handleDragend);
                   return {
                       destroy() {
                           window.removeEventListener('dragstart', handleDragstart);
+                          window.removeEventListener('dragend', handleDragend);
                       },
                   };
               },
@@ -11280,6 +11356,17 @@ var tiptap = (function (exports) {
                       drop: (view, event) => {
                           isDroppedFromProseMirror = dragSourceElement === view.dom.parentElement;
                           dropEvent = event;
+                          if (!isDroppedFromProseMirror) {
+                              const dragFromOtherEditor = tiptapDragFromOtherEditor;
+                              if (dragFromOtherEditor) {
+                                  setTimeout(() => {
+                                      const selection = dragFromOtherEditor.state.selection;
+                                      if (selection) {
+                                          dragFromOtherEditor.commands.deleteRange({ from: selection.from, to: selection.to });
+                                      }
+                                  }, 10);
+                              }
+                          }
                           return false;
                       },
                       paste: (_view, event) => {
@@ -11301,7 +11388,14 @@ var tiptap = (function (exports) {
                       return;
                   }
                   if (isSimulatedPaste) {
-                      const { from, text } = simulatedPasteMeta;
+                      let { text } = simulatedPasteMeta;
+                      if (typeof text === 'string') {
+                          text = text;
+                      }
+                      else {
+                          text = getHTMLFromFragment(Fragment.from(text), state.schema);
+                      }
+                      const { from } = simulatedPasteMeta;
                       const to = from + text.length;
                       const pasteEvt = createClipboardPasteEvent(text);
                       return processEvent({
@@ -11799,13 +11893,19 @@ var tiptap = (function (exports) {
   }
   function findMarkInSet(marks, type, attributes = {}) {
       return marks.find(item => {
-          return item.type === type && objectIncludes(item.attrs, attributes);
+          return (item.type === type
+              && objectIncludes(
+              Object.fromEntries(Object.keys(attributes).map(k => [k, item.attrs[k]])), attributes));
       });
   }
   function isMarkInSet(marks, type, attributes = {}) {
       return !!findMarkInSet(marks, type, attributes);
   }
-  function getMarkRange($pos, type, attributes = {}) {
+  function getMarkRange(
+  $pos,
+  type,
+  attributes) {
+      var _a;
       if (!$pos || !type) {
           return;
       }
@@ -11816,6 +11916,7 @@ var tiptap = (function (exports) {
       if (!start.node || !start.node.marks.some(mark => mark.type === type)) {
           return;
       }
+      attributes = attributes || ((_a = start.node.marks[0]) === null || _a === void 0 ? void 0 : _a.attrs);
       const mark = findMarkInSet([...start.node.marks], type, attributes);
       if (!mark) {
           return;
@@ -11824,8 +11925,8 @@ var tiptap = (function (exports) {
       let startPos = $pos.start() + start.offset;
       let endIndex = startIndex + 1;
       let endPos = startPos + start.node.nodeSize;
-      findMarkInSet([...start.node.marks], type, attributes);
-      while (startIndex > 0 && mark.isInSet($pos.parent.child(startIndex - 1).marks)) {
+      while (startIndex > 0
+          && isMarkInSet([...$pos.parent.child(startIndex - 1).marks], type, attributes)) {
           startIndex -= 1;
           startPos -= $pos.parent.child(startIndex).nodeSize;
       }
@@ -11897,6 +11998,9 @@ var tiptap = (function (exports) {
       }
       return TextSelection.create(doc, minMax(position, minPos, maxPos), minMax(position, minPos, maxPos));
   }
+  function isAndroid() {
+      return navigator.platform === 'Android' || /android/i.test(navigator.userAgent);
+  }
   function isiOS() {
       return [
           'iPad Simulator',
@@ -11914,7 +12018,7 @@ var tiptap = (function (exports) {
           ...options,
       };
       const delayedFocus = () => {
-          if (isiOS()) {
+          if (isiOS() || isAndroid()) {
               view.dom.focus();
           }
           requestAnimationFrame(() => {
@@ -11971,6 +12075,9 @@ var tiptap = (function (exports) {
       return removeWhitespaces(html);
   }
   function createNodeFromContent(content, schema, options) {
+      if (content instanceof Node$1 || content instanceof Fragment) {
+          return content;
+      }
       options = {
           slice: true,
           parseOptions: {},
@@ -12115,6 +12222,15 @@ var tiptap = (function (exports) {
               if (Array.isArray(value)) {
                   newContent = value.map(v => v.text || '').join('');
               }
+              else if (value instanceof Fragment) {
+                  let text = '';
+                  value.forEach(node => {
+                      if (node.text) {
+                          text += node.text;
+                      }
+                  });
+                  newContent = text;
+              }
               else if (typeof value === 'object' && !!value && !!value.text) {
                   newContent = value.text;
               }
@@ -12163,7 +12279,7 @@ var tiptap = (function (exports) {
           }
           return true;
       }
-      catch (e) {
+      catch {
           return false;
       }
   };
@@ -12179,7 +12295,7 @@ var tiptap = (function (exports) {
           }
           return true;
       }
-      catch (e) {
+      catch {
           return false;
       }
   };
@@ -12377,11 +12493,12 @@ var tiptap = (function (exports) {
       }
       return true;
   };
-  const selectAll = () => ({ tr, commands }) => {
-      return commands.setTextSelection({
-          from: 0,
-          to: tr.doc.content.size,
-      });
+  const selectAll = () => ({ tr, dispatch }) => {
+      if (dispatch) {
+          const selection = new AllSelection(tr.doc);
+          tr.setSelection(selection);
+      }
+      return true;
   };
   const selectNodeBackward = () => ({ state, dispatch }) => {
       return selectNodeBackward$1(state, dispatch);
@@ -12503,13 +12620,6 @@ var tiptap = (function (exports) {
   }
   function findParentNode(predicate) {
       return (selection) => findParentNodeClosestToPos(selection.$from, predicate);
-  }
-  function getHTMLFromFragment(fragment, schema) {
-      const documentFragment = DOMSerializer.fromSchema(schema).serializeFragment(fragment);
-      const temporaryDocument = document.implementation.createHTMLDocument();
-      const container = temporaryDocument.createElement('div');
-      container.appendChild(documentFragment);
-      return container.innerHTML;
   }
   function getSchema(extensions, editor) {
       const resolvedExtensions = ExtensionManager.resolve(extensions);
@@ -12901,6 +13011,61 @@ var tiptap = (function (exports) {
           toJSON: () => data,
       };
   }
+  function rewriteUnknownContentInner({ json, validMarks, validNodes, options, rewrittenContent = [], }) {
+      if (json.marks && Array.isArray(json.marks)) {
+          json.marks = json.marks.filter(mark => {
+              const name = typeof mark === 'string' ? mark : mark.type;
+              if (validMarks.has(name)) {
+                  return true;
+              }
+              rewrittenContent.push({
+                  original: JSON.parse(JSON.stringify(mark)),
+                  unsupported: name,
+              });
+              return false;
+          });
+      }
+      if (json.content && Array.isArray(json.content)) {
+          json.content = json.content
+              .map(value => rewriteUnknownContentInner({
+              json: value,
+              validMarks,
+              validNodes,
+              options,
+              rewrittenContent,
+          }).json)
+              .filter(a => a !== null && a !== undefined);
+      }
+      if (json.type && !validNodes.has(json.type)) {
+          rewrittenContent.push({
+              original: JSON.parse(JSON.stringify(json)),
+              unsupported: json.type,
+          });
+          if (json.content && Array.isArray(json.content) && ((options === null || options === void 0 ? void 0 : options.fallbackToParagraph) !== false)) {
+              json.type = 'paragraph';
+              return {
+                  json,
+                  rewrittenContent,
+              };
+          }
+          return {
+              json: null,
+              rewrittenContent,
+          };
+      }
+      return { json, rewrittenContent };
+  }
+  function rewriteUnknownContent(
+  json,
+  schema,
+  options) {
+      return rewriteUnknownContentInner({
+          json,
+          validNodes: new Set(Object.keys(schema.nodes)),
+          validMarks: new Set(Object.keys(schema.marks)),
+          options,
+      });
+  }
   function canSetMark(state, tr, newMarkType) {
       var _a;
       const { selection } = tr;
@@ -12978,20 +13143,24 @@ var tiptap = (function (exports) {
   };
   const setNode = (typeOrName, attributes = {}) => ({ state, dispatch, chain }) => {
       const type = getNodeType(typeOrName, state.schema);
+      let attributesToCopy;
+      if (state.selection.$anchor.sameParent(state.selection.$head)) {
+          attributesToCopy = state.selection.$anchor.parent.attrs;
+      }
       if (!type.isTextblock) {
           console.warn('[tiptap warn]: Currently "setNode()" only supports text block nodes.');
           return false;
       }
       return (chain()
           .command(({ commands }) => {
-          const canSetBlock = setBlockType(type, attributes)(state);
+          const canSetBlock = setBlockType(type, { ...attributesToCopy, ...attributes })(state);
           if (canSetBlock) {
               return true;
           }
           return commands.clearNodes();
       })
           .command(({ state: updatedState }) => {
-          return setBlockType(type, attributes)(updatedState, dispatch);
+          return setBlockType(type, { ...attributesToCopy, ...attributes })(updatedState, dispatch);
       })
           .run());
   };
@@ -13378,21 +13547,63 @@ var tiptap = (function (exports) {
           markType = getMarkType(typeOrName, state.schema);
       }
       if (dispatch) {
-          tr.selection.ranges.forEach(range => {
+          tr.selection.ranges.forEach((range) => {
               const from = range.$from.pos;
               const to = range.$to.pos;
-              state.doc.nodesBetween(from, to, (node, pos) => {
-                  if (nodeType && nodeType === node.type) {
-                      tr.setNodeMarkup(pos, undefined, {
-                          ...node.attrs,
+              let lastPos;
+              let lastNode;
+              let trimmedFrom;
+              let trimmedTo;
+              if (tr.selection.empty) {
+                  state.doc.nodesBetween(from, to, (node, pos) => {
+                      if (nodeType && nodeType === node.type) {
+                          trimmedFrom = Math.max(pos, from);
+                          trimmedTo = Math.min(pos + node.nodeSize, to);
+                          lastPos = pos;
+                          lastNode = node;
+                      }
+                  });
+              }
+              else {
+                  state.doc.nodesBetween(from, to, (node, pos) => {
+                      if (pos < from && nodeType && nodeType === node.type) {
+                          trimmedFrom = Math.max(pos, from);
+                          trimmedTo = Math.min(pos + node.nodeSize, to);
+                          lastPos = pos;
+                          lastNode = node;
+                      }
+                      if (pos >= from && pos <= to) {
+                          if (nodeType && nodeType === node.type) {
+                              tr.setNodeMarkup(pos, undefined, {
+                                  ...node.attrs,
+                                  ...attributes,
+                              });
+                          }
+                          if (markType && node.marks.length) {
+                              node.marks.forEach((mark) => {
+                                  if (markType === mark.type) {
+                                      const trimmedFrom2 = Math.max(pos, from);
+                                      const trimmedTo2 = Math.min(pos + node.nodeSize, to);
+                                      tr.addMark(trimmedFrom2, trimmedTo2, markType.create({
+                                          ...mark.attrs,
+                                          ...attributes,
+                                      }));
+                                  }
+                              });
+                          }
+                      }
+                  });
+              }
+              if (lastNode) {
+                  if (lastPos !== undefined) {
+                      tr.setNodeMarkup(lastPos, undefined, {
+                          ...lastNode.attrs,
                           ...attributes,
                       });
                   }
-                  if (markType && node.marks.length) {
-                      node.marks.forEach(mark => {
+                  if (markType && lastNode.marks.length) {
+                      lastNode.marks.forEach((mark) => {
                           if (markType === mark.type) {
-                              const trimmedFrom = Math.max(pos, from);
-                              const trimmedTo = Math.min(pos + node.nodeSize, to);
                               tr.addMark(trimmedFrom, trimmedTo, markType.create({
                                   ...mark.attrs,
                                   ...attributes,
@@ -13400,7 +13611,7 @@ var tiptap = (function (exports) {
                           }
                       });
                   }
-              });
+              }
           });
       }
       return true;
@@ -13621,6 +13832,9 @@ var tiptap = (function (exports) {
               new Plugin({
                   key: new PluginKey('clearDocument'),
                   appendTransaction: (transactions, oldState, newState) => {
+                      if (transactions.some(tr => tr.getMeta('composition'))) {
+                          return;
+                      }
                       const docChanges = transactions.some(transaction => transaction.docChanged)
                           && !oldState.doc.eq(newState.doc);
                       const ignoreTr = transactions.some(transaction => transaction.getMeta('preventClearDocument'));
@@ -14126,6 +14340,7 @@ img.ProseMirror-separator {
           this.schema = this.extensionManager.schema;
       }
       createView() {
+          var _a;
           let doc;
           try {
               doc = createDocument(this.options.content, this.schema, this.options.parseOptions, { errorOnInvalidContent: this.options.enableContentCheck });
@@ -14150,16 +14365,16 @@ img.ProseMirror-separator {
           const selection = resolveFocusPosition(doc, this.options.autofocus);
           this.view = new EditorView(this.options.element, {
               ...this.options.editorProps,
+              attributes: {
+                  role: 'textbox',
+                  ...(_a = this.options.editorProps) === null || _a === void 0 ? void 0 : _a.attributes,
+              },
               dispatchTransaction: this.dispatchTransaction.bind(this),
               state: EditorState.create({
                   doc,
                   selection: selection || undefined,
               }),
           });
-          this.view.dom.setAttribute('role', 'textbox');
-          if (!this.view.dom.getAttribute('aria-label')) {
-              this.view.dom.setAttribute('aria-label', 'Rich-Text Editor');
-          }
           const newState = this.state.reconfigure({
               plugins: this.extensionManager.plugins,
           });
@@ -14504,9 +14719,6 @@ img.ProseMirror-separator {
           return extension;
       }
   }
-  function isAndroid() {
-      return navigator.platform === 'Android' || /android/i.test(navigator.userAgent);
-  }
   class NodeView {
       constructor(component, props, options) {
           this.isDragging = false;
@@ -14591,10 +14803,10 @@ img.ProseMirror-separator {
           const isPasteEvent = event.type === 'paste';
           const isCutEvent = event.type === 'cut';
           const isClickEvent = event.type === 'mousedown';
-          if (!isDraggable && isSelectable && isDragEvent) {
+          if (!isDraggable && isSelectable && isDragEvent && event.target === this.dom) {
               event.preventDefault();
           }
-          if (isDraggable && isDragEvent && !isDragging) {
+          if (isDraggable && isDragEvent && !isDragging && event.target === this.dom) {
               event.preventDefault();
               return false;
           }
@@ -14872,12 +15084,28 @@ img.ProseMirror-separator {
       },
   });
 
+  const mergeNestedSpanStyles = (element) => {
+      if (!element.children.length) {
+          return;
+      }
+      const childSpans = element.querySelectorAll('span');
+      if (!childSpans) {
+          return;
+      }
+      childSpans.forEach(childSpan => {
+          var _a, _b;
+          const childStyle = childSpan.getAttribute('style');
+          const closestParentSpanStyleOfChild = (_b = (_a = childSpan.parentElement) === null || _a === void 0 ? void 0 : _a.closest('span')) === null || _b === void 0 ? void 0 : _b.getAttribute('style');
+          childSpan.setAttribute('style', `${closestParentSpanStyleOfChild};${childStyle}`);
+      });
+  };
   const TextStyle = Mark.create({
       name: 'textStyle',
       priority: 101,
       addOptions() {
           return {
               HTMLAttributes: {},
+              mergeNestedSpanStyles: false,
           };
       },
       parseHTML() {
@@ -14889,6 +15117,9 @@ img.ProseMirror-separator {
                       if (!hasStyles) {
                           return false;
                       }
+                      if (this.options.mergeNestedSpanStyles) {
+                          mergeNestedSpanStyles(element);
+                      }
                       return {};
                   },
               },
@@ -14899,13 +15130,17 @@ img.ProseMirror-separator {
       },
       addCommands() {
           return {
-              removeEmptyTextStyle: () => ({ state, commands }) => {
-                  const attributes = getMarkAttributes(state, this.type);
-                  const hasStyles = Object.entries(attributes).some(([, value]) => !!value);
-                  if (hasStyles) {
-                      return true;
-                  }
-                  return commands.unsetMark(this.name);
+              removeEmptyTextStyle: () => ({ tr }) => {
+                  const { selection } = tr;
+                  tr.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+                      if (node.isTextblock) {
+                          return true;
+                      }
+                      if (!node.marks.filter(mark => mark.type === this.type).some(mark => Object.values(mark.attrs).some(value => !!value))) {
+                          tr.removeMark(pos, pos + node.nodeSize, this.type);
+                      }
+                  });
+                  return true;
               },
           };
       },
@@ -15016,7 +15251,7 @@ img.ProseMirror-separator {
       addInputRules() {
           return this.options.levels.map(level => {
               return textblockTypeInputRule({
-                  find: new RegExp(`^(#{1,${level}})\\s$`),
+                  find: new RegExp(`^(#{${Math.min(...this.options.levels)},${level}})\\s$`),
                   type: this.type,
                   getAttributes: {
                       level,
@@ -15404,8 +15639,8 @@ img.ProseMirror-separator {
       },
   });
 
-  const inputRegex$1 = /(?:^|\s)(`(?!\s+`)((?:[^`]+))`(?!\s+`))$/;
-  const pasteRegex = /(?:^|\s)(`(?!\s+`)((?:[^`]+))`(?!\s+`))/g;
+  const inputRegex$1 = /(^|[^`])`([^`]+)`(?!`)/;
+  const pasteRegex = /(^|[^`])`([^`]+)`(?!`)/g;
   const Code = Mark.create({
       name: 'code',
       addOptions() {
@@ -15718,7 +15953,7 @@ img.ProseMirror-separator {
       },
   });
 
-  const encodedTlds = 'aaa1rp3bb0ott3vie4c1le2ogado5udhabi7c0ademy5centure6ountant0s9o1tor4d0s1ult4e0g1ro2tna4f0l1rica5g0akhan5ency5i0g1rbus3force5tel5kdn3l0ibaba4pay4lfinanz6state5y2sace3tom5m0azon4ericanexpress7family11x2fam3ica3sterdam8nalytics7droid5quan4z2o0l2partments8p0le4q0uarelle8r0ab1mco4chi3my2pa2t0e3s0da2ia2sociates9t0hleta5torney7u0ction5di0ble3o3spost5thor3o0s4vianca6w0s2x0a2z0ure5ba0by2idu3namex3narepublic11d1k2r0celona5laycard4s5efoot5gains6seball5ketball8uhaus5yern5b0c1t1va3cg1n2d1e0ats2uty4er2ntley5rlin4st0buy5t2f1g1h0arti5i0ble3d1ke2ng0o3o1z2j1lack0friday9ockbuster8g1omberg7ue3m0s1w2n0pparibas9o0ats3ehringer8fa2m1nd2o0k0ing5sch2tik2on4t1utique6x2r0adesco6idgestone9oadway5ker3ther5ussels7s1t1uild0ers6siness6y1zz3v1w1y1z0h3ca0b1fe2l0l1vinklein9m0era3p2non3petown5ital0one8r0avan4ds2e0er0s4s2sa1e1h1ino4t0ering5holic7ba1n1re3c1d1enter4o1rn3f0a1d2g1h0anel2nel4rity4se2t2eap3intai5ristmas6ome4urch5i0priani6rcle4sco3tadel4i0c2y3k1l0aims4eaning6ick2nic1que6othing5ud3ub0med6m1n1o0ach3des3ffee4llege4ogne5m0cast4mbank4unity6pany2re3uter5sec4ndos3struction8ulting7tact3ractors9oking4l1p2rsica5untry4pon0s4rses6pa2r0edit0card4union9icket5own3s1uise0s6u0isinella9v1w1x1y0mru3ou3z2dabur3d1nce3ta1e1ing3sun4y2clk3ds2e0al0er2s3gree4livery5l1oitte5ta3mocrat6ntal2ist5si0gn4v2hl2iamonds6et2gital5rect0ory7scount3ver5h2y2j1k1m1np2o0cs1tor4g1mains5t1wnload7rive4tv2ubai3nlop4pont4rban5vag2r2z2earth3t2c0o2deka3u0cation8e1g1mail3erck5nergy4gineer0ing9terprises10pson4quipment8r0icsson6ni3s0q1tate5t1u0rovision8s2vents5xchange6pert3osed4ress5traspace10fage2il1rwinds6th3mily4n0s2rm0ers5shion4t3edex3edback6rrari3ero6i0delity5o2lm2nal1nce1ial7re0stone6mdale6sh0ing5t0ness6j1k1lickr3ghts4r2orist4wers5y2m1o0o0d1tball6rd1ex2sale4um3undation8x2r0ee1senius7l1ogans4ntier7tr2ujitsu5n0d2rniture7tbol5yi3ga0l0lery3o1up4me0s3p1rden4y2b0iz3d0n2e0a1nt0ing5orge5f1g0ee3h1i0ft0s3ves2ing5l0ass3e1obal2o4m0ail3bh2o1x2n1odaddy5ld0point6f2o0dyear5g0le4p1t1v2p1q1r0ainger5phics5tis4een3ipe3ocery4up4s1t1u0ardian6cci3ge2ide2tars5ru3w1y2hair2mburg5ngout5us3bo2dfc0bank7ealth0care8lp1sinki6re1mes5iphop4samitsu7tachi5v2k0t2m1n1ockey4ldings5iday5medepot5goods5s0ense7nda3rse3spital5t0ing5t0els3mail5use3w2r1sbc3t1u0ghes5yatt3undai7ibm2cbc2e1u2d1e0ee3fm2kano4l1m0amat4db2mo0bilien9n0c1dustries8finiti5o2g1k1stitute6urance4e4t0ernational10uit4vestments10o1piranga7q1r0ish4s0maili5t0anbul7t0au2v3jaguar4va3cb2e0ep2tzt3welry6io2ll2m0p2nj2o0bs1urg4t1y2p0morgan6rs3uegos4niper7kaufen5ddi3e0rryhotels6logistics9properties14fh2g1h1i0a1ds2m1ndle4tchen5wi3m1n1oeln3matsu5sher5p0mg2n2r0d1ed3uokgroup8w1y0oto4z2la0caixa5mborghini8er3ncaster6d0rover6xess5salle5t0ino3robe5w0yer5b1c1ds2ease3clerc5frak4gal2o2xus4gbt3i0dl2fe0insurance9style7ghting6ke2lly3mited4o2ncoln4k2psy3ve1ing5k1lc1p2oan0s3cker3us3l1ndon4tte1o3ve3pl0financial11r1s1t0d0a3u0ndbeck6xe1ury5v1y2ma0drid4if1son4keup4n0agement7go3p1rket0ing3s4riott5shalls7ttel5ba2c0kinsey7d1e0d0ia3et2lbourne7me1orial6n0u2rckmsd7g1h1iami3crosoft7l1ni1t2t0subishi9k1l0b1s2m0a2n1o0bi0le4da2e1i1m1nash3ey2ster5rmon3tgage6scow4to0rcycles9v0ie4p1q1r1s0d2t0n1r2u0seum3ic4v1w1x1y1z2na0b1goya4me2tura4vy3ba2c1e0c1t0bank4flix4work5ustar5w0s2xt0direct7us4f0l2g0o2hk2i0co2ke1on3nja3ssan1y5l1o0kia3rton4w0ruz3tv4p1r0a1w2tt2u1yc2z2obi1server7ffice5kinawa6layan0group9dnavy5lo3m0ega4ne1g1l0ine5oo2pen3racle3nge4g0anic5igins6saka4tsuka4t2vh3pa0ge2nasonic7ris2s1tners4s1y3y2ccw3e0t2f0izer5g1h0armacy6d1ilips5one2to0graphy6s4ysio5ics1tet2ures6d1n0g1k2oneer5zza4k1l0ace2y0station9umbing5s3m1n0c2ohl2ker3litie5rn2st3r0america6xi3ess3ime3o0d0uctions8f1gressive8mo2perties3y5tection8u0dential9s1t1ub2w0c2y2qa1pon3uebec3st5racing4dio4e0ad1lestate6tor2y4cipes5d0stone5umbrella9hab3ise0n3t2liance6n0t0als5pair3ort3ublican8st0aurant8view0s5xroth6ich0ardli6oh3l1o1p2o0cks3deo3gers4om3s0vp3u0gby3hr2n2w0e2yukyu6sa0arland6fe0ty4kura4le1on3msclub4ung5ndvik0coromant12ofi4p1rl2s1ve2xo3b0i1s2c0a1b1haeffler7midt4olarships8ol3ule3warz5ience5ot3d1e0arch3t2cure1ity6ek2lect4ner3rvices6ven3w1x0y3fr2g1h0angrila6rp2w2ell3ia1ksha5oes2p0ping5uji3w3i0lk2na1gles5te3j1k0i0n2y0pe4l0ing4m0art3ile4n0cf3o0ccer3ial4ftbank4ware6hu2lar2utions7ng1y2y2pa0ce3ort2t3r0l2s1t0ada2ples4r1tebank4farm7c0group6ockholm6rage3e3ream4udio2y3yle4u0cks3pplies3y2ort5rf1gery5zuki5v1watch4iss4x1y0dney4stems6z2tab1ipei4lk2obao4rget4tamotors6r2too4x0i3c0i2d0k2eam2ch0nology8l1masek5nnis4va3f1g1h0d1eater2re6iaa2ckets5enda4ps2res2ol4j0maxx4x2k0maxx5l1m0all4n1o0day3kyo3ols3p1ray3shiba5tal3urs3wn2yota3s3r0ade1ing4ining5vel0ers0insurance16ust3v2t1ube2i1nes3shu4v0s2w1z2ua1bank3s2g1k1nicom3versity8o2ol2ps2s1y1z2va0cations7na1guard7c1e0gas3ntures6risign5mögensberater2ung14sicherung10t2g1i0ajes4deo3g1king4llas4n1p1rgin4sa1ion4va1o3laanderen9n1odka3lvo3te1ing3o2yage5u2wales2mart4ter4ng0gou5tch0es6eather0channel12bcam3er2site5d0ding5ibo2r3f1hoswho6ien2ki2lliamhill9n0dows4e1ners6me2olterskluwer11odside6rk0s2ld3w2s1tc1f3xbox3erox4finity6ihuan4n2xx2yz3yachts4hoo3maxun5ndex5e1odobashi7ga2kohama6u0tube6t1un3za0ppos4ra3ero3ip2m1one3uerich6w2';
+  const encodedTlds = 'aaa1rp3bb0ott3vie4c1le2ogado5udhabi7c0ademy5centure6ountant0s9o1tor4d0s1ult4e0g1ro2tna4f0l1rica5g0akhan5ency5i0g1rbus3force5tel5kdn3l0ibaba4pay4lfinanz6state5y2sace3tom5m0azon4ericanexpress7family11x2fam3ica3sterdam8nalytics7droid5quan4z2o0l2partments8p0le4q0uarelle8r0ab1mco4chi3my2pa2t0e3s0da2ia2sociates9t0hleta5torney7u0ction5di0ble3o3spost5thor3o0s4w0s2x0a2z0ure5ba0by2idu3namex4d1k2r0celona5laycard4s5efoot5gains6seball5ketball8uhaus5yern5b0c1t1va3cg1n2d1e0ats2uty4er2ntley5rlin4st0buy5t2f1g1h0arti5i0ble3d1ke2ng0o3o1z2j1lack0friday9ockbuster8g1omberg7ue3m0s1w2n0pparibas9o0ats3ehringer8fa2m1nd2o0k0ing5sch2tik2on4t1utique6x2r0adesco6idgestone9oadway5ker3ther5ussels7s1t1uild0ers6siness6y1zz3v1w1y1z0h3ca0b1fe2l0l1vinklein9m0era3p2non3petown5ital0one8r0avan4ds2e0er0s4s2sa1e1h1ino4t0ering5holic7ba1n1re3c1d1enter4o1rn3f0a1d2g1h0anel2nel4rity4se2t2eap3intai5ristmas6ome4urch5i0priani6rcle4sco3tadel4i0c2y3k1l0aims4eaning6ick2nic1que6othing5ud3ub0med6m1n1o0ach3des3ffee4llege4ogne5m0mbank4unity6pany2re3uter5sec4ndos3struction8ulting7tact3ractors9oking4l1p2rsica5untry4pon0s4rses6pa2r0edit0card4union9icket5own3s1uise0s6u0isinella9v1w1x1y0mru3ou3z2dad1nce3ta1e1ing3sun4y2clk3ds2e0al0er2s3gree4livery5l1oitte5ta3mocrat6ntal2ist5si0gn4v2hl2iamonds6et2gital5rect0ory7scount3ver5h2y2j1k1m1np2o0cs1tor4g1mains5t1wnload7rive4tv2ubai3nlop4pont4rban5vag2r2z2earth3t2c0o2deka3u0cation8e1g1mail3erck5nergy4gineer0ing9terprises10pson4quipment8r0icsson6ni3s0q1tate5t1u0rovision8s2vents5xchange6pert3osed4ress5traspace10fage2il1rwinds6th3mily4n0s2rm0ers5shion4t3edex3edback6rrari3ero6i0delity5o2lm2nal1nce1ial7re0stone6mdale6sh0ing5t0ness6j1k1lickr3ghts4r2orist4wers5y2m1o0o0d1tball6rd1ex2sale4um3undation8x2r0ee1senius7l1ogans4ntier7tr2ujitsu5n0d2rniture7tbol5yi3ga0l0lery3o1up4me0s3p1rden4y2b0iz3d0n2e0a1nt0ing5orge5f1g0ee3h1i0ft0s3ves2ing5l0ass3e1obal2o4m0ail3bh2o1x2n1odaddy5ld0point6f2o0dyear5g0le4p1t1v2p1q1r0ainger5phics5tis4een3ipe3ocery4up4s1t1u0cci3ge2ide2tars5ru3w1y2hair2mburg5ngout5us3bo2dfc0bank7ealth0care8lp1sinki6re1mes5iphop4samitsu7tachi5v2k0t2m1n1ockey4ldings5iday5medepot5goods5s0ense7nda3rse3spital5t0ing5t0els3mail5use3w2r1sbc3t1u0ghes5yatt3undai7ibm2cbc2e1u2d1e0ee3fm2kano4l1m0amat4db2mo0bilien9n0c1dustries8finiti5o2g1k1stitute6urance4e4t0ernational10uit4vestments10o1piranga7q1r0ish4s0maili5t0anbul7t0au2v3jaguar4va3cb2e0ep2tzt3welry6io2ll2m0p2nj2o0bs1urg4t1y2p0morgan6rs3uegos4niper7kaufen5ddi3e0rryhotels6logistics9properties14fh2g1h1i0a1ds2m1ndle4tchen5wi3m1n1oeln3matsu5sher5p0mg2n2r0d1ed3uokgroup8w1y0oto4z2la0caixa5mborghini8er3ncaster6d0rover6xess5salle5t0ino3robe5w0yer5b1c1ds2ease3clerc5frak4gal2o2xus4gbt3i0dl2fe0insurance9style7ghting6ke2lly3mited4o2ncoln4k2psy3ve1ing5k1lc1p2oan0s3cker3us3l1ndon4tte1o3ve3pl0financial11r1s1t0d0a3u0ndbeck6xe1ury5v1y2ma0drid4if1son4keup4n0agement7go3p1rket0ing3s4riott5shalls7ttel5ba2c0kinsey7d1e0d0ia3et2lbourne7me1orial6n0u2rckmsd7g1h1iami3crosoft7l1ni1t2t0subishi9k1l0b1s2m0a2n1o0bi0le4da2e1i1m1nash3ey2ster5rmon3tgage6scow4to0rcycles9v0ie4p1q1r1s0d2t0n1r2u0seum3ic4v1w1x1y1z2na0b1goya4me2vy3ba2c1e0c1t0bank4flix4work5ustar5w0s2xt0direct7us4f0l2g0o2hk2i0co2ke1on3nja3ssan1y5l1o0kia3rton4w0ruz3tv4p1r0a1w2tt2u1yc2z2obi1server7ffice5kinawa6layan0group9lo3m0ega4ne1g1l0ine5oo2pen3racle3nge4g0anic5igins6saka4tsuka4t2vh3pa0ge2nasonic7ris2s1tners4s1y3y2ccw3e0t2f0izer5g1h0armacy6d1ilips5one2to0graphy6s4ysio5ics1tet2ures6d1n0g1k2oneer5zza4k1l0ace2y0station9umbing5s3m1n0c2ohl2ker3litie5rn2st3r0america6xi3ess3ime3o0d0uctions8f1gressive8mo2perties3y5tection8u0dential9s1t1ub2w0c2y2qa1pon3uebec3st5racing4dio4e0ad1lestate6tor2y4cipes5d0stone5umbrella9hab3ise0n3t2liance6n0t0als5pair3ort3ublican8st0aurant8view0s5xroth6ich0ardli6oh3l1o1p2o0cks3deo3gers4om3s0vp3u0gby3hr2n2w0e2yukyu6sa0arland6fe0ty4kura4le1on3msclub4ung5ndvik0coromant12ofi4p1rl2s1ve2xo3b0i1s2c0b1haeffler7midt4olarships8ol3ule3warz5ience5ot3d1e0arch3t2cure1ity6ek2lect4ner3rvices6ven3w1x0y3fr2g1h0angrila6rp3ell3ia1ksha5oes2p0ping5uji3w3i0lk2na1gles5te3j1k0i0n2y0pe4l0ing4m0art3ile4n0cf3o0ccer3ial4ftbank4ware6hu2lar2utions7ng1y2y2pa0ce3ort2t3r0l2s1t0ada2ples4r1tebank4farm7c0group6ockholm6rage3e3ream4udio2y3yle4u0cks3pplies3y2ort5rf1gery5zuki5v1watch4iss4x1y0dney4stems6z2tab1ipei4lk2obao4rget4tamotors6r2too4x0i3c0i2d0k2eam2ch0nology8l1masek5nnis4va3f1g1h0d1eater2re6iaa2ckets5enda4ps2res2ol4j0maxx4x2k0maxx5l1m0all4n1o0day3kyo3ols3p1ray3shiba5tal3urs3wn2yota3s3r0ade1ing4ining5vel0ers0insurance16ust3v2t1ube2i1nes3shu4v0s2w1z2ua1bank3s2g1k1nicom3versity8o2ol2ps2s1y1z2va0cations7na1guard7c1e0gas3ntures6risign5mögensberater2ung14sicherung10t2g1i0ajes4deo3g1king4llas4n1p1rgin4sa1ion4va1o3laanderen9n1odka3lvo3te1ing3o2yage5u2wales2mart4ter4ng0gou5tch0es6eather0channel12bcam3er2site5d0ding5ibo2r3f1hoswho6ien2ki2lliamhill9n0dows4e1ners6me2olterskluwer11odside6rk0s2ld3w2s1tc1f3xbox3erox4ihuan4n2xx2yz3yachts4hoo3maxun5ndex5e1odobashi7ga2kohama6u0tube6t1un3za0ppos4ra3ero3ip2m1one3uerich6w2';
   const encodedUtlds = 'ελ1υ2бг1ел3дети4ею2католик6ом3мкд2он1сква6онлайн5рг3рус2ф2сайт3рб3укр3қаз3հայ3ישראל5קום3ابوظبي5رامكو5لاردن4بحرين5جزائر5سعودية6عليان5مغرب5مارات5یران5بارت2زار4يتك3ھارت5تونس4سودان3رية5شبكة4عراق2ب2مان4فلسطين6قطر3كاثوليك6وم3مصر2ليسيا5وريتانيا7قع4همراه5پاکستان7ڀارت4कॉम3नेट3भारत0म्3ोत5संगठन5বাংলা5ভারত2ৰত4ਭਾਰਤ4ભારત4ଭାରତ4இந்தியா6லங்கை6சிங்கப்பூர்11భారత్5ಭಾರತ4ഭാരതം5ලංකා4คอม3ไทย3ລາວ3გე2みんな3アマゾン4クラウド4グーグル4コム2ストア3セール3ファッション6ポイント4世界2中信1国1國1文网3亚马逊3企业2佛山2信息2健康2八卦2公司1益2台湾1灣2商城1店1标2嘉里0大酒店5在线2大拿2天主教3娱乐2家電2广东2微博2慈善2我爱你3手机2招聘2政务1府2新加坡2闻2时尚2書籍2机构2淡马锡3游戏2澳門2点看2移动2组织机构4网址1店1站1络2联通2谷歌2购物2通販2集团2電訊盈科4飞利浦3食品2餐厅2香格里拉3港2닷넷1컴2삼성2한국2';
   const assign = (target, properties) => {
     for (const key in properties) {
@@ -15779,10 +16014,7 @@ img.ProseMirror-separator {
     }
     return result;
   }
-  function State(token) {
-    if (token === void 0) {
-      token = null;
-    }
+  function State(token = null) {
     this.j = {};
     this.jr = [];
     this.jd = null;
@@ -15808,10 +16040,7 @@ img.ProseMirror-separator {
       }
       return state.jd;
     },
-    has(input, exactOnly) {
-      if (exactOnly === void 0) {
-        exactOnly = false;
-      }
+    has(input, exactOnly = false) {
       return exactOnly ? input in this.j : !!this.go(input);
     },
     ta(inputs, next, flags, groups) {
@@ -15884,6 +16113,8 @@ img.ProseMirror-separator {
   const tt = (state, input, next, flags, groups) => state.tt(input, next, flags, groups);
   const WORD = 'WORD';
   const UWORD = 'UWORD';
+  const ASCIINUMERICAL = 'ASCIINUMERICAL';
+  const ALPHANUMERICAL = 'ALPHANUMERICAL';
   const LOCALHOST = 'LOCALHOST';
   const TLD = 'TLD';
   const UTLD = 'UTLD';
@@ -15891,7 +16122,7 @@ img.ProseMirror-separator {
   const SLASH_SCHEME = 'SLASH_SCHEME';
   const NUM = 'NUM';
   const WS = 'WS';
-  const NL$1 = 'NL';
+  const NL = 'NL';
   const OPENBRACE = 'OPENBRACE';
   const CLOSEBRACE = 'CLOSEBRACE';
   const OPENBRACKET = 'OPENBRACKET';
@@ -15928,6 +16159,7 @@ img.ProseMirror-separator {
   const POUND = 'POUND';
   const QUERY = 'QUERY';
   const QUOTE = 'QUOTE';
+  const FULLWIDTHMIDDLEDOT = 'FULLWIDTHMIDDLEDOT';
   const SEMI = 'SEMI';
   const SLASH = 'SLASH';
   const TILDE = 'TILDE';
@@ -15938,6 +16170,8 @@ img.ProseMirror-separator {
   	__proto__: null,
   	WORD: WORD,
   	UWORD: UWORD,
+  	ASCIINUMERICAL: ASCIINUMERICAL,
+  	ALPHANUMERICAL: ALPHANUMERICAL,
   	LOCALHOST: LOCALHOST,
   	TLD: TLD,
   	UTLD: UTLD,
@@ -15945,7 +16179,7 @@ img.ProseMirror-separator {
   	SLASH_SCHEME: SLASH_SCHEME,
   	NUM: NUM,
   	WS: WS,
-  	NL: NL$1,
+  	NL: NL,
   	OPENBRACE: OPENBRACE,
   	CLOSEBRACE: CLOSEBRACE,
   	OPENBRACKET: OPENBRACKET,
@@ -15982,6 +16216,7 @@ img.ProseMirror-separator {
   	POUND: POUND,
   	QUERY: QUERY,
   	QUOTE: QUOTE,
+  	FULLWIDTHMIDDLEDOT: FULLWIDTHMIDDLEDOT,
   	SEMI: SEMI,
   	SLASH: SLASH,
   	TILDE: TILDE,
@@ -16004,15 +16239,14 @@ img.ProseMirror-separator {
   	DIGIT: DIGIT,
   	SPACE: SPACE
   });
-  const NL = '\n';
+  const CR = '\r';
+  const LF = '\n';
   const EMOJI_VARIATION = '\ufe0f';
   const EMOJI_JOINER = '\u200d';
+  const OBJECT_REPLACEMENT = '\ufffc';
   let tlds = null,
     utlds = null;
-  function init$2(customSchemes) {
-    if (customSchemes === void 0) {
-      customSchemes = [];
-    }
+  function init$2(customSchemes = []) {
     const groups = {};
     State.groups = groups;
     const Start = new State();
@@ -16062,36 +16296,61 @@ img.ProseMirror-separator {
     tt(Start, '~', TILDE);
     tt(Start, '_', UNDERSCORE);
     tt(Start, '\\', BACKSLASH);
+    tt(Start, '・', FULLWIDTHMIDDLEDOT);
     const Num = tr(Start, DIGIT, NUM, {
       [numeric]: true
     });
     tr(Num, DIGIT, Num);
+    const Asciinumeric = tr(Num, ASCII_LETTER, ASCIINUMERICAL, {
+      [asciinumeric]: true
+    });
+    const Alphanumeric = tr(Num, LETTER, ALPHANUMERICAL, {
+      [alphanumeric]: true
+    });
     const Word = tr(Start, ASCII_LETTER, WORD, {
       [ascii]: true
     });
+    tr(Word, DIGIT, Asciinumeric);
     tr(Word, ASCII_LETTER, Word);
+    tr(Asciinumeric, DIGIT, Asciinumeric);
+    tr(Asciinumeric, ASCII_LETTER, Asciinumeric);
     const UWord = tr(Start, LETTER, UWORD, {
       [alpha]: true
     });
     tr(UWord, ASCII_LETTER);
+    tr(UWord, DIGIT, Alphanumeric);
     tr(UWord, LETTER, UWord);
+    tr(Alphanumeric, DIGIT, Alphanumeric);
+    tr(Alphanumeric, ASCII_LETTER);
+    tr(Alphanumeric, LETTER, Alphanumeric);
+    const Nl = tt(Start, LF, NL, {
+      [whitespace]: true
+    });
+    const Cr = tt(Start, CR, WS, {
+      [whitespace]: true
+    });
     const Ws = tr(Start, SPACE, WS, {
       [whitespace]: true
     });
-    tt(Start, NL, NL$1, {
-      [whitespace]: true
-    });
-    tt(Ws, NL);
+    tt(Start, OBJECT_REPLACEMENT, Ws);
+    tt(Cr, LF, Nl);
+    tt(Cr, OBJECT_REPLACEMENT, Ws);
+    tr(Cr, SPACE, Ws);
+    tt(Ws, CR);
+    tt(Ws, LF);
     tr(Ws, SPACE, Ws);
+    tt(Ws, OBJECT_REPLACEMENT, Ws);
     const Emoji = tr(Start, EMOJI, EMOJI$1, {
       [emoji]: true
     });
+    tt(Emoji, '#');
     tr(Emoji, EMOJI, Emoji);
     tt(Emoji, EMOJI_VARIATION, Emoji);
     const EmojiJoiner = tt(Emoji, EMOJI_JOINER);
+    tt(EmojiJoiner, '#');
     tr(EmojiJoiner, EMOJI, Emoji);
-    const wordjr = [[ASCII_LETTER, Word]];
-    const uwordjr = [[ASCII_LETTER, null], [LETTER, UWord]];
+    const wordjr = [[ASCII_LETTER, Word], [DIGIT, Asciinumeric]];
+    const uwordjr = [[ASCII_LETTER, null], [LETTER, UWord], [DIGIT, Alphanumeric]];
     for (let i = 0; i < tlds.length; i++) {
       fastts(Start, tlds[i], TLD, WORD, wordjr);
     }
@@ -16262,10 +16521,7 @@ img.ProseMirror-separator {
     ignoreTags: [],
     render: null
   };
-  function Options(opts, defaultRender) {
-    if (defaultRender === void 0) {
-      defaultRender = null;
-    }
+  function Options(opts, defaultRender = null) {
     let o = assign({}, defaults);
     if (opts) {
       o = assign(o, opts instanceof Options ? opts.o : opts);
@@ -16356,10 +16612,7 @@ img.ProseMirror-separator {
     endIndex() {
       return this.tk[this.tk.length - 1].e;
     },
-    toObject(protocol) {
-      if (protocol === void 0) {
-        protocol = defaults.defaultProtocol;
-      }
+    toObject(protocol = defaults.defaultProtocol) {
       return {
         type: this.t,
         value: this.toString(),
@@ -16438,10 +16691,7 @@ img.ProseMirror-separator {
   const Nl = createTokenClass('nl');
   const Url = createTokenClass('url', {
     isLink: true,
-    toHref(scheme) {
-      if (scheme === void 0) {
-        scheme = defaults.defaultProtocol;
-      }
+    toHref(scheme = defaults.defaultProtocol) {
       return this.hasProtocol() ? this.v : `${scheme}://${this.v}`;
     },
     hasProtocol() {
@@ -16460,12 +16710,11 @@ img.ProseMirror-separator {
   	Url: Url
   });
   const makeState = arg => new State(arg);
-  function init$1(_ref) {
-    let {
-      groups
-    } = _ref;
+  function init$1({
+    groups
+  }) {
     const qsAccepting = groups.domain.concat([AMPERSAND, ASTERISK, AT, BACKSLASH, BACKTICK, CARET, DOLLAR, EQUALS, HYPHEN, NUM, PERCENT, PIPE, PLUS, POUND, SLASH, SYM, TILDE, UNDERSCORE]);
-    const qsNonAccepting = [APOSTROPHE, COLON, COMMA, DOT, EXCLAMATION, QUERY, QUOTE, SEMI, OPENANGLEBRACKET, CLOSEANGLEBRACKET, OPENBRACE, CLOSEBRACE, CLOSEBRACKET, OPENBRACKET, OPENPAREN, CLOSEPAREN, FULLWIDTHLEFTPAREN, FULLWIDTHRIGHTPAREN, LEFTCORNERBRACKET, RIGHTCORNERBRACKET, LEFTWHITECORNERBRACKET, RIGHTWHITECORNERBRACKET, FULLWIDTHLESSTHAN, FULLWIDTHGREATERTHAN];
+    const qsNonAccepting = [COLON, COMMA, DOT, EXCLAMATION, PERCENT, QUERY, QUOTE, SEMI, OPENANGLEBRACKET, CLOSEANGLEBRACKET, OPENBRACE, CLOSEBRACE, CLOSEBRACKET, OPENBRACKET, OPENPAREN, CLOSEPAREN, FULLWIDTHLEFTPAREN, FULLWIDTHRIGHTPAREN, LEFTCORNERBRACKET, RIGHTCORNERBRACKET, LEFTWHITECORNERBRACKET, RIGHTWHITECORNERBRACKET, FULLWIDTHLESSTHAN, FULLWIDTHGREATERTHAN];
     const localpartAccepting = [AMPERSAND, APOSTROPHE, ASTERISK, BACKSLASH, BACKTICK, CARET, DOLLAR, EQUALS, HYPHEN, OPENBRACE, CLOSEBRACE, PERCENT, PIPE, PLUS, POUND, QUERY, SLASH, SYM, TILDE, UNDERSCORE];
     const Start = makeState();
     const Localpart = tt(Start, TILDE);
@@ -16496,6 +16745,7 @@ img.ProseMirror-separator {
     ta(EmailDomainDot, groups.utld, Email$1);
     tt(LocalpartAt, LOCALHOST, Email$1);
     const EmailDomainHyphen = tt(EmailDomain, HYPHEN);
+    tt(EmailDomainHyphen, HYPHEN, EmailDomainHyphen);
     ta(EmailDomainHyphen, groups.domain, EmailDomain);
     ta(Email$1, groups.domain, EmailDomain);
     tt(Email$1, DOT, EmailDomainDot);
@@ -16504,6 +16754,7 @@ img.ProseMirror-separator {
     ta(EmailColon, groups.numeric, Email);
     const DomainHyphen = tt(Domain, HYPHEN);
     const DomainDot = tt(Domain, DOT);
+    tt(DomainHyphen, HYPHEN, DomainHyphen);
     ta(DomainHyphen, groups.domain, Domain);
     ta(DomainDot, localpartAccepting, Localpart);
     ta(DomainDot, groups.domain, Domain);
@@ -16538,6 +16789,7 @@ img.ProseMirror-separator {
     tt(SlashScheme, HYPHEN, DomainHyphen);
     ta(SchemeColon, groups.domain, Url$1);
     tt(SchemeColon, SLASH, Url$1);
+    tt(SchemeColon, QUERY, Url$1);
     ta(UriPrefix, groups.domain, Url$1);
     ta(UriPrefix, qsAccepting, Url$1);
     tt(UriPrefix, SLASH, Url$1);
@@ -16567,7 +16819,7 @@ img.ProseMirror-separator {
       tt(UrlOpenSyms, CLOSE, Url$1);
     }
     tt(Start, LOCALHOST, DomainDotTld);
-    tt(Start, NL$1, Nl);
+    tt(Start, NL, Nl);
     return {
       start: Start,
       tokens: tk
@@ -16647,11 +16899,9 @@ img.ProseMirror-separator {
     INIT.pluginQueue = [];
     INIT.customSchemes = [];
     INIT.initialized = false;
+    return INIT;
   }
-  function registerCustomProtocol(scheme, optionalSlashSlash) {
-    if (optionalSlashSlash === void 0) {
-      optionalSlashSlash = false;
-    }
+  function registerCustomProtocol(scheme, optionalSlashSlash = false) {
     if (INIT.initialized) {
       warn(`linkifyjs: already initialized - will not register custom scheme "${scheme}" ${warnAdvice}`);
     }
@@ -16678,6 +16928,7 @@ img.ProseMirror-separator {
       });
     }
     INIT.initialized = true;
+    return INIT;
   }
   function tokenize(str) {
     if (!INIT.initialized) {
@@ -16685,13 +16936,8 @@ img.ProseMirror-separator {
     }
     return run(INIT.parser.start, str, run$1(INIT.scanner.start, str));
   }
-  function find(str, type, opts) {
-    if (type === void 0) {
-      type = null;
-    }
-    if (opts === void 0) {
-      opts = null;
-    }
+  tokenize.scan = run$1;
+  function find(str, type = null, opts = null) {
     if (type && typeof type === 'object') {
       if (opts) {
         throw Error(`linkifyjs: Invalid link type ${type}; must be a string`);
@@ -16773,6 +17019,7 @@ img.ProseMirror-separator {
                           return !newState.doc.rangeHasMark(link.from, link.to, newState.schema.marks.code);
                       })
                           .filter(link => options.validate(link.value))
+                          .filter(link => options.shouldAutoLink(link.value))
                           .forEach(link => {
                           if (getMarksBetween(link.from, link.to, newState.doc).some(item => item.mark.type === options.type)) {
                               return;
@@ -16843,26 +17090,40 @@ img.ProseMirror-separator {
                   if (!textContent || !link) {
                       return false;
                   }
-                  options.editor.commands.setMark(options.type, {
+                  return options.editor.commands.setMark(options.type, {
                       href: link.href,
                   });
-                  return true;
               },
           },
       });
   }
   const ATTR_WHITESPACE = /[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205F\u3000]/g;
   function isAllowedUri(uri, protocols) {
-      const allowedProtocols = ['http', 'https', 'ftp', 'ftps', 'mailto', 'tel', 'callto', 'sms', 'cid', 'xmpp'];
+      const allowedProtocols = [
+          'http',
+          'https',
+          'ftp',
+          'ftps',
+          'mailto',
+          'tel',
+          'callto',
+          'sms',
+          'cid',
+          'xmpp',
+      ];
       if (protocols) {
           protocols.forEach(protocol => {
-              const nextProtocol = (typeof protocol === 'string' ? protocol : protocol.scheme);
+              const nextProtocol = typeof protocol === 'string' ? protocol : protocol.scheme;
               if (nextProtocol) {
                   allowedProtocols.push(nextProtocol);
               }
           });
       }
-      return !uri || uri.replace(ATTR_WHITESPACE, '').match(new RegExp(`^(?:(?:${allowedProtocols.join('|')}):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))`, 'i'));
+      return (!uri
+          || uri
+              .replace(ATTR_WHITESPACE, '')
+              .match(new RegExp(
+          `^(?:(?:${allowedProtocols.join('|')}):|[^a-z]|[a-z0-9+.\-]+(?:[^a-z+.\-:]|$))`, 'i')));
   }
   const Link = Mark.create({
       name: 'link',
@@ -16870,6 +17131,10 @@ img.ProseMirror-separator {
       keepOnSplit: false,
       exitable: true,
       onCreate() {
+          if (this.options.validate && !this.options.shouldAutoLink) {
+              this.options.shouldAutoLink = this.options.validate;
+              console.warn('The `validate` option is deprecated. Rename to the `shouldAutoLink` option instead.');
+          }
           this.options.protocols.forEach(protocol => {
               if (typeof protocol === 'string') {
                   registerCustomProtocol(protocol);
@@ -16896,7 +17161,9 @@ img.ProseMirror-separator {
                   rel: 'noopener noreferrer nofollow',
                   class: null,
               },
+              isAllowedUri: (url, ctx) => !!isAllowedUri(url, ctx.protocols),
               validate: url => !!url,
+              shouldAutoLink: url => !!url,
           };
       },
       addAttributes() {
@@ -16919,29 +17186,60 @@ img.ProseMirror-separator {
           };
       },
       parseHTML() {
-          return [{
+          return [
+              {
                   tag: 'a[href]',
                   getAttrs: dom => {
                       const href = dom.getAttribute('href');
-                      if (!href || !isAllowedUri(href, this.options.protocols)) {
+                      if (!href
+                          || !this.options.isAllowedUri(href, {
+                              defaultValidate: url => !!isAllowedUri(url, this.options.protocols),
+                              protocols: this.options.protocols,
+                              defaultProtocol: this.options.defaultProtocol,
+                          })) {
                           return false;
                       }
                       return null;
                   },
-              }];
+              },
+          ];
       },
       renderHTML({ HTMLAttributes }) {
-          if (!isAllowedUri(HTMLAttributes.href, this.options.protocols)) {
-              return ['a', mergeAttributes(this.options.HTMLAttributes, { ...HTMLAttributes, href: '' }), 0];
+          if (!this.options.isAllowedUri(HTMLAttributes.href, {
+              defaultValidate: href => !!isAllowedUri(href, this.options.protocols),
+              protocols: this.options.protocols,
+              defaultProtocol: this.options.defaultProtocol,
+          })) {
+              return [
+                  'a',
+                  mergeAttributes(this.options.HTMLAttributes, { ...HTMLAttributes, href: '' }),
+                  0,
+              ];
           }
           return ['a', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
       },
       addCommands() {
           return {
               setLink: attributes => ({ chain }) => {
+                  const { href } = attributes;
+                  if (!this.options.isAllowedUri(href, {
+                      defaultValidate: url => !!isAllowedUri(url, this.options.protocols),
+                      protocols: this.options.protocols,
+                      defaultProtocol: this.options.defaultProtocol,
+                  })) {
+                      return false;
+                  }
                   return chain().setMark(this.name, attributes).setMeta('preventAutolink', true).run();
               },
               toggleLink: attributes => ({ chain }) => {
+                  const { href } = attributes;
+                  if (!this.options.isAllowedUri(href, {
+                      defaultValidate: url => !!isAllowedUri(url, this.options.protocols),
+                      protocols: this.options.protocols,
+                      defaultProtocol: this.options.defaultProtocol,
+                  })) {
+                      return false;
+                  }
                   return chain()
                       .toggleMark(this.name, attributes, { extendEmptyMarkRange: true })
                       .setMeta('preventAutolink', true)
@@ -16961,16 +17259,21 @@ img.ProseMirror-separator {
                   find: text => {
                       const foundLinks = [];
                       if (text) {
-                          const { validate } = this.options;
-                          const links = find(text).filter(item => item.isLink && validate(item.value));
+                          const { protocols, defaultProtocol } = this.options;
+                          const links = find(text).filter(item => item.isLink
+                              && this.options.isAllowedUri(item.value, {
+                                  defaultValidate: href => !!isAllowedUri(href, protocols),
+                                  protocols,
+                                  defaultProtocol,
+                              }));
                           if (links.length) {
-                              links.forEach(link => (foundLinks.push({
+                              links.forEach(link => foundLinks.push({
                                   text: link.value,
                                   data: {
                                       href: link.href,
                                   },
                                   index: link.start,
-                              })));
+                              }));
                           }
                       }
                       return foundLinks;
@@ -16987,11 +17290,17 @@ img.ProseMirror-separator {
       },
       addProseMirrorPlugins() {
           const plugins = [];
+          const { protocols, defaultProtocol } = this.options;
           if (this.options.autolink) {
               plugins.push(autolink({
                   type: this.type,
                   defaultProtocol: this.options.defaultProtocol,
-                  validate: this.options.validate,
+                  validate: url => this.options.isAllowedUri(url, {
+                      defaultValidate: href => !!isAllowedUri(href, protocols),
+                      protocols,
+                      defaultProtocol,
+                  }),
+                  shouldAutoLink: this.options.shouldAutoLink,
               }));
           }
           if (this.options.openOnClick === true) {
@@ -17226,6 +17535,7 @@ img.ProseMirror-separator {
   exports.injectExtensionAttributesToParseRule = injectExtensionAttributesToParseRule;
   exports.inputRulesPlugin = inputRulesPlugin;
   exports.isActive = isActive;
+  exports.isAllowedUri = isAllowedUri;
   exports.isAtEndOfNode = isAtEndOfNode;
   exports.isAtStartOfNode = isAtStartOfNode;
   exports.isEmptyObject = isEmptyObject;
@@ -17255,6 +17565,7 @@ img.ProseMirror-separator {
   exports.posToDOMRect = posToDOMRect;
   exports.removeDuplicates = removeDuplicates;
   exports.resolveFocusPosition = resolveFocusPosition;
+  exports.rewriteUnknownContent = rewriteUnknownContent;
   exports.selectionToInsertionEnd = selectionToInsertionEnd;
   exports.splitExtensions = splitExtensions;
   exports.textInputRule = textInputRule;

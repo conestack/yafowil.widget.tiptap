@@ -64,6 +64,10 @@ export class TiptapWidget {
         this.editor.on('update', this.on_update);
         this.on_selection_update = this.on_selection_update.bind(this);
         this.editor.on('selectionUpdate', this.on_selection_update);
+
+        if (window.ts !== undefined) {
+            ts.ajax.attach(this, elem);
+        }
     }
 
     destroy() {
