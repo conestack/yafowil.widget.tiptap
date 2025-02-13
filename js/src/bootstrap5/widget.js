@@ -92,10 +92,25 @@ export class TiptapWidget {
      * Cleans up the widget and removes event listeners.
      */
     destroy() {
+        if (this.editor) {
+            this.editor.off();
+            this.editor.destroy();
+        }
+    
         this.unload_all();
-        this.editor.destroy();
-        this.elem.empty();
-        this.buttons = null;
+    
+        if (this.helpLink && typeof this.helpLink.unload === 'function') {
+            this.helpLink.unload();
+        }
+    
+        // remove from jQuery data cache
+        this.elem.removeData('yafowil-tiptap');
+    
+        // remove event listeners
+        this.editarea.off();
+        this.controls.off();
+        this.textarea.off();
+        this.elem.off();
     }
 
     /**
@@ -103,9 +118,7 @@ export class TiptapWidget {
      */
     unload_all() {
         for (let btn in this.buttons) {
-            if (this.buttons[btn].unload) {
-                this.buttons[btn].unload();
-            }
+            this.buttons[btn].unload();
         }
     }
 

@@ -38,7 +38,7 @@ export class Action {
         if (opts.tooltip) {
             this.container.attr('data-bs-toggle', 'tooltip')
                 .attr('data-bs-title', opts.tooltip);
-            new bootstrap.Tooltip(this.container);
+            this.tooltip = new bootstrap.Tooltip(this.container);
         }
 
         if (opts.icon) {
@@ -84,6 +84,13 @@ export class Action {
      */
     on_click(e) {
         e.preventDefault();
+    }
+
+    unload() {
+        if (this.tooltip) {
+            this.tooltip.dispose();
+        }
+        this.elem.off();
     }
 }
 
@@ -162,6 +169,13 @@ export class DropdownButton extends Button {
      */
     unload() {
         $(window).off('resize', this.on_resize);
+        if (this.submit_elem) {
+            this.submit_elem.off();
+        }
+        for (let child of this.children) {
+            child.unload();
+        }
+        super.unload();
     }
 
     /**
