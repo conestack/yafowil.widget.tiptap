@@ -32,4 +32,12 @@ div.tiptap-editor {
             margin-right: 6px;
         }
     }
+
+    &.is-valid .ProseMirror {
+        border-color: var(--bs-form-valid-border-color);
+    }
+
+    &.is-invalid .ProseMirror {
+        border-color: var(--bs-form-invalid-border-color);
+    }
 }

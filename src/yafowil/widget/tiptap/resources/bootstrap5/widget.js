@@ -48,7 +48,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
             e.preventDefault();
         }
         unload() {
-            if (this.tooltip) {
+            if (this.tooltip && this.tooltip._element) {
                 this.tooltip.dispose();
             }
             this.elem.off();

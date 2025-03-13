@@ -87,7 +87,7 @@ export class Action {
     }
 
     unload() {
-        if (this.tooltip) {
+        if (this.tooltip && this.tooltip._element) {
             this.tooltip.dispose();
         }
         this.elem.off();
