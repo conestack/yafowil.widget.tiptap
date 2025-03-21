@@ -5,6 +5,7 @@ from yafowil.common import generic_extractor
 from yafowil.common import generic_required_extractor
 from yafowil.datatypes import generic_emptyvalue_extractor
 from yafowil.textarea import textarea_renderer
+from yafowil.utils import attr_value
 from yafowil.utils import cssclasses
 from yafowil.utils import data_attrs_helper
 from yafowil.utils import managedprops
@@ -34,7 +35,10 @@ def tiptap_display_renderer(widget, data):
     value = fetch_value(widget, data)
     if not value:
         value = ''
-    return data.tag('div', value, **{'class': 'display-tiptap'})
+    display_class = attr_value("display_class", widget, data)
+    return data.tag('div', value, **{
+        'class': 'display-tiptap' + f' {display_class}' if display_class is not None else ''
+    })
 
 
 factory.register(

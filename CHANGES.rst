@@ -4,6 +4,9 @@ Changes
 1.0 (unreleased)
 ----------------
 
+- Introduce ``display_class`` widget property.
+  [lenadax]
+
 - Update jQuery to version ``4.0.0-beta.2``.
   [lenadax]
 
