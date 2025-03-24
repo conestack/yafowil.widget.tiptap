@@ -37,7 +37,7 @@ def tiptap_display_renderer(widget, data):
         value = ''
     display_class = attr_value("display_class", widget, data)
     return data.tag('div', value, **{
-        'class': 'display-tiptap' + f' {display_class}' if display_class is not None else ''
+        'class': 'display-tiptap' + (f' {display_class}' if display_class is not None else '')
     })
 
 
