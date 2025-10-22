@@ -166,7 +166,3 @@ class TestTiptapWidget(YafowilTestCase):
         self.assertEqual(styles[0].path, 'yafowil-tiptap')
         self.assertEqual(styles[0].file_name, 'widget.css')
         self.assertTrue(os.path.exists(styles[0].file_path))
-
-
-if __name__ == '__main__':
-    unittest.main()

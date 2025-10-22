@@ -95,7 +95,7 @@ QUnit.module('Actions', hooks => {
         assert.strictEqual($('span', underline_btn.elem).text(), 'U');
         assert.strictEqual(
             $('span', underline_btn.elem).css('text-decoration'),
-            'underline solid rgb(0, 0, 0)'
+            'underline'
         );
         assert.true(underline_btn.opts.toggle);
         assert.strictEqual(underline_btn.id, 'underline');
