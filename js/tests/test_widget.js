@@ -22,7 +22,7 @@ QUnit.module('TiptapWidget', hooks => {
         const tiptap = await import('tiptap');
         window.tiptap = tiptap;
 
-        const modules = await import('../src/widget.js');
+        const modules = await import('../src/default/widget.js');
         TiptapWidget = modules.TiptapWidget;
         register_array_subscribers = modules.register_array_subscribers;
     });

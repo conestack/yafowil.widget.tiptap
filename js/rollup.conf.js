@@ -14,14 +14,18 @@ window.yafowil.tiptap = exports;
 export default args => {
     let conf = [];
 
-    let conf_tiptap = {
-        input: 'js/src/bundles/tiptap.js',
+    ////////////////////////////////////////////////////////////////////////////
+    // TIPTAP
+    ////////////////////////////////////////////////////////////////////////////
+
+    let bundle_tiptap = {
+        input: 'js/src/tiptap/bundle.js',
         plugins: [
             nodeResolve(),
             cleanup()
         ],
         output: [{
-            file: `${out_dir}/tiptap.js`,
+            file: `${out_dir}/tiptap/tiptap.js`,
             name: 'tiptap',
             format: 'iife',
             interop: 'default',
@@ -32,8 +36,8 @@ export default args => {
         }]
     };
     if (args.configDebug !== true) {
-        conf_tiptap.output.push({
-            file: `${out_dir}/tiptap.min.js`,
+        bundle_tiptap.output.push({
+            file: `${out_dir}/tiptap/tiptap.min.js`,
             name: 'tiptap',
             format: 'iife',
             plugins: [
@@ -46,33 +50,35 @@ export default args => {
             }
         });
     }
-    conf.push(conf_tiptap);
-
-    let conf_tiptap_dist = {
-        input: 'js/src/bundles/tiptap.js',
+    let tiptap_dist = {
+        input: 'js/src/tiptap/bundle.js',
         plugins: [
             nodeResolve(),
             commonjs()
         ],
         output: [{
-            file: `${out_dir}/tiptap.dist.bundle.js`,
+            file: `${out_dir}/tiptap/tiptap.dist.bundle.js`,
             name: 'tiptap',
             format: 'es',
             interop: 'default',
             sourcemap: false
         }]
     };
-    conf.push(conf_tiptap_dist);
+    conf.push(bundle_tiptap, tiptap_dist);
 
-    let conf_widget = {
-        input: 'js/src/bundles/widget.js',
+    ////////////////////////////////////////////////////////////////////////////
+    // DEFAULT
+    ////////////////////////////////////////////////////////////////////////////
+
+    let bundle_default = {
+        input: 'js/src/default/bundle.js',
         plugins: [
             nodeResolve(),
             cleanup()
         ],
         output: [{
             name: 'yafowil_tiptap',
-            file: `${out_dir}/widget.js`,
+            file: `${out_dir}/default/widget.js`,
             format: 'iife',
             outro: outro,
             globals: {
@@ -87,9 +93,9 @@ export default args => {
         ]
     };
     if (args.configDebug !== true) {
-        conf_widget.output.push({
+        bundle_default.output.push({
             name: 'yafowil_tiptap',
-            file: `${out_dir}/widget.min.js`,
+            file: `${out_dir}/default/widget.min.js`,
             format: 'iife',
             plugins: [
                 terser()
@@ -102,11 +108,10 @@ export default args => {
             interop: 'default'
         });
     }
-    conf.push(conf_widget);
-    let scss = {
-        input: ['scss/widget.scss'],
+    let scss_default = {
+        input: ['scss/default/widget.scss'],
         output: [{
-            file: `${out_dir}/widget.css`,
+            file: `${out_dir}/default/widget.min.css`,
             format: 'es',
             plugins: [terser()],
         }],
@@ -120,7 +125,67 @@ export default args => {
             }),
         ],
     };
-    conf.push(scss);
+    conf.push(bundle_default, scss_default);
+
+    ////////////////////////////////////////////////////////////////////////////
+    // BOOTSTRAP5
+    ////////////////////////////////////////////////////////////////////////////
+
+    let bundle_bs5 = {
+        input: 'js/src/bootstrap5/bundle.js',
+        plugins: [
+            cleanup()
+        ],
+        output: [{
+            name: 'yafowil_tiptap',
+            file: `${out_dir}/bootstrap5/widget.js`,
+            format: 'iife',
+            outro: outro,
+            globals: {
+                jquery: 'jQuery',
+                bootstrap: 'bootstrap'
+            },
+            interop: 'default'
+        }],
+        external: [
+            'jquery',
+            'bootstrap'
+        ]
+    };
+    if (args.configDebug !== true) {
+        bundle_bs5.output.push({
+            name: 'yafowil_tiptap',
+            file: `${out_dir}/bootstrap5/widget.min.js`,
+            format: 'iife',
+            plugins: [
+                terser()
+            ],
+            outro: outro,
+            globals: {
+                jquery: 'jQuery',
+                bootstrap: 'bootstrap'
+            },
+            interop: 'default'
+        });
+    }
+    let scss_bs5 = {
+        input: ['scss/bootstrap5/widget.scss'],
+        output: [{
+            file: `${out_dir}/bootstrap5/widget.min.css`,
+            format: 'es',
+            plugins: [terser()],
+        }],
+        plugins: [
+            postcss({
+                extract: true,
+                minimize: true,
+                use: [
+                    ['sass', { outputStyle: 'compressed' }],
+                ],
+            }),
+        ],
+    };
+    conf.push(bundle_bs5, scss_bs5);
 
     return conf;
 };

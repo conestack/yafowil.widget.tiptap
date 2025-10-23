@@ -24,7 +24,7 @@ QUnit.module('buttons.js', hooks => {
         const tiptap = await import('tiptap');
         window.tiptap = tiptap;
 
-        const modules = await import('../src/buttons.js');
+        const modules = await import('../src/default/buttons.js');
         Tooltip = modules.Tooltip;
         Button = modules.Button;
         DropdownButton = modules.DropdownButton;
@@ -32,7 +32,7 @@ QUnit.module('buttons.js', hooks => {
         // css
         css_link = document.createElement('link');
         css_link.rel = 'stylesheet';
-        css_link.href = '../../src/yafowil/widget/tiptap/resources/widget.css';
+        css_link.href = '../../src/yafowil/widget/tiptap/resources/default/widget.min.css';
         document.head.appendChild(css_link);
     });
     hooks.beforeEach(() => {

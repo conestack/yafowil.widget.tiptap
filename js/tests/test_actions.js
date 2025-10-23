@@ -21,9 +21,9 @@ QUnit.module('Actions', hooks => {
         const tiptap = await import('tiptap');
         window.tiptap = tiptap;
 
-        const widget_modules = await import('../src/widget.js');
+        const widget_modules = await import('../src/default/widget.js');
         TiptapWidget = widget_modules.TiptapWidget;
-        const actions_modules = await import('../src/actions.js');
+        const actions_modules = await import('../src/default/actions.js');
         actions = actions_modules.actions;
     });
     hooks.beforeEach(() => {
