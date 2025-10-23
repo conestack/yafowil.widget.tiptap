@@ -17,7 +17,7 @@ export default {
                 importMap: {
                     imports: {
                         'jquery': './node_modules/jquery/dist-module/jquery.module.js',
-                        'tiptap': './src/yafowil/widget/tiptap/resources/tiptap.dist.bundle.js'
+                        'tiptap': './src/yafowil/widget/tiptap/resources/tiptap/tiptap.dist.bundle.js'
                     },
                 },
             },

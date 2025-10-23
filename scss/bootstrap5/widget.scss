@@ -1,0 +1,43 @@
+div.ProseMirror {
+    overflow: auto;
+    resize: both;
+}
+textarea.tiptap-editor {
+    display: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0;
+    padding: 5px 10px;
+}
+
+div.tiptap-editor {
+    blockquote {
+        margin: 0;
+        padding: 0 0 0 40px;
+        border: none;
+        font-size: unset;
+    }
+    img {
+        max-width: 100%;
+    }
+    .action {
+        cursor: pointer;
+
+        .color {
+            width: 14px;
+            height: 14px;
+            margin: 0;
+            border-radius: 3px;
+            display: inline-block;
+            margin-right: 6px;
+        }
+    }
+
+    &.is-valid .ProseMirror {
+        border-color: var(--bs-form-valid-border-color);
+    }
+
+    &.is-invalid .ProseMirror {
+        border-color: var(--bs-form-invalid-border-color);
+    }
+}
