@@ -1,4 +1,4 @@
-name: Test yafowil.widget.tiptap
+name: Python Tests
 
 on: [push]
 
