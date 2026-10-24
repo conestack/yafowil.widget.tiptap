@@ -2,7 +2,6 @@ from importlib import reload
 from node.utils import UNSET
 from yafowil.base import factory
 from yafowil.tests import YafowilTestCase
-import unittest
 import os
 
 
@@ -11,67 +10,66 @@ def np(path):
 
 
 class TestTiptapWidget(YafowilTestCase):
-
     def setUp(self):
         super(TestTiptapWidget, self).setUp()
         from yafowil.widget import tiptap
         from yafowil.widget.tiptap import widget
+
         reload(widget)
         tiptap.register()
 
     def test_edit_renderer(self):
         widget = factory('tiptap', value='<p>Hello Tiptap</p>', name='tiptap')
-        self.checkOutput((
-            '<div class="tiptap-editor" '
-                'data-tiptap-actions=\'['
-                    '["heading"], '
-                    '["bold", "italic", "underline"], '
-                    '["color"], '
-                    '["bulletList", "orderedList", "indent", "outdent"], '
-                    '["html"], '
-                    '["image"], '
-                    '["link"], '
-                    '["code"], '
-                    '["codeBlock"]'
-                ']\' '
-                'data-tiptap-colors=\'['
-                    '{"name": "Blue", "color": "rgb(53,39,245)"}, '
-                    '{"name": "Lime", "color": "rgb(204,255,0)"}, '
-                    '{"name": "Teal", "color": "rgb(42,202,234)"}, '
-                    '{"name": "Red", "color": "rgb(208,6,10)"}'
-                ']\'>'
+        self.checkOutput(
+            (
+                '<div class="tiptap-editor" '
+                "data-tiptap-actions='["
+                '["heading"], '
+                '["bold", "italic", "underline"], '
+                '["color"], '
+                '["bulletList", "orderedList", "indent", "outdent"], '
+                '["html"], '
+                '["image"], '
+                '["link"], '
+                '["code"], '
+                '["codeBlock"]'
+                "]' "
+                "data-tiptap-colors='["
+                '{"name": "Blue", "color": "rgb(53,39,245)"}, '
+                '{"name": "Lime", "color": "rgb(204,255,0)"}, '
+                '{"name": "Teal", "color": "rgb(42,202,234)"}, '
+                '{"name": "Red", "color": "rgb(208,6,10)"}'
+                "]'>"
                 '<textarea class="tiptap-editor" id="input-tiptap" name="tiptap">'
-                  '<p>Hello Tiptap</p>'
+                '<p>Hello Tiptap</p>'
                 '</textarea>'
-            '</div>'),
-            widget()
+                '</div>'
+            ),
+            widget(),
         )
 
-        widget = factory('tiptap',
+        widget = factory(
+            'tiptap',
             name='tiptap',
-            props={
-                'actions': None,
-                'colors': None,
-                'helpLink': None
-            })
-        self.checkOutput((
-            '<div class="tiptap-editor">'
-              '<textarea class="tiptap-editor" id="input-tiptap" name="tiptap">'
-              '</textarea>'
-            '</div>'
-        ), widget())
+            props={'actions': None, 'colors': None, 'helpLink': None},
+        )
+        self.checkOutput(
+            (
+                '<div class="tiptap-editor">'
+                '<textarea class="tiptap-editor" id="input-tiptap" name="tiptap">'
+                '</textarea>'
+                '</div>'
+            ),
+            widget(),
+        )
 
     def test_display_renderer(self):
-        widget = factory('tiptap',
-            name='tiptap',
-            value='<p>Hello Tiptap</p>',
-            mode='display'
+        widget = factory(
+            'tiptap', name='tiptap', value='<p>Hello Tiptap</p>', mode='display'
         )
-        self.checkOutput((
-            '<div class="display-tiptap">'
-              '<p>Hello Tiptap</p>'
-            '</div>'
-        ), widget())
+        self.checkOutput(
+            ('<div class="display-tiptap"><p>Hello Tiptap</p></div>'), widget()
+        )
 
         widget = factory('tiptap', name='tiptap', mode='display')
         self.assertEqual(widget(), '<div class="display-tiptap"></div>')
@@ -95,10 +93,7 @@ class TestTiptapWidget(YafowilTestCase):
         self.assertEqual(data.extracted, '<p>Updated Text</p>')
 
     def test_extractor_with_preset_value(self):
-        widget = factory('tiptap',
-            name='tiptap',
-            value='<p>Hello Tiptap</p>'
-        )
+        widget = factory('tiptap', name='tiptap', value='<p>Hello Tiptap</p>')
 
         data = widget.extract(request={})
         self.assertEqual(data.name, 'tiptap')
@@ -116,12 +111,7 @@ class TestTiptapWidget(YafowilTestCase):
         self.assertEqual(data.extracted, '<p>Updated Text</p>')
 
     def test_extractor_with_emptyvalue(self):
-        widget = factory(
-            'tiptap',
-            name='tiptap',
-            props={
-                'emptyvalue': UNSET
-            })
+        widget = factory('tiptap', name='tiptap', props={'emptyvalue': UNSET})
 
         data = widget.extract(request={})
         self.assertEqual(data.name, 'tiptap')

@@ -14,18 +14,11 @@ Default Tiptap widget
 
 
 def default_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part = factory('fieldset', name='yafowil.widget.tiptap')
     part['tiptap'] = factory(
-        '#field:tiptap',
-        value='<p>Hello World!</p>',
-        props={
-            'label': 'Default Widget'
-        })
-    return {
-        'widget': part,
-        'doc': DOC_DEFAULT_TIPTAP,
-        'title': 'Tiptap'
-    }
+        '#field:tiptap', value='<p>Hello World!</p>', props={'label': 'Default Widget'}
+    )
+    return {'widget': part, 'doc': DOC_DEFAULT_TIPTAP, 'title': 'Tiptap'}
 
 
 DOC_ACTIONS_TIPTAP = """
@@ -55,7 +48,7 @@ together by putting them in a list.
 
 
 def actions_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part = factory('fieldset', name='yafowil.widget.tiptap')
     part['tiptap'] = factory(
         '#field:tiptap',
         value='<p>This widget has customized actions.</p>',
@@ -67,15 +60,15 @@ def actions_example():
                 ['bulletList', 'orderedList', 'indent', 'outdent'],
                 ['html'],
                 ['image', 'link'],
-                ['code', 'codeBlock']
-            ]
-        })
+                ['code', 'codeBlock'],
+            ],
+        },
+    )
     return {
         'widget': part,
         'doc': DOC_ACTIONS_TIPTAP,
         'title': 'Tiptap Widget with customized actions',
     }
-
 
 
 DOC_COLORS_TIPTAP = """
@@ -114,13 +107,13 @@ Colors can only be supplied as rgb() values.
 
 
 def colors_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part = factory('fieldset', name='yafowil.widget.tiptap')
     part['tiptap'] = factory(
         'tiptap',
         value=(
             '<p>'
-              '<span style="color: rgb(66,209,245)">This widget</span> has '
-              '<span style="color: rgb(161,66,245)">custom colors</span>.'
+            '<span style="color: rgb(66,209,245)">This widget</span> has '
+            '<span style="color: rgb(161,66,245)">custom colors</span>.'
             '</p>'
         ),
         props={
@@ -133,9 +126,10 @@ def colors_example():
                 {'name': 'Green', 'color': 'rgb(105,245,66)'},
                 {'name': 'Yellow', 'color': 'rgb(245,236,66)'},
                 {'name': 'Orange', 'color': 'rgb(245,167,66'},
-                {'name': 'Red', 'color': 'rgb(245,66,66)'}
-            ]
-        })
+                {'name': 'Red', 'color': 'rgb(245,66,66)'},
+            ],
+        },
+    )
     return {
         'widget': part,
         'doc': DOC_COLORS_TIPTAP,
@@ -183,16 +177,16 @@ widget value.
 
 
 def display_example():
-    part = factory(u'fieldset', name='yafowil.widget.tiptap')
+    part = factory('fieldset', name='yafowil.widget.tiptap')
     part['tiptap'] = factory(
         'tiptap',
         value=(
             '<p>'
-              'This widget is in '
-              '<strong style="color: rgb(66,209,245)">display mode</strong>, '
-              'but it will still show <strong>custom formatting</strong>.'
-              '<br />'
-              'Its border was adding with the <strong>display_class</strong> property.'
+            'This widget is in '
+            '<strong style="color: rgb(66,209,245)">display mode</strong>, '
+            'but it will still show <strong>custom formatting</strong>.'
+            '<br />'
+            'Its border was adding with the <strong>display_class</strong> property.'
             '</p>'
         ),
         props={
@@ -205,10 +199,12 @@ def display_example():
                 {'name': 'Green', 'color': 'rgb(105,245,66)'},
                 {'name': 'Yellow', 'color': 'rgb(245,236,66)'},
                 {'name': 'Orange', 'color': 'rgb(245,167,66'},
-                {'name': 'Red', 'color': 'rgb(245,66,66)'}
+                {'name': 'Red', 'color': 'rgb(245,66,66)'},
             ],
-            'display_class': 'form-control border-2 border-info'
-        }, mode='display')
+            'display_class': 'form-control border-2 border-info',
+        },
+        mode='display',
+    )
     return {
         'widget': part,
         'doc': DOC_DISPLAY_TIPTAP,
@@ -217,9 +213,4 @@ def display_example():
 
 
 def get_example():
-    return [
-        default_example(),
-        actions_example(),
-        colors_example(),
-        display_example()
-    ]
+    return [default_example(), actions_example(), colors_example(), display_example()]

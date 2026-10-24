@@ -10,18 +10,12 @@ from yafowil.utils import data_attrs_helper
 from yafowil.utils import managedprops
 
 
-tiptap_options = [
-    'actions',
-    'colors',
-    'helpLink'
-]
+tiptap_options = ['actions', 'colors', 'helpLink']
 
 
 @managedprops(*tiptap_options)
 def tiptap_edit_renderer(widget, data):
-    attrs = dict(
-        class_=cssclasses(widget, data)
-    )
+    attrs = dict(class_=cssclasses(widget, data))
     # XXX: extend data_attrs_helper to accept optional prefix
     custom_attrs = data_attrs_helper(widget, data, tiptap_options)
     for key in custom_attrs:
@@ -34,10 +28,15 @@ def tiptap_display_renderer(widget, data):
     value = fetch_value(widget, data)
     if not value:
         value = ''
-    display_class = attr_value("display_class", widget, data)
-    return data.tag('div', value, **{
-        'class': 'display-tiptap' + (f' {display_class}' if display_class is not None else '')
-    })
+    display_class = attr_value('display_class', widget, data)
+    return data.tag(
+        'div',
+        value,
+        **{
+            'class': 'display-tiptap'
+            + (f' {display_class}' if display_class is not None else '')
+        },
+    )
 
 
 factory.register(
@@ -45,14 +44,10 @@ factory.register(
     extractors=[
         generic_extractor,
         generic_required_extractor,
-        generic_emptyvalue_extractor
+        generic_emptyvalue_extractor,
     ],
-    edit_renderers=[
-        tiptap_edit_renderer
-    ],
-    display_renderers=[
-        tiptap_display_renderer
-    ]
+    edit_renderers=[tiptap_edit_renderer],
+    display_renderers=[tiptap_display_renderer],
 )
 
 factory.doc['blueprint']['tiptap'] = """\
@@ -74,7 +69,7 @@ factory.defaults['tiptap.actions'] = [
     ['image'],
     ['link'],
     ['code'],
-    ['codeBlock']
+    ['codeBlock'],
 ]
 factory.doc['props']['tiptap.actions'] = """\
 Specifies the order of elements and button groups.
@@ -103,7 +98,7 @@ factory.defaults['tiptap.colors'] = [
     {'name': 'Blue', 'color': 'rgb(53,39,245)'},
     {'name': 'Lime', 'color': 'rgb(204,255,0)'},
     {'name': 'Teal', 'color': 'rgb(42,202,234)'},
-    {'name': 'Red', 'color': 'rgb(208,6,10)'}
+    {'name': 'Red', 'color': 'rgb(208,6,10)'},
 ]
 factory.doc['props']['tiptap.colors'] = """\
 Specify custom font colors for ``color`` action.
