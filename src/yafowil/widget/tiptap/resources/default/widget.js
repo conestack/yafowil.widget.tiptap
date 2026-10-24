@@ -3,20 +3,17 @@ var yafowil_tiptap = (function (exports, $) {
 
     class Tooltip {
         constructor(name, elem) {
-            this.elem = $('<div />')
-                .text(name)
-                .addClass('tiptap-tooltip')
-                .appendTo('body');
+            this.elem = $('<div />').text(name).addClass('tiptap-tooltip').appendTo('body');
             let timeout;
-            elem.on('mouseover', (e) => {
-                let left = `${elem.offset().left + 20}px`;
-                let top = `${elem.offset().top + elem.outerHeight()}px`;
+            elem.on('mouseover', () => {
+                const left = `${elem.offset().left + 20}px`;
+                const top = `${elem.offset().top + elem.outerHeight()}px`;
                 timeout = setTimeout(() => {
-                    this.elem.css({left: left, top: top});
+                    this.elem.css({ left: left, top: top });
                     this.elem.fadeIn();
                 }, 500);
             });
-            elem.on('mouseout', (e) => {
+            elem.on('mouseout', () => {
                 clearTimeout(timeout);
                 this.elem.fadeOut();
             });
@@ -26,21 +23,20 @@ var yafowil_tiptap = (function (exports, $) {
         constructor(editor, opts = {}) {
             this.editor = editor;
             this.editor_elem = $(editor.options.element);
-            this.elem = $('<button />')
-                .appendTo(opts.container_elem);
+            this.elem = $('<button />').appendTo(opts.container_elem);
             this.opts = opts;
-            if (opts.tooltip) { new Tooltip(opts.tooltip, this.elem); }
+            if (opts.tooltip) {
+                new Tooltip(opts.tooltip, this.elem);
+            }
             if (opts.icon) {
-                this.icon = $('<i />')
-                    .addClass(`glyphicon glyphicon-${opts.icon}`)
-                    .appendTo(this.elem);
+                this.icon = $('<i />').addClass(`glyphicon glyphicon-${opts.icon}`).appendTo(this.elem);
             }
             if (opts.text) {
-                $(`<span />`)
-                    .text(opts.text)
-                    .appendTo(this.elem);
+                $(`<span />`).text(opts.text).appendTo(this.elem);
             }
-            if (opts.css) { $('> *', this.elem).css(opts.css); }
+            if (opts.css) {
+                $('> *', this.elem).css(opts.css);
+            }
             this.content = $('> *', this.elem);
             this.container_elem = opts.container_elem;
             this.on_click = this.on_click.bind(this);
@@ -63,9 +59,7 @@ var yafowil_tiptap = (function (exports, $) {
         constructor(editor, opts = {}) {
             super(editor, opts);
             this.elem.addClass('drop_btn');
-            this.dd_elem = $('<div />')
-                .addClass('tiptap-dropdown')
-                .appendTo('body');
+            this.dd_elem = $('<div />').addClass('tiptap-dropdown').appendTo('body');
             this.children = [];
             if (opts.submit) {
                 this.dd_elem.addClass('grid');
@@ -85,7 +79,7 @@ var yafowil_tiptap = (function (exports, $) {
             return this._active_item;
         }
         set active_item(item) {
-            let clone = item.elem.children().clone();
+            const clone = item.elem.children().clone();
             this.elem.empty().append(clone);
             if (this.content) {
                 this.elem.prepend(this.content);
@@ -97,14 +91,14 @@ var yafowil_tiptap = (function (exports, $) {
             $(document).off('click', this.hide_dropdown);
             $(window).off('resize', this.on_resize);
         }
-        on_resize(e) {
+        on_resize(_e) {
             this.dd_elem.hide();
             this.active = false;
         }
         set_items() {
-            for (let child of this.children) {
+            for (const child of this.children) {
                 child.elem.addClass('dropdown-item');
-                child.elem.on('click', (e) => {
+                child.elem.on('click', () => {
                     this.active_item = child;
                 });
             }
@@ -112,24 +106,26 @@ var yafowil_tiptap = (function (exports, $) {
         }
         on_click(e) {
             e.preventDefault();
-            let offset_left = this.elem.offset().left,
+            const offset_left = this.elem.offset().left,
                 elem_width = this.elem.outerWidth(),
                 dd_width = this.dd_elem.outerWidth(),
                 space_right = $(window).width() - offset_left - elem_width;
-            let left = (space_right < dd_width) ?
-                offset_left - dd_width + elem_width : offset_left;
+            const left = space_right < dd_width ? offset_left - dd_width + elem_width : offset_left;
             this.dd_elem
                 .css('left', `${left}px`)
                 .css('top', `${this.elem.offset().top + this.elem.outerHeight()}px`)
                 .toggle();
         }
         hide_dropdown(e) {
-            if (!this.dd_elem.is(':visible')) { return; }
-            if (e.target !== this.dd_elem[0] &&
+            if (!this.dd_elem.is(':visible')) {
+                return;
+            }
+            if (
+                e.target !== this.dd_elem[0] &&
                 e.target !== this.elem[0] &&
                 $(e.target).closest(this.dd_elem).length === 0 &&
-                $(e.target).closest(this.elem).length === 0)
-            {
+                $(e.target).closest(this.elem).length === 0
+            ) {
                 this.dd_elem.hide();
                 this.active = false;
             }
@@ -144,13 +140,13 @@ var yafowil_tiptap = (function (exports, $) {
 
     class BoldAction extends Button {
         static extensions = [tiptap.Bold];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 text: 'B',
-                css: {'font-weight': 'bold'},
+                css: { 'font-weight': 'bold' },
                 tooltip: 'Toggle Bold',
-                toggle: true
+                toggle: true,
             });
             this.id = 'bold';
         }
@@ -165,13 +161,13 @@ var yafowil_tiptap = (function (exports, $) {
     }
     class ItalicAction extends Button {
         static extensions = [tiptap.Italic];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 text: 'i',
-                css: {'font-style': 'italic'},
+                css: { 'font-style': 'italic' },
                 tooltip: 'Toggle Italic',
-                toggle: true
+                toggle: true,
             });
             this.id = 'italic';
         }
@@ -186,13 +182,13 @@ var yafowil_tiptap = (function (exports, $) {
     }
     class UnderlineAction extends Button {
         static extensions = [tiptap.Underline];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 text: 'U',
-                css: {'text-decoration': 'underline'},
+                css: { 'text-decoration': 'underline' },
                 tooltip: 'Toggle Underline',
-                toggle: true
+                toggle: true,
             });
             this.id = 'underline';
         }
@@ -212,7 +208,7 @@ var yafowil_tiptap = (function (exports, $) {
                 container_elem: opts.container_elem,
                 icon: 'list',
                 tooltip: 'Bullet List',
-                toggle: true
+                toggle: true,
             });
             this.id = 'bulletList';
             this.widget = widget;
@@ -233,12 +229,12 @@ var yafowil_tiptap = (function (exports, $) {
     }
     class OrderedListAction extends Button {
         static extensions = [tiptap.OrderedList, tiptap.ListItem];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 icon: 'th-list',
                 tooltip: 'Ordered List',
-                toggle: true
+                toggle: true,
             });
             this.id = 'orderedList';
         }
@@ -258,11 +254,11 @@ var yafowil_tiptap = (function (exports, $) {
     }
     class IndentAction extends Button {
         static extensions = [tiptap.Blockquote];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 icon: 'indent-left',
-                tooltip: 'Indent'
+                tooltip: 'Indent',
             });
             this.id = 'indent';
         }
@@ -275,11 +271,11 @@ var yafowil_tiptap = (function (exports, $) {
     }
     class OutdentAction extends Button {
         static extensions = [tiptap.Blockquote];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 icon: 'indent-right',
-                tooltip: 'Outdent'
+                tooltip: 'Outdent',
             });
             this.id = 'outdent';
         }
@@ -297,7 +293,7 @@ var yafowil_tiptap = (function (exports, $) {
                 container_elem: opts.container_elem,
                 icon: 'pencil',
                 tooltip: 'Edit HTML',
-                toggle: true
+                toggle: true,
             });
             this.id = 'html';
             this.widget = widget;
@@ -308,7 +304,7 @@ var yafowil_tiptap = (function (exports, $) {
             e.preventDefault();
             this.active = !this.active;
             if (this.active) {
-                for (let btn in this.widget.buttons) {
+                for (const btn in this.widget.buttons) {
                     if (this.widget.buttons[btn] !== this) {
                         this.widget.buttons[btn].elem.prop('disabled', true);
                     }
@@ -316,7 +312,7 @@ var yafowil_tiptap = (function (exports, $) {
                 this.editarea.hide();
                 this.textarea.show();
             } else {
-                for (let btn in this.widget.buttons) {
+                for (const btn in this.widget.buttons) {
                     if (this.widget.buttons[btn] !== this) {
                         this.widget.buttons[btn].elem.prop('disabled', false);
                     }
@@ -329,24 +325,24 @@ var yafowil_tiptap = (function (exports, $) {
     }
     class HeadingAction extends Button {
         static extensions = [tiptap.Heading];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: `Heading ${opts.level}`
+                text: `Heading ${opts.level}`,
             });
             this.id = 'heading';
             this.level = opts.level;
         }
         on_click(e) {
             e.preventDefault();
-            this.editor.chain().focus().toggleHeading({level: this.level}).run();
+            this.editor.chain().focus().toggleHeading({ level: this.level }).run();
         }
     }
     class ParagraphAction extends Button {
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: 'Text'
+                text: 'Text',
             });
             this.id = 'paragraph';
         }
@@ -356,10 +352,10 @@ var yafowil_tiptap = (function (exports, $) {
         }
     }
     class ColorAction extends Button {
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: opts.swatch.name
+                text: opts.swatch.name,
             });
             this.id = 'color';
             this.swatch = opts.swatch;
@@ -374,10 +370,10 @@ var yafowil_tiptap = (function (exports, $) {
         }
     }
     class UnsetColorAction extends Button {
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                text: 'None'
+                text: 'None',
             });
             this.id = 'unsetColor';
             $('<div />')
@@ -395,20 +391,20 @@ var yafowil_tiptap = (function (exports, $) {
         constructor(widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
-                icon: 'font'
+                icon: 'font',
             });
             this.id = 'headings';
             this.children.push(
                 new ParagraphAction(widget, editor, {
-                    container_elem: this.dd_elem
-                })
+                    container_elem: this.dd_elem,
+                }),
             );
-            for (let i=1; i<=6; i++) {
+            for (let i = 1; i <= 6; i++) {
                 this.children.push(
                     new HeadingAction(widget, editor, {
                         container_elem: this.dd_elem,
-                        level: i
-                    })
+                        level: i,
+                    }),
                 );
             }
             this.set_items();
@@ -420,8 +416,8 @@ var yafowil_tiptap = (function (exports, $) {
             if (this.editor.isActive('paragraph')) {
                 this.active_item = this.children[0];
             } else {
-                for (let i=1; i<=6; i++) {
-                    if (this.editor.isActive('heading', {level: i})) {
+                for (let i = 1; i <= 6; i++) {
+                    if (this.editor.isActive('heading', { level: i })) {
                         this.active_item = this.children[i];
                     }
                 }
@@ -432,46 +428,46 @@ var yafowil_tiptap = (function (exports, $) {
         static extensions = [tiptap.Color];
         constructor(widget, editor, opts) {
             super(editor, {
-                container_elem: opts.container_elem
+                container_elem: opts.container_elem,
             });
             this.id = 'colors';
             this.children.push(
                 new UnsetColorAction(widget, editor, {
-                    container_elem: this.dd_elem
-                })
+                    container_elem: this.dd_elem,
+                }),
             );
             this.colors = widget.colors;
-            for (let swatch of this.colors) {
+            for (const swatch of this.colors) {
                 this.children.push(
                     new ColorAction(widget, editor, {
                         container_elem: this.dd_elem,
-                        swatch: swatch
-                    })
+                        swatch: swatch,
+                    }),
                 );
             }
             this.set_items();
         }
         on_selection_update() {
-            for (let color of this.colors) {
-                let index = this.colors.indexOf(color);
-                if (this.editor.isActive('textStyle', {color: color.color})) {
+            for (const color of this.colors) {
+                const index = this.colors.indexOf(color);
+                if (this.editor.isActive('textStyle', { color: color.color })) {
                     this.active_item = this.children[index + 1];
                     return;
                 }
             }
             if (!this.editor.isActive('textStyle', { color: /.*/ })) {
-                    this.active_item = this.children[0];
+                this.active_item = this.children[0];
             }
         }
     }
     class ImageAction extends DropdownButton {
         static extensions = [tiptap.Image];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 tooltip: 'Add Image',
                 icon: 'picture',
-                submit: true
+                submit: true,
             });
             this.id = 'image';
             this.src_elem = $('<span />')
@@ -492,22 +488,26 @@ var yafowil_tiptap = (function (exports, $) {
         }
         submit(e) {
             e.preventDefault();
-            this.editor.chain().focus().setImage({
-                src: $('input', this.src_elem).val(),
-                alt: $('input', this.alt_elem).val(),
-                title: $('input', this.title_elem).val()
-            }).run();
+            this.editor
+                .chain()
+                .focus()
+                .setImage({
+                    src: $('input', this.src_elem).val(),
+                    alt: $('input', this.alt_elem).val(),
+                    title: $('input', this.title_elem).val(),
+                })
+                .run();
             this.dd_elem.hide();
         }
     }
     class LinkAction extends DropdownButton {
         static extensions = [tiptap.Link];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 tooltip: 'Add Link',
                 icon: 'link',
-                submit: true
+                submit: true,
             });
             this.id = 'link';
             this.href_elem = $('<span />')
@@ -518,19 +518,19 @@ var yafowil_tiptap = (function (exports, $) {
         }
         submit(e) {
             e.preventDefault();
-            let href = $('input', this.href_elem).val();
-            this.editor.chain().focus().setLink({href: href}).run();
+            const href = $('input', this.href_elem).val();
+            this.editor.chain().focus().setLink({ href: href }).run();
             this.dd_elem.hide();
         }
     }
     class CodeAction extends Button {
         static extensions = [tiptap.Code];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 text: '< / >',
                 tooltip: 'Toggle Code',
-                toggle: true
+                toggle: true,
             });
             this.id = 'code';
         }
@@ -545,12 +545,12 @@ var yafowil_tiptap = (function (exports, $) {
     }
     class CodeBlockAction extends Button {
         static extensions = [tiptap.CodeBlock];
-        constructor(widget, editor, opts) {
+        constructor(_widget, editor, opts) {
             super(editor, {
                 container_elem: opts.container_elem,
                 text: '{ }',
                 tooltip: 'Toggle Code Block',
-                toggle: true
+                toggle: true,
             });
             this.id = 'codeBlock';
         }
@@ -570,14 +570,12 @@ var yafowil_tiptap = (function (exports, $) {
                 .attr('href', 'https://tiptap.dev/api/keyboard-shortcuts#predefined-keyboard-shortcuts')
                 .attr('target', '_blank')
                 .addClass('help-btn')
-                .append(
-                    $('<div />')
-                    .text('?'))
-                    .insertAfter(widget.elem);
+                .append($('<div />').text('?'))
+                .insertAfter(widget.elem);
             this.tooltip = new Tooltip('Help', this.elem);
         }
     }
-    let actions = {
+    const actions = {
         bold: BoldAction,
         italic: ItalicAction,
         underline: UnderlineAction,
@@ -592,55 +590,50 @@ var yafowil_tiptap = (function (exports, $) {
         link: LinkAction,
         code: CodeAction,
         codeBlock: CodeBlockAction,
-        helpLink: HelpAction
+        helpLink: HelpAction,
     };
 
     class TiptapWidget {
         static initialize(context) {
-            $('div.tiptap-editor', context).each(function() {
-                let elem = $(this);
-                if (window.yafowil_array !== undefined &&
-                    window.yafowil_array.inside_template(elem)) {
+            $('div.tiptap-editor', context).each(function () {
+                const elem = $(this);
+                if (window.yafowil_array?.inside_template(elem)) {
                     return;
                 }
                 new TiptapWidget(elem, {
                     actions: elem.data('tiptap-actions'),
                     colors: elem.data('tiptap-colors'),
-                    helpLink: elem.data('tiptap-helpLink')
+                    helpLink: elem.data('tiptap-helpLink'),
                 });
             });
         }
-        constructor(elem, opts={}) {
+        constructor(elem, opts = {}) {
             elem.data('yafowil-tiptap', this);
             this.elem = elem;
-            this.controls = $('<div />')
-                .addClass('tiptap-controls')
-                .prependTo(elem);
+            this.controls = $('<div />').addClass('tiptap-controls').prependTo(elem);
             this.textarea = $('textarea', elem);
             if (!this.textarea.length) {
-                this.textarea = $('<textarea />')
-                    .addClass('tiptap-editor')
-                    .appendTo(elem);
+                this.textarea = $('<textarea />').addClass('tiptap-editor').appendTo(elem);
             }
             this.buttons = {};
             this.colors = opts.colors;
             if (opts.helpLink) {
-                let factory = actions.helpLink;
+                const factory = actions.helpLink;
                 this.helpLink = new factory(this);
             }
-            let tiptap_actions = this.parse_actions(opts.actions);
-            let tiptap_extensions = this.parse_extensions(tiptap_actions);
+            const tiptap_actions = this.parse_actions(opts.actions);
+            const tiptap_extensions = this.parse_extensions(tiptap_actions);
             this.editor = new tiptap.Editor({
                 element: elem[0],
                 extensions: tiptap_extensions,
-                content: this.textarea.val()
+                content: this.textarea.val(),
             });
-            tiptap_actions.forEach(act => {
+            tiptap_actions.forEach((act) => {
                 if (Array.isArray(act)) {
-                    let container = $('<div />')
-                        .addClass('btn-group')
-                        .appendTo(this.controls);
-                        act.forEach(name => this.add_button(name, container));
+                    const container = $('<div />').addClass('btn-group').appendTo(this.controls);
+                    act.forEach((name) => {
+                        this.add_button(name, container);
+                    });
                 } else {
                     this.add_button(act, this.controls);
                 }
@@ -660,27 +653,27 @@ var yafowil_tiptap = (function (exports, $) {
             this.buttons = null;
         }
         unload_all() {
-            for (let btn in this.buttons) {
+            for (const btn in this.buttons) {
                 if (this.buttons[btn].unload) {
                     this.buttons[btn].unload();
                 }
             }
         }
         add_button(name, container) {
-            let factory = actions[name],
+            const factory = actions[name],
                 btn = new factory(this, this.editor, {
-                    container_elem: container
+                    container_elem: container,
                 });
             this.buttons[name] = btn;
         }
         parse_actions(acs) {
-            let ret = [];
+            const ret = [];
             function parse(ret_arr, acts) {
-                acts.forEach((action, i) => {
+                acts.forEach((action) => {
                     if (Array.isArray(action)) {
                         ret.push([]);
                         parse(ret[ret.length - 1], action);
-                    } else if (actions[action] == undefined) {
+                    } else if (actions[action] === undefined) {
                         console.log(`ERROR: Defined action does not exist at '${action}'`);
                     } else {
                         ret_arr.push(action);
@@ -691,21 +684,23 @@ var yafowil_tiptap = (function (exports, $) {
             return ret;
         }
         parse_extensions(acs) {
-            let extensions = new Set([
+            const extensions = new Set([
                 tiptap.Document,
                 tiptap.Paragraph,
                 tiptap.Text,
                 tiptap.TextStyle,
-                tiptap.Dropcursor
+                tiptap.Dropcursor,
             ]);
-            let flattened = acs.flat(2);
-            flattened.forEach(ac => {
-                actions[ac].extensions.forEach(ext => extensions.add(ext));
+            const flattened = acs.flat(2);
+            flattened.forEach((ac) => {
+                actions[ac].extensions.forEach((ext) => {
+                    extensions.add(ext);
+                });
             });
             return extensions;
         }
         on_update() {
-            for (let btn in this.buttons) {
+            for (const btn in this.buttons) {
                 if (this.buttons[btn].on_update) {
                     this.buttons[btn].on_update();
                 }
@@ -713,14 +708,14 @@ var yafowil_tiptap = (function (exports, $) {
             this.textarea.val(this.editor.getHTML());
         }
         on_selection_update() {
-            for (let btn in this.buttons) {
+            for (const btn in this.buttons) {
                 if (this.buttons[btn].on_selection_update) {
                     this.buttons[btn].on_selection_update();
                 }
             }
         }
     }
-    function tiptap_on_array_add(inst, context) {
+    function tiptap_on_array_add(_inst, context) {
         TiptapWidget.initialize(context);
     }
     function register_array_subscribers() {
@@ -730,7 +725,7 @@ var yafowil_tiptap = (function (exports, $) {
         window.yafowil_array.on_array_event('on_add', tiptap_on_array_add);
     }
 
-    $(function() {
+    $(() => {
         if (window.ts !== undefined) {
             ts.ajax.register(TiptapWidget.initialize, true);
         } else if (window.bdajax !== undefined) {

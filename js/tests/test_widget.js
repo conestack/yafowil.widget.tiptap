@@ -1,17 +1,14 @@
 import $ from 'jquery';
 
-
 function create_elem() {
-    let elem = $('<div/>').addClass('tiptap-editor');
-    let textarea = $('<textarea />')
-        .val('<p>Hello World!</p>')
-        .appendTo(elem);
+    const elem = $('<div/>').addClass('tiptap-editor');
+    $('<textarea />').val('<p>Hello World!</p>').appendTo(elem);
 
     return elem;
 }
 let widget;
 
-QUnit.module('TiptapWidget', hooks => {
+QUnit.module('TiptapWidget', (hooks) => {
     let elem;
     let TiptapWidget, register_array_subscribers;
 
@@ -39,7 +36,7 @@ QUnit.module('TiptapWidget', hooks => {
         $('#container').empty().remove();
     });
 
-    QUnit.test('initialize/construct', assert => {
+    QUnit.test('initialize/construct', (assert) => {
         // set data attr
         elem.data('tiptap-actions', ['bold']);
 
@@ -54,7 +51,7 @@ QUnit.module('TiptapWidget', hooks => {
         assert.ok(widget.buttons.bold);
     });
 
-    QUnit.test('initialize/construct no textarea', assert => {
+    QUnit.test('initialize/construct no textarea', (assert) => {
         // set data attr
         elem.data('tiptap-actions', ['bold']);
 
@@ -65,34 +62,31 @@ QUnit.module('TiptapWidget', hooks => {
         assert.true(widget.textarea.is('textarea', elem));
     });
 
-    QUnit.test('register_array_subscribers', assert => {
+    QUnit.test('register_array_subscribers', (assert) => {
         $('#container').empty();
 
         let _array_subscribers = {
-            on_add: []
+            on_add: [],
         };
-    
+
         // window.yafowil_array is undefined - return
         register_array_subscribers();
-        assert.deepEqual(_array_subscribers['on_add'], []);
-    
+        assert.deepEqual(_array_subscribers.on_add, []);
+
         // patch yafowil_array
         window.yafowil_array = {
-            on_array_event: function(evt_name, evt_function) {
+            on_array_event: (evt_name, evt_function) => {
                 _array_subscribers[evt_name] = evt_function;
             },
             inside_template(elem) {
                 return elem.parents('.arraytemplate').length > 0;
-            }
+            },
         };
         register_array_subscribers();
-    
+
         // create table DOM
-        let table = $('<table />')
-            .append($('<tr />'))
-            .append($('<td />'))
-            .appendTo('body');
-    
+        const table = $('<table />').append($('<tr />')).append($('<td />')).appendTo('body');
+
         elem = create_elem();
         $('td', table).addClass('arraytemplate');
         elem.appendTo($('td', table));
@@ -100,14 +94,14 @@ QUnit.module('TiptapWidget', hooks => {
         elem.data('tiptap-actions', ['bold']);
 
         // invoke array on_add - returns
-        _array_subscribers['on_add'].apply(null, $('tr', table));
+        _array_subscribers.on_add.apply(null, $('tr', table));
         let widget = elem.data('yafowil-tiptap');
         assert.notOk(widget);
         $('td', table).removeClass('arraytemplate');
-    
+
         // invoke array on_add
         elem.attr('id', '');
-        _array_subscribers['on_add'].apply(null, $('tr', table));
+        _array_subscribers.on_add.apply(null, $('tr', table));
         widget = elem.data('yafowil-tiptap');
         assert.ok(widget);
         table.remove();
@@ -115,7 +109,26 @@ QUnit.module('TiptapWidget', hooks => {
         _array_subscribers = undefined;
     });
 
-    QUnit.test('destroy', assert => {
+    QUnit.test('treibstoff integration', (assert) => {
+        const attached = [];
+        window.ts = {
+            ajax: {
+                attach: (inst, elem) => {
+                    attached.push([inst, elem]);
+                },
+            },
+        };
+        try {
+            widget = new TiptapWidget(elem, { actions: ['bold'] });
+        } finally {
+            delete window.ts;
+        }
+        assert.strictEqual(attached.length, 1);
+        assert.strictEqual(attached[0][0], widget);
+        assert.strictEqual(attached[0][1], elem);
+    });
+
+    QUnit.test('destroy', (assert) => {
         // set data attr
         elem.data('tiptap-actions', ['bold']);
 
@@ -127,11 +140,9 @@ QUnit.module('TiptapWidget', hooks => {
         assert.notOk(widget.buttons);
     });
 
-    QUnit.test('unload_all', assert => {
+    QUnit.test('unload_all', (assert) => {
         // set data attr
-        elem.data('tiptap-actions', [
-            'heading'
-        ]);
+        elem.data('tiptap-actions', ['heading']);
         TiptapWidget.initialize();
         widget = elem.data('yafowil-tiptap');
 
@@ -146,13 +157,9 @@ QUnit.module('TiptapWidget', hooks => {
         assert.strictEqual(widget.buttons.heading.dd_elem.css('display'), 'block');
     });
 
-    QUnit.test('filter_actions', assert => {
+    QUnit.test('filter_actions', (assert) => {
         widget = new TiptapWidget(elem, {
-            actions: [
-                'undefinedAction',
-                'bold',
-                ['underline', 'italic', 'anotherUndefinedAction']
-            ]
+            actions: ['undefinedAction', 'bold', ['underline', 'italic', 'anotherUndefinedAction']],
         });
 
         assert.notOk(widget.buttons.undefinedAction);
@@ -161,18 +168,14 @@ QUnit.module('TiptapWidget', hooks => {
         assert.notOk(widget.buttons.anotherUndefinedAction);
     });
 
-    QUnit.test('on_update', assert => {
+    QUnit.test('on_update', (assert) => {
         widget = new TiptapWidget(elem, {
-            actions: [
-                'bulletList',
-                'orderedList',
-                'heading'
-            ]
+            actions: ['bulletList', 'orderedList', 'heading'],
         });
 
-        let heading_button = widget.buttons.heading;
-        let bl_button = widget.buttons.bulletList;
-        let ol_button = widget.buttons.orderedList;
+        const heading_button = widget.buttons.heading;
+        const bl_button = widget.buttons.bulletList;
+        const ol_button = widget.buttons.orderedList;
 
         // show heading dropdown
         heading_button.dd_elem.show();
@@ -193,8 +196,8 @@ QUnit.module('TiptapWidget', hooks => {
         assert.false(ol_button.active);
     });
 
-    QUnit.test('on_selection_update', assert => {
-        let opts = {
+    QUnit.test('on_selection_update', (assert) => {
+        const opts = {
             actions: [
                 'heading',
                 'bold',
@@ -202,13 +205,13 @@ QUnit.module('TiptapWidget', hooks => {
                 'underline',
                 'bulletList',
                 'orderedList',
-                'color'
+                'color',
             ],
             colors: [
-                { name: 'Default', color: 'rgb(51, 51, 51)'},
-                { name: 'Blue', color: 'rgb(53 39 245)' }
-            ]
-        }
+                { name: 'Default', color: 'rgb(51, 51, 51)' },
+                { name: 'Blue', color: 'rgb(53 39 245)' },
+            ],
+        };
         widget = new TiptapWidget(elem, opts);
 
         /*
@@ -218,17 +221,17 @@ QUnit.module('TiptapWidget', hooks => {
             position in ProseMirror
         */
 
-        let headings = widget.buttons.heading;
-        let colors = widget.buttons.color;
+        const headings = widget.buttons.heading;
+        const colors = widget.buttons.color;
 
         // set to Heading (h1)
-        widget.editor.chain().focus().toggleHeading({level: 1}).run();
+        widget.editor.chain().focus().toggleHeading({ level: 1 }).run();
         widget.editor.commands.setTextSelection(2);
         assert.deepEqual(headings.active_item, headings.children[1]);
 
         // set to Paragraph and select range
         widget.editor.commands.setParagraph();
-        widget.editor.commands.setTextSelection({ from: 0, to: 13 })
+        widget.editor.commands.setTextSelection({ from: 0, to: 13 });
         assert.deepEqual(headings.active_item, headings.children[0]);
 
         // set color

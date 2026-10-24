@@ -1,7 +1,11 @@
 import {importMapsPlugin} from '@web/dev-server-import-maps';
+import {playwrightLauncher} from '@web/test-runner-playwright';
 
 export default {
     nodeResolve: true,
+    browsers: [
+        playwrightLauncher({product: 'chromium'}),
+    ],
     testFramework: {
         path: './node_modules/web-test-runner-qunit/dist/autorun.js',
         config: {
@@ -11,12 +15,17 @@ export default {
     files: [
         'js/tests/**/test_*.js'
     ],
+    coverageConfig: {
+        include: ['**/js/src/**/*.js'],
+        exclude: ['**/node_modules/**', 'sources/**']
+    },
     plugins: [
         importMapsPlugin({
             inject: {
                 importMap: {
                     imports: {
                         'jquery': './node_modules/jquery/dist-module/jquery.module.js',
+                        'bootstrap': './js/tests/bootstrap_shim.js',
                         'tiptap': './src/yafowil/widget/tiptap/resources/tiptap/tiptap.dist.bundle.js'
                     },
                 },

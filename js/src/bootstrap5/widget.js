@@ -1,24 +1,22 @@
 import $ from 'jquery';
-import {actions} from './actions';
+import { actions } from './actions';
 
 export class TiptapWidget {
-
     /**
      * Initializes each widget in the given DOM context.
-     * 
+     *
      * @param {HTMLElement} context - DOM context for initialization.
      */
     static initialize(context) {
-        $('div.tiptap-editor', context).each(function() {
-            let elem = $(this);
-            if (window.yafowil_array !== undefined &&
-                window.yafowil_array.inside_template(elem)) {
+        $('div.tiptap-editor', context).each(function () {
+            const elem = $(this);
+            if (window.yafowil_array?.inside_template(elem)) {
                 return;
             }
             new TiptapWidget(elem, {
                 actions: elem.data('tiptap-actions'),
                 colors: elem.data('tiptap-colors'),
-                helpLink: elem.data('tiptap-helpLink')
+                helpLink: elem.data('tiptap-helpLink'),
             });
         });
     }
@@ -30,7 +28,7 @@ export class TiptapWidget {
      * @param {Array} opts.colors - An array of font colors to be used in the editor.
      * @param {string} opts.helpLink - A link to help resources related to the editor.
      */
-    constructor(elem, opts={}) {
+    constructor(elem, opts = {}) {
         elem.data('yafowil-tiptap', this);
         elem.attr('spellcheck', false);
         this.elem = elem;
@@ -42,37 +40,34 @@ export class TiptapWidget {
 
         this.textarea = $('textarea', elem);
         if (!this.textarea.length) {
-            this.textarea = $('<textarea />')
-                .addClass('tiptap-editor')
-                .appendTo(elem);
+            this.textarea = $('<textarea />').addClass('tiptap-editor').appendTo(elem);
         }
         this.textarea.addClass('m-0 form-control');
 
         this.buttons = {};
         this.colors = opts.colors;
         if (opts.helpLink) {
-            let factory = actions.helpLink;
+            const factory = actions.helpLink;
             this.helpLink = new factory(this);
         }
 
-        let tiptap_actions = this.parse_actions(opts.actions);
-        let tiptap_extensions = this.parse_extensions(tiptap_actions);
+        const tiptap_actions = this.parse_actions(opts.actions);
+        const tiptap_extensions = this.parse_extensions(tiptap_actions);
 
         this.editor = new tiptap.Editor({
             element: elem[0],
             extensions: tiptap_extensions,
-            content: this.textarea.val()
+            content: this.textarea.val(),
         });
 
-        this.editarea = $('div.ProseMirror', this.elem)
-            .addClass('form-control');
+        this.editarea = $('div.ProseMirror', this.elem).addClass('form-control');
 
-        tiptap_actions.forEach(act => {
+        tiptap_actions.forEach((act) => {
             if (Array.isArray(act)) {
-                let container = $('<div />')
-                    .addClass('btn-group me-2')
-                    .appendTo(this.controls);
-                act.forEach(name => this.add_button(name, container));
+                const container = $('<div />').addClass('btn-group me-2').appendTo(this.controls);
+                act.forEach((name) => {
+                    this.add_button(name, container);
+                });
             } else {
                 this.add_button(act, this.controls);
             }
@@ -96,16 +91,16 @@ export class TiptapWidget {
             this.editor.off();
             this.editor.destroy();
         }
-    
+
         this.unload_all();
-    
+
         if (this.helpLink && typeof this.helpLink.unload === 'function') {
             this.helpLink.unload();
         }
-    
+
         // remove from jQuery data cache
         this.elem.removeData('yafowil-tiptap');
-    
+
         // remove event listeners
         this.editarea.off();
         this.controls.off();
@@ -117,7 +112,7 @@ export class TiptapWidget {
      * Unloads all action buttons in the widget.
      */
     unload_all() {
-        for (let btn in this.buttons) {
+        for (const btn in this.buttons) {
             this.buttons[btn].unload();
         }
     }
@@ -129,9 +124,9 @@ export class TiptapWidget {
      * @param {jQuery} container - The jQuery container to append the button to.
      */
     add_button(name, container) {
-        let factory = actions[name];
-        let btn = new factory(this, this.editor, {
-            container_elem: container
+        const factory = actions[name];
+        const btn = new factory(this, this.editor, {
+            container_elem: container,
         });
         this.buttons[name] = btn;
     }
@@ -143,13 +138,13 @@ export class TiptapWidget {
      * @returns {Array} A structured array of parsed actions.
      */
     parse_actions(acs) {
-        let ret = [];
+        const ret = [];
         function parse(ret_arr, acts) {
-            acts.forEach((action, i) => {
+            acts.forEach((action) => {
                 if (Array.isArray(action)) {
                     ret.push([]);
                     parse(ret[ret.length - 1], action);
-                } else if (actions[action] == undefined) {
+                } else if (actions[action] === undefined) {
                     console.log(`ERROR: Defined action does not exist at '${action}'`);
                 } else {
                     ret_arr.push(action);
@@ -167,17 +162,19 @@ export class TiptapWidget {
      * @returns {Set} A set of extensions associated with the actions.
      */
     parse_extensions(acs) {
-        let extensions = new Set([
+        const extensions = new Set([
             tiptap.Document,
             tiptap.Paragraph,
             tiptap.Text,
             tiptap.TextStyle,
-            tiptap.Dropcursor
+            tiptap.Dropcursor,
         ]);
 
-        let flattened = acs.flat(2);
-        flattened.forEach(ac => {
-            actions[ac].extensions.forEach(ext => extensions.add(ext));
+        const flattened = acs.flat(2);
+        flattened.forEach((ac) => {
+            actions[ac].extensions.forEach((ext) => {
+                extensions.add(ext);
+            });
         });
         return extensions;
     }
@@ -186,7 +183,7 @@ export class TiptapWidget {
      * Updates the state of all buttons and the textarea value.
      */
     on_update() {
-        for (let btn in this.buttons) {
+        for (const btn in this.buttons) {
             if (this.buttons[btn].on_update) {
                 this.buttons[btn].on_update();
             }
@@ -198,7 +195,7 @@ export class TiptapWidget {
      * Updates the state of all buttons based on the current selection.
      */
     on_selection_update() {
-        for (let btn in this.buttons) {
+        for (const btn in this.buttons) {
             if (this.buttons[btn].on_selection_update) {
                 this.buttons[btn].on_selection_update();
             }
@@ -213,7 +210,7 @@ export class TiptapWidget {
 /**
  * Re-initializes widget on array add event.
  */
-function tiptap_on_array_add(inst, context) {
+function tiptap_on_array_add(_inst, context) {
     TiptapWidget.initialize(context);
 }
 

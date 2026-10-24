@@ -1,8 +1,7 @@
-import $ from 'jquery';
 import bootstrap from 'bootstrap';
+import $ from 'jquery';
 
 export class Action {
-
     /**
      * @param {Object} editor - The editor instance to which this action belongs.
      * @param {Object} [opts={}] - Options for configuring the action.
@@ -29,29 +28,23 @@ export class Action {
      * @param {Object} opts - The options used to configure the action.
      */
     compile(opts) {
-        this.container = $('<div />')
-            .addClass('action')
-            .appendTo(opts.container_elem);
-        this.elem = $('<div />')
-            .appendTo(this.container);
+        this.container = $('<div />').addClass('action').appendTo(opts.container_elem);
+        this.elem = $('<div />').appendTo(this.container);
 
         if (opts.tooltip) {
-            this.container.attr('data-bs-toggle', 'tooltip')
-                .attr('data-bs-title', opts.tooltip);
+            this.container.attr('data-bs-toggle', 'tooltip').attr('data-bs-title', opts.tooltip);
             this.tooltip = new bootstrap.Tooltip(this.container);
         }
 
         if (opts.icon) {
-            this.icon = $('<i />')
-                .addClass(`bi-${opts.icon}`)
-                .appendTo(this.elem);
+            this.icon = $('<i />').addClass(`bi-${opts.icon}`).appendTo(this.elem);
         }
         if (opts.text) {
-            $(`<span />`)
-                .text(opts.text)
-                .appendTo(this.elem);
+            $(`<span />`).text(opts.text).appendTo(this.elem);
         }
-        if (opts.css) { $('> *', this.elem).css(opts.css); }
+        if (opts.css) {
+            $('> *', this.elem).css(opts.css);
+        }
 
         this.content = $('> *', this.elem);
     }
@@ -87,7 +80,7 @@ export class Action {
     }
 
     unload() {
-        if (this.tooltip && this.tooltip._element) {
+        if (this.tooltip?._element) {
             this.tooltip.dispose();
         }
         this.elem.off();
@@ -95,7 +88,6 @@ export class Action {
 }
 
 export class Button extends Action {
-
     /**
      * Compiles the button's UI elements, adding button-specific classes.
      *
@@ -104,13 +96,13 @@ export class Button extends Action {
     compile(opts) {
         super.compile(opts);
         this.container.addClass('btn-group');
-        this.elem.attr('role', 'button')
+        this.elem
+            .attr('role', 'button')
             .addClass('btn btn-outline-secondary d-flex align-items-center');
     }
 }
 
 export class DropdownButton extends Button {
-
     /**
      * Creates an instance of the DropdownButton class.
      *
@@ -120,8 +112,7 @@ export class DropdownButton extends Button {
      */
     constructor(editor, opts = {}) {
         super(editor, opts);
-        this.elem.addClass('drop_btn dropdown-toggle')
-            .attr('data-bs-toggle', 'dropdown');
+        this.elem.addClass('drop_btn dropdown-toggle').attr('data-bs-toggle', 'dropdown');
         this.dd_elem = $('<ul />')
             .addClass('dropdown-menu tiptap-dropdown')
             .appendTo(this.container);
@@ -156,7 +147,7 @@ export class DropdownButton extends Button {
      * @param {Object} item - The item to set as active.
      */
     set active_item(item) {
-        let clone = item.elem.children().clone();
+        const clone = item.elem.children().clone();
         this.elem.empty().append(clone);
         if (this.content) {
             this.elem.prepend(this.content);
@@ -172,7 +163,7 @@ export class DropdownButton extends Button {
         if (this.submit_elem) {
             this.submit_elem.off();
         }
-        for (let child of this.children) {
+        for (const child of this.children) {
             child.unload();
         }
         super.unload();
@@ -183,7 +174,7 @@ export class DropdownButton extends Button {
      *
      * @param {Event} e - The resize event.
      */
-    on_resize(e) {
+    on_resize(_e) {
         this.active = false;
     }
 
@@ -191,9 +182,9 @@ export class DropdownButton extends Button {
      * Sets the items in the dropdown menu.
      */
     set_items() {
-        for (let child of this.children) {
+        for (const child of this.children) {
             child.container.addClass('dropdown-item');
-            child.elem.on('click', (e) => {
+            child.elem.on('click', () => {
                 this.active_item = child;
             });
         }

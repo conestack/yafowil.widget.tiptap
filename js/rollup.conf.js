@@ -120,7 +120,7 @@ export default args => {
                 extract: true,
                 minimize: true,
                 use: [
-                    ['sass', { outputStyle: 'compressed' }],
+                    ['sass', { outputStyle: 'compressed', charset: false }],
                 ],
             }),
         ],
@@ -180,7 +180,7 @@ export default args => {
                 extract: true,
                 minimize: true,
                 use: [
-                    ['sass', { outputStyle: 'compressed' }],
+                    ['sass', { outputStyle: 'compressed', charset: false }],
                 ],
             }),
         ],
