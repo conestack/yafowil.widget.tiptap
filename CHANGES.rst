@@ -4,6 +4,11 @@ Changes
 2.0.1 (unreleased)
 ------------------
 
+- Fix ``destroy`` of the default widget leaving the help link, the button
+  tooltips and the dropdowns in the DOM. Tooltips and dropdowns were appended
+  to ``body`` and never removed.
+  [rnix]
+
 - Fix spellchecking not being disabled in the bootstrap5 editor. With jQuery 4
   ``.attr('spellcheck', false)`` removes the attribute instead of setting
   ``spellcheck="false"``.

@@ -140,6 +140,27 @@ QUnit.module('TiptapWidget', (hooks) => {
         assert.notOk(widget.buttons);
     });
 
+    QUnit.test('destroy removes help link, tooltips and dropdowns', (assert) => {
+        const tooltip_count = () => $('div.tiptap-tooltip').length;
+        const dropdown_count = () => $('div.tiptap-dropdown').length;
+        const initial_tooltips = tooltip_count();
+        const initial_dropdowns = dropdown_count();
+        widget = new TiptapWidget(elem, {
+            actions: ['bold', 'link', 'heading'],
+            helpLink: true,
+        });
+        const help_elem = widget.helpLink.elem;
+        // bold, link and help link
+        assert.strictEqual(tooltip_count(), initial_tooltips + 3);
+        // link and heading
+        assert.strictEqual(dropdown_count(), initial_dropdowns + 2);
+
+        widget.destroy();
+        assert.notOk($.contains(document, help_elem[0]));
+        assert.strictEqual(tooltip_count(), initial_tooltips);
+        assert.strictEqual(dropdown_count(), initial_dropdowns);
+    });
+
     QUnit.test('unload_all', (assert) => {
         // set data attr
         elem.data('tiptap-actions', ['heading']);
@@ -151,10 +172,12 @@ QUnit.module('TiptapWidget', (hooks) => {
         assert.strictEqual(widget.buttons.heading.dd_elem.css('display'), 'none');
 
         // unload all buttons
+        const heading = widget.buttons.heading;
         widget.unload_all();
-        widget.buttons.heading.dd_elem.show();
-        $('body').trigger('click');
-        assert.strictEqual(widget.buttons.heading.dd_elem.css('display'), 'block');
+        assert.notOk($.contains(document, heading.dd_elem[0]));
+        heading.active = true;
+        $(window).trigger('resize');
+        assert.true(heading.active);
     });
 
     QUnit.test('filter_actions', (assert) => {

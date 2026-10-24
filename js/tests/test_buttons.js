@@ -75,6 +75,44 @@ QUnit.module('buttons.js', (hooks) => {
         }, 1500);
     });
 
+    QUnit.test('Tooltip destroy', (assert) => {
+        const tt = new Tooltip('test', element);
+        assert.true($.contains(document, tt.elem[0]));
+
+        tt.destroy();
+        assert.notOk($.contains(document, tt.elem[0]));
+    });
+
+    QUnit.test('Button unload removes tooltip', (assert) => {
+        const btn = new Button(editor, {
+            container_elem: $('#container'),
+            tooltip: 'test_tt',
+        });
+        const tooltip_elem = $('div.tiptap-tooltip');
+        assert.strictEqual(tooltip_elem.length, 1);
+
+        btn.unload();
+        assert.notOk($.contains(document, tooltip_elem[0]));
+
+        // button without tooltip
+        new Button(editor).unload();
+        assert.strictEqual($('div.tiptap-tooltip').length, 0);
+    });
+
+    QUnit.test('DropdownButton unload removes tooltip and dropdown', (assert) => {
+        const btn = new DropdownButton(editor, {
+            container_elem: $('#container'),
+            tooltip: 'test_tt',
+        });
+        const tooltip_elem = $('div.tiptap-tooltip');
+        assert.strictEqual(tooltip_elem.length, 1);
+        assert.true(btn.dd_elem.parent().is('body'));
+
+        btn.unload();
+        assert.notOk($.contains(document, tooltip_elem[0]));
+        assert.notOk($.contains(document, btn.dd_elem[0]));
+    });
+
     QUnit.test('Button constructor / no options', (assert) => {
         const btn = new Button(editor);
         assert.deepEqual(btn.editor, editor);
@@ -153,10 +191,8 @@ QUnit.module('buttons.js', (hooks) => {
 
         // no longer reacts on window resize after unload
         btn.unload();
-        btn.dd_elem.show();
         btn.active = true;
         $(window).trigger('resize');
-        assert.strictEqual(btn.dd_elem.css('display'), 'block');
         assert.true(btn.active);
     });
 

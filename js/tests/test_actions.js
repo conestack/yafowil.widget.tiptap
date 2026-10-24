@@ -400,6 +400,17 @@ QUnit.module('Actions', (hooks) => {
         assert.true(help_button.elem.is('a.help-btn'));
     });
 
+    QUnit.test('Help unload', (assert) => {
+        const help_button = new actions.helpLink({ elem });
+        const help_elem = help_button.elem;
+        const tooltip_elem = help_button.tooltip.elem;
+        assert.true(help_elem.prev().is(elem));
+
+        help_button.unload();
+        assert.notOk($.contains(document, help_elem[0]));
+        assert.notOk($.contains(document, tooltip_elem[0]));
+    });
+
     QUnit.test('ActionGroup', (assert) => {
         widget = new TiptapWidget(elem, {
             actions: [

@@ -66,6 +66,9 @@ export class TiptapWidget {
 
     destroy() {
         this.unload_all();
+        if (this.helpLink) {
+            this.helpLink.unload();
+        }
         this.editor.destroy();
         this.elem.empty();
         this.buttons = null;
@@ -73,9 +76,7 @@ export class TiptapWidget {
 
     unload_all() {
         for (const btn in this.buttons) {
-            if (this.buttons[btn].unload) {
-                this.buttons[btn].unload();
-            }
+            this.buttons[btn].unload();
         }
     }
 

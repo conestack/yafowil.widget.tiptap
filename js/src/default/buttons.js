@@ -19,6 +19,10 @@ export class Tooltip {
             this.elem.fadeOut();
         });
     }
+
+    destroy() {
+        this.elem.remove();
+    }
 }
 
 export class Button {
@@ -30,7 +34,7 @@ export class Button {
         this.opts = opts;
 
         if (opts.tooltip) {
-            new Tooltip(opts.tooltip, this.elem);
+            this.tooltip = new Tooltip(opts.tooltip, this.elem);
         }
         if (opts.icon) {
             this.icon = $('<i />').addClass(`glyphicon glyphicon-${opts.icon}`).appendTo(this.elem);
@@ -57,6 +61,11 @@ export class Button {
         }
         this._active = active;
     }
+
+    unload() {
+        this.tooltip?.destroy();
+    }
+
     on_click(e) {
         e.preventDefault();
     }
@@ -103,6 +112,8 @@ export class DropdownButton extends Button {
     unload() {
         $(document).off('click', this.hide_dropdown);
         $(window).off('resize', this.on_resize);
+        this.dd_elem.remove();
+        super.unload();
     }
 
     on_resize(_e) {

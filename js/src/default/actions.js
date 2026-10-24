@@ -508,6 +508,11 @@ class HelpAction {
             .insertAfter(widget.elem);
         this.tooltip = new Tooltip('Help', this.elem);
     }
+
+    unload() {
+        this.tooltip.destroy();
+        this.elem.remove();
+    }
 }
 
 export const actions = {

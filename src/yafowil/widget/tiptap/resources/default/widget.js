@@ -18,6 +18,9 @@ var yafowil_tiptap = (function (exports, $) {
                 this.elem.fadeOut();
             });
         }
+        destroy() {
+            this.elem.remove();
+        }
     }
     class Button {
         constructor(editor, opts = {}) {
@@ -26,7 +29,7 @@ var yafowil_tiptap = (function (exports, $) {
             this.elem = $('<button />').appendTo(opts.container_elem);
             this.opts = opts;
             if (opts.tooltip) {
-                new Tooltip(opts.tooltip, this.elem);
+                this.tooltip = new Tooltip(opts.tooltip, this.elem);
             }
             if (opts.icon) {
                 this.icon = $('<i />').addClass(`glyphicon glyphicon-${opts.icon}`).appendTo(this.elem);
@@ -50,6 +53,9 @@ var yafowil_tiptap = (function (exports, $) {
                 active ? this.elem.addClass('active') : this.elem.removeClass('active');
             }
             this._active = active;
+        }
+        unload() {
+            this.tooltip?.destroy();
         }
         on_click(e) {
             e.preventDefault();
@@ -90,6 +96,8 @@ var yafowil_tiptap = (function (exports, $) {
         unload() {
             $(document).off('click', this.hide_dropdown);
             $(window).off('resize', this.on_resize);
+            this.dd_elem.remove();
+            super.unload();
         }
         on_resize(_e) {
             this.dd_elem.hide();
@@ -574,6 +582,10 @@ var yafowil_tiptap = (function (exports, $) {
                 .insertAfter(widget.elem);
             this.tooltip = new Tooltip('Help', this.elem);
         }
+        unload() {
+            this.tooltip.destroy();
+            this.elem.remove();
+        }
     }
     const actions = {
         bold: BoldAction,
@@ -648,15 +660,16 @@ var yafowil_tiptap = (function (exports, $) {
         }
         destroy() {
             this.unload_all();
+            if (this.helpLink) {
+                this.helpLink.unload();
+            }
             this.editor.destroy();
             this.elem.empty();
             this.buttons = null;
         }
         unload_all() {
             for (const btn in this.buttons) {
-                if (this.buttons[btn].unload) {
-                    this.buttons[btn].unload();
-                }
+                this.buttons[btn].unload();
             }
         }
         add_button(name, container) {

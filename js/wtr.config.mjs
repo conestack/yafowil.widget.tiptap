@@ -1,6 +1,14 @@
 import {importMapsPlugin} from '@web/dev-server-import-maps';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 
+export const importMap = {
+    imports: {
+        'jquery': './node_modules/jquery/dist-module/jquery.module.js',
+        'bootstrap': './js/tests/bootstrap_shim.js',
+        'tiptap': './src/yafowil/widget/tiptap/resources/tiptap/tiptap.dist.bundle.js'
+    },
+};
+
 export default {
     nodeResolve: true,
     browsers: [
@@ -21,15 +29,7 @@ export default {
     },
     plugins: [
         importMapsPlugin({
-            inject: {
-                importMap: {
-                    imports: {
-                        'jquery': './node_modules/jquery/dist-module/jquery.module.js',
-                        'bootstrap': './js/tests/bootstrap_shim.js',
-                        'tiptap': './src/yafowil/widget/tiptap/resources/tiptap/tiptap.dist.bundle.js'
-                    },
-                },
-            },
+            inject: {importMap},
         }),
     ],
 }
