@@ -1,13 +1,9 @@
+from importlib import reload
 from node.utils import UNSET
 from yafowil.base import factory
-from yafowil.compat import IS_PY2
 from yafowil.tests import YafowilTestCase
 import unittest
 import os
-
-
-if not IS_PY2:
-    from importlib import reload
 
 
 def np(path):
