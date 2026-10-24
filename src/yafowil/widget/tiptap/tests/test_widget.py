@@ -73,6 +73,9 @@ class TestTiptapWidget(YafowilTestCase):
             '</div>'
         ), widget())
 
+        widget = factory('tiptap', name='tiptap', mode='display')
+        self.assertEqual(widget(), '<div class="display-tiptap"></div>')
+
     def test_extractor(self):
         widget = factory('tiptap', name='tiptap')
 
