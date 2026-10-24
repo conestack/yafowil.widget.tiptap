@@ -4,6 +4,17 @@ Changes
 2.0.1 (unreleased)
 ------------------
 
+- Fix spellchecking not being disabled in the bootstrap5 editor. With jQuery 4
+  ``.attr('spellcheck', false)`` removes the attribute instead of setting
+  ``spellcheck="false"``.
+  [rnix]
+
+- Fix the bootstrap5 widget with ``helpLink`` failing to construct with a
+  ``TypeError``, which also left all following editors uninitialized. The help
+  link tooltip works now, and ``destroy`` disposes the tooltip and removes the
+  help link.
+  [rnix]
+
 - Upgrade tiptap to 3.32, ``@tiptap/core`` before 3.30.4 is vulnerable
   (``mergeAttributes()`` turns an own ``__proto__`` key into DOM attributes).
   Switching from HTML source back to the editor now syncs the textarea with the
@@ -20,8 +31,8 @@ Changes
 - Do not write a byte order mark into the compiled CSS.
   [rnix]
 
-- Extend the JS tests, all modules are loaded by the tests now. Code paths
-  behind known bugs stay uncovered.
+- Extend the JS tests to 100 % coverage, all modules including bundles are
+  loaded by the tests now.
   [rnix]
 
 - Lint and format the JS code with biome. ``make check`` runs ``biome check``,

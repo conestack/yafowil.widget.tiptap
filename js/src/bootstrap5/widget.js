@@ -30,7 +30,7 @@ export class TiptapWidget {
      */
     constructor(elem, opts = {}) {
         elem.data('yafowil-tiptap', this);
-        elem.attr('spellcheck', false);
+        elem.attr('spellcheck', 'false');
         this.elem = elem;
 
         this.controls = $('<div />')
@@ -94,7 +94,7 @@ export class TiptapWidget {
 
         this.unload_all();
 
-        if (this.helpLink && typeof this.helpLink.unload === 'function') {
+        if (this.helpLink) {
             this.helpLink.unload();
         }
 

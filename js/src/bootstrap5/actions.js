@@ -509,7 +509,14 @@ class HelpAction {
             .append($('<div />').text('?'))
             .insertAfter(widget.elem);
 
-        new bootstrap.Tooltip(this.container);
+        this.tooltip = new bootstrap.Tooltip(this.elem);
+    }
+
+    unload() {
+        if (this.tooltip._element) {
+            this.tooltip.dispose();
+        }
+        this.elem.remove();
     }
 }
 

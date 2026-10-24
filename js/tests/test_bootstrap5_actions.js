@@ -381,6 +381,30 @@ QUnit.module('bootstrap5 Actions', (hooks) => {
         assert.true(btn.active);
     });
 
+    QUnit.test('Help', (assert) => {
+        widget = new TiptapWidget(elem, { actions: ['bold'], helpLink: true });
+
+        const help_button = widget.helpLink;
+        assert.true(help_button instanceof actions.helpLink);
+        assert.true(help_button.elem.is('a.help-btn'));
+        assert.true(help_button.elem.prev().is(elem));
+        assert.strictEqual(help_button.elem.attr('data-bs-title'), 'Help');
+        assert.strictEqual(bootstrap.Tooltip.getInstance(help_button.elem[0]), help_button.tooltip);
+    });
+
+    QUnit.test('Help unload', (assert) => {
+        const help_button = new actions.helpLink({ elem });
+        const help_elem = help_button.elem;
+
+        help_button.unload();
+        assert.strictEqual(bootstrap.Tooltip.getInstance(help_elem[0]), null);
+        assert.notOk($.contains(document, help_elem[0]));
+
+        // disposed tooltip is not disposed twice
+        help_button.unload();
+        assert.strictEqual(bootstrap.Tooltip.getInstance(help_elem[0]), null);
+    });
+
     QUnit.test('mark buttons on_selection_update', (assert) => {
         widget = new TiptapWidget(elem, {
             actions: ['bold', 'italic', 'underline', 'bulletList', 'orderedList'],

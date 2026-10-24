@@ -51,6 +51,30 @@ QUnit.module('bootstrap5 TiptapWidget', (hooks) => {
         assert.true(widget.editarea.is('div.ProseMirror.form-control'));
         assert.notOk(widget.helpLink);
         assert.ok(widget.buttons.bold);
+        // jQuery 4 removes an attribute set to boolean ``false``
+        assert.strictEqual(elem.attr('spellcheck'), 'false');
+    });
+
+    QUnit.test('initialize/construct with helpLink', (assert) => {
+        elem.data('tiptap-actions', ['bold']);
+        elem.data('tiptap-helpLink', true);
+        const next_elem = create_elem();
+        next_elem.data('tiptap-actions', ['bold']);
+        $('#container').append(next_elem);
+
+        TiptapWidget.initialize();
+        widget = elem.data('yafowil-tiptap');
+
+        const help_elem = widget.helpLink.elem;
+        assert.true(help_elem.is('a.help-btn'));
+        assert.true(help_elem.prev().is(elem));
+        assert.true(bootstrap.Tooltip.getInstance(help_elem[0]) instanceof bootstrap.Tooltip);
+
+        // a widget with help link does not abort the initialization of the
+        // following ones
+        const next_widget = next_elem.data('yafowil-tiptap');
+        assert.true(next_widget instanceof TiptapWidget);
+        next_widget.destroy();
     });
 
     QUnit.test('initialize/construct no textarea', (assert) => {
@@ -142,6 +166,15 @@ QUnit.module('bootstrap5 TiptapWidget', (hooks) => {
         for (const el of [widget.editarea, widget.controls, widget.textarea, widget.elem]) {
             assert.strictEqual($._data(el[0], 'events'), undefined);
         }
+    });
+
+    QUnit.test('destroy with helpLink', (assert) => {
+        widget = new TiptapWidget(elem, { actions: ['bold'], helpLink: true });
+        const help_elem = widget.helpLink.elem;
+
+        widget.destroy();
+        assert.strictEqual(bootstrap.Tooltip.getInstance(help_elem[0]), null);
+        assert.notOk($.contains(document, help_elem[0]));
     });
 
     QUnit.test('unload_all', (assert) => {

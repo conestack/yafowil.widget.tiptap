@@ -551,7 +551,13 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
                 .addClass('help-btn')
                 .append($('<div />').text('?'))
                 .insertAfter(widget.elem);
-            new bootstrap.Tooltip(this.container);
+            this.tooltip = new bootstrap.Tooltip(this.elem);
+        }
+        unload() {
+            if (this.tooltip._element) {
+                this.tooltip.dispose();
+            }
+            this.elem.remove();
         }
     }
     const actions = {
@@ -588,7 +594,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
         }
         constructor(elem, opts = {}) {
             elem.data('yafowil-tiptap', this);
-            elem.attr('spellcheck', false);
+            elem.attr('spellcheck', 'false');
             this.elem = elem;
             this.controls = $('<div />')
                 .addClass('tiptap-controls btn-toolbar mb-2')
@@ -637,7 +643,7 @@ var yafowil_tiptap = (function (exports, $, bootstrap) {
                 this.editor.destroy();
             }
             this.unload_all();
-            if (this.helpLink && typeof this.helpLink.unload === 'function') {
+            if (this.helpLink) {
                 this.helpLink.unload();
             }
             this.elem.removeData('yafowil-tiptap');
